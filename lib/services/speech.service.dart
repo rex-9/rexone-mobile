@@ -6,12 +6,12 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/api.service.dart';
+import 'package:rexone_mobile/services/permission.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
 
 /// Shared live STT + TTS client. Any controller can `Get.find<SpeechService>()`.
@@ -21,6 +21,7 @@ import 'package:rexone_mobile/services/socket.service.dart';
 class SpeechService extends GetxService with WidgetsBindingObserver {
   late final ApiService _api;
   late final SocketService _socket;
+  late final PermissionService _permissions;
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
 
@@ -51,6 +52,7 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
     super.onInit();
     _api = Get.find<ApiService>();
     _socket = Get.find<SocketService>();
+    _permissions = Get.find<PermissionService>();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -182,11 +184,8 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
       return ESpeechListenResult.disconnected;
     }
 
-    var permission = await Permission.microphone.status;
-    if (!permission.isGranted) {
-      permission = await Permission.microphone.request();
-    }
-    if (!permission.isGranted || !await _recorder.hasPermission()) {
+    if (!await _permissions.requestMicrophone() ||
+        !await _recorder.hasPermission()) {
       return ESpeechListenResult.permissionDenied;
     }
 

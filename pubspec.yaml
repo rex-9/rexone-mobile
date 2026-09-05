@@ -49,6 +49,7 @@ dependencies:
   firebase_analytics: ^12.4.5
   record: ^6.0.0
   permission_handler: ^12.0.1
+  image_picker: ^1.2.1
   path_provider: ^2.1.5
   just_audio: ^0.9.46
   connectivity_plus: ^7.3.1

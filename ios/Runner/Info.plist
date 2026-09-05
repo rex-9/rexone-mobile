@@ -29,6 +29,10 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is needed for voice messages in AI chat.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to take a profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to choose a profile picture.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -4,8 +4,6 @@ class FlagHelper {
     switch (localeCode) {
       case 'en_US':
         return '🇺🇸';
-      case 'es_ES':
-        return '🇪🇸';
       case 'my_MM':
         return '🇲🇲';
       default:

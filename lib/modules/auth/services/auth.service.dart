@@ -121,7 +121,7 @@ class AuthService extends GetxService {
     final response = await _api.get(ServerRoutes.currentUser);
     return _api.parseResponse<UserModel>(
       response,
-      (data) => UserModel.fromJson(data),
+      (data) => UserModel.fromJson(data[AuthKeys.user]),
     );
   }
 

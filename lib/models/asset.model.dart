@@ -38,17 +38,21 @@ class AssetModel {
       id: json[ApiKeys.id]?.toString() ?? '',
       name: json[AssetKeys.name] ?? '',
       url: json[AssetKeys.url] ?? '',
-      type: json[AssetKeys.type] ?? 'general',
+      type: json[AssetKeys.type] ?? '',
       format: json[AssetKeys.format],
       extension: json[AssetKeys.extension],
-      sizeBytes: json[AssetKeys.sizeBytes] as int?,
-      durationSecs: json[AssetKeys.durationSecs] as int?,
-      source: json[AssetKeys.source] ?? 'upload',
+      sizeBytes: (json[AssetKeys.sizeBytes] as num?)?.toInt(),
+      durationSecs: (json[AssetKeys.durationSecs] as num?)?.toInt(),
+      source: json[AssetKeys.source] ?? AssetKeys.sourceUpload,
       assetableType: json[AssetKeys.assetableType],
       assetableId: json[AssetKeys.assetableId],
       createdById: json[AssetKeys.createdById],
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      createdAt: json[AssetKeys.createdAt] != null
+          ? DateTime.tryParse(json[AssetKeys.createdAt].toString())
+          : null,
+      updatedAt: json[AssetKeys.updatedAt] != null
+          ? DateTime.tryParse(json[AssetKeys.updatedAt].toString())
+          : null,
     );
   }
 

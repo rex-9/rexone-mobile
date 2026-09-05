@@ -3,7 +3,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/services/services.dart';
@@ -13,6 +12,7 @@ import '../ai.dart';
 class AiController extends GetxController {
   final AiService _ai = Get.find<AiService>();
   final SpeechService _speech = Get.find<SpeechService>();
+  final PermissionService _permissions = Get.find<PermissionService>();
 
   final RxList<AiMessageModel> messages = <AiMessageModel>[].obs;
   final RxList<AiRoomModel> rooms = <AiRoomModel>[].obs;
@@ -290,7 +290,7 @@ class AiController extends GetxController {
       case ESpeechListenResult.disconnected:
         AppSnackbar.error(AppLocales.ai.aiTranscriptionFailed.tr);
       case ESpeechListenResult.permissionDenied:
-        await _promptMicPermission();
+        await _permissions.promptMicrophoneSettings();
       case ESpeechListenResult.failed:
         AppSnackbar.error(AppLocales.ai.aiStartRecordingFailed.tr);
       case ESpeechListenResult.alreadyListening:
@@ -315,22 +315,6 @@ class AiController extends GetxController {
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
     );
-  }
-
-  Future<void> _promptMicPermission() async {
-    final context = Get.context;
-    if (context == null || !context.mounted) return;
-
-    final openSettings = await AppDialog.confirm(
-      context: context,
-      title: AppLocales.ai.micPermissionTitle.tr,
-      message: AppLocales.ai.micPermissionMessage.tr,
-      confirmLabel: AppLocales.ai.openSettings.tr,
-    );
-
-    if (openSettings) {
-      await openAppSettings();
-    }
   }
 
   // ============================================================

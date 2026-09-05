@@ -5,6 +5,7 @@ import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
+import 'package:rexone_mobile/routes/app.routes.dart';
 
 import '../../auth/auth.dart';
 import '../../feedback/feedback.dart';
@@ -168,26 +169,31 @@ class SettingPage extends GetView<SettingController> {
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          AppListTile(
-            leading: CircleAvatar(
-              backgroundColor: context.colors.primary.withValues(alpha: 0.1),
-              backgroundImage: authController.currentUser.value?.photo != null
-                  ? NetworkImage(authController.currentUser.value!.photo!)
-                  : null,
-              child: authController.currentUser.value?.photo == null
-                  ? Icon(Design.icons.person, color: context.colors.primary)
-                  : null,
-            ),
-            title: Text(
-              authController.currentUser.value?.name ??
-                  authController.currentUser.value?.username ??
-                  AppLocales.setting.account.tr,
-            ),
-            subtitle: Obx(
-              () => Text(
+          Obx(
+            () => AppListTile(
+              leading: CircleAvatar(
+                backgroundColor: context.colors.primary.withValues(alpha: 0.1),
+                backgroundImage: authController.currentUser.value?.photo != null
+                    ? NetworkImage(authController.currentUser.value!.photo!)
+                    : null,
+                child: authController.currentUser.value?.photo == null
+                    ? Icon(Design.icons.person, color: context.colors.primary)
+                    : null,
+              ),
+              title: Text(
+                authController.currentUser.value?.name ??
+                    authController.currentUser.value?.username ??
+                    AppLocales.setting.account.tr,
+              ),
+              subtitle: Text(
                 authController.currentUser.value?.email ??
                     AppLocales.common.loading.tr,
               ),
+              trailing: Icon(
+                Design.icons.rightArrow,
+                color: context.colors.textSecondary,
+              ),
+              onTap: AppRoutes.toProfile,
             ),
           ),
           Divider(

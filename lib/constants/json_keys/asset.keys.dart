@@ -19,4 +19,11 @@ class AssetKeys {
   static const assetableId = 'assetable_id';
   static const createdById = 'created_by_id';
   static const bytes = 'bytes';
+  static const createdAt = 'created_at';
+  static const updatedAt = 'updated_at';
+
+  // ===== Upload constants (FormData values) =====
+  static const typeAvatar = 'avatar';
+  static const assetableUser = 'User';
+  static const sourceUpload = 'upload';
 }

@@ -221,6 +221,7 @@ Rexone Mobile has a strictly governed design system accessible via `lib/design/d
 ### 🧩 Mobile Domain Capabilities
 
 - **Auth Flow**: Complete parity with Web & Core (email check, 6-digit password, OTP verification, Google OAuth challenge, session replacement). Zero hardcoded string literals.
+- **Profile**: Own Flutter module (`lib/modules/profile/`). Settings account row opens a Profile screen (name, username, disabled email). Save PUTs name/username and uploads a picked avatar.
 - **Push Notifications**: Powered by OneSignal (`PushNotiService`). Automatically syncs user IDs and tags on login/session restore and clears state on logout.
 - **Product Analytics**: Powered by Firebase Analytics (`AnalyticsService`). Integrates navigation observers for screen tracking and records authentication and application lifecycle events.
 - **In-App Upgrader**: Powered by `upgrader`. Wraps root app builder with `UpgradeAlert` to notify users of critical or optional Play Store / App Store updates.

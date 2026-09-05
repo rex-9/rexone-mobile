@@ -254,6 +254,15 @@ class _UserLocales {
   final avatarHint = 'user.avatar_hint';
   final selectImage = 'user.select_image';
   final uploadAvatar = 'user.upload_avatar';
+  final takePhoto = 'user.take_photo';
+  final chooseFromGallery = 'user.choose_from_gallery';
+  final cameraPermissionTitle = 'user.camera_permission_title';
+  final cameraPermissionMessage = 'user.camera_permission_message';
+  final photosPermissionTitle = 'user.photos_permission_title';
+  final photosPermissionMessage = 'user.photos_permission_message';
+  final uploadAvatarFailed = 'user.upload_avatar_failed';
+  final updateSuccess = 'user.update_success';
+  final updateFailed = 'user.update_failed';
   final accountInfo = 'user.account_info';
   final roles = 'user.roles';
   final permissions = 'user.permissions';

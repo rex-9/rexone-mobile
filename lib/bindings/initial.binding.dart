@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../modules/ai/ai.dart';
 import '../modules/auth/auth.dart';
 import '../modules/payment/payment.dart';
+import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
 import '../services/services.dart';
@@ -31,8 +32,14 @@ class InitialBinding extends Bindings {
     // Telemetry & Error Logging (depends on ApiService)
     Get.put(LogService(), permanent: true);
 
+    // Media upload (depends on ApiService)
+    Get.put(MediaService(), permanent: true);
+
     // WebSocket / Action Cable Socket Service
     Get.put(SocketService(), permanent: true);
+
+    // Device permissions (mic, camera, photos) + Settings prompt
+    Get.put(PermissionService(), permanent: true);
 
     // Shared live STT + TTS (depends on ApiService + SocketService)
     Get.put(SpeechService(), permanent: true);
@@ -46,6 +53,8 @@ class InitialBinding extends Bindings {
     // Auth Service (depends on ApiService)
     Get.put(AuthService(), permanent: true);
 
+    // Profile Service (depends on ApiService)
+    Get.put(ProfileService(), permanent: true);
     // Notification Service (depends on ApiService)
     Get.put(NotificationService(), permanent: true);
 

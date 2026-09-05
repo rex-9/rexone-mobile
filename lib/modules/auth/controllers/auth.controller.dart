@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/components/components.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../routes/app.routes.dart';
@@ -375,16 +376,14 @@ class AuthController extends GetxController {
 
   // Register new user with full details
   Future<void> signUp() async {
-    if (fullName.value.trim().length < 2) {
-      AppSnackbar.error(AppLocales.auth.signUpInfo.enterFullName.tr);
+    final nameError = FullnameValidator.error(fullName.value);
+    if (nameError != null) {
+      AppSnackbar.error(nameError);
       return;
     }
-    if (username.value.length < 3) {
-      AppSnackbar.error(AppLocales.auth.signUpInfo.usernameMinLength.tr);
-      return;
-    }
-    if (!RegExp(r'^[a-z0-9_]+$').hasMatch(username.value)) {
-      AppSnackbar.error(AppLocales.auth.signUpInfo.usernameCharset.tr);
+    final usernameError = UsernameValidator.error(username.value);
+    if (usernameError != null) {
+      AppSnackbar.error(usernameError);
       return;
     }
 
@@ -512,10 +511,14 @@ class AuthController extends GetxController {
     try {
       final response = await _auth.getCurrentUser();
       if (response.success && response.data != null) {
-        currentUser.value = response.data;
-        _storage.setUserData(response.data!);
+        _cacheUser(response.data!);
       }
     } catch (_) {}
+  }
+
+  void _cacheUser(UserModel user) {
+    currentUser.value = user;
+    _storage.setUserData(user);
   }
 
   // Forgot password: email a reset link (60s resend countdown).

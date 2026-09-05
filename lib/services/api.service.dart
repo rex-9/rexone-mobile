@@ -1,4 +1,5 @@
 // lib/services/api.service.dart
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:rexone_mobile/config/config.dart';

@@ -44,6 +44,10 @@ class AppSpacing {
   double get iconLarge => 24.0;
   double get iconXLarge => 32.0;
 
+  // Avatar
+  double get avatarRadius => 48.0;
+  double get avatarBadgeRadius => 16.0;
+
   // ===== EDGE INSETS HELPERS =====
 
   /// Creates EdgeInsets with same value on all sides

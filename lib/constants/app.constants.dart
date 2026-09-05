@@ -32,12 +32,12 @@ class AppConstants {
   }
 
   // Validation Rules
-  int get minPasswordLength => 6;
-  int get maxPasswordLength => 6;
-  int get minUsernameLength => 3;
-  int get maxUsernameLength => 20;
-  int get minNameLength => 2;
-  int get maxNameLength => 50;
+  static const minPasswordLength = 6;
+  static const maxPasswordLength = 6;
+  static const minUsernameLength = 3;
+  static const maxUsernameLength = 20;
+  static const minNameLength = 2;
+  static const maxNameLength = 50;
 
   // HTTP Headers
   static const headerContentType = 'Content-Type';

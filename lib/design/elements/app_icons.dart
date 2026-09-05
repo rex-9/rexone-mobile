@@ -33,6 +33,9 @@ class AppIcons {
   IconData get logout => Icons.logout_rounded;
   IconData get person => Icons.person_rounded;
   IconData get lock => Icons.lock_rounded;
+  IconData get edit => Icons.edit_rounded;
+  IconData get camera => Icons.photo_camera_rounded;
+  IconData get gallery => Icons.photo_library_rounded;
 
   // ── Settings / UI ─────────────────────────────────────────────
   IconData get settings => Icons.settings_outlined;

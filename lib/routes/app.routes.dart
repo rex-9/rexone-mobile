@@ -12,6 +12,7 @@ import '../modules/ai/ai.dart';
 import '../modules/auth/auth.dart';
 import '../modules/home/home.dart';
 import '../modules/payment/payment.dart';
+import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
 
@@ -35,6 +36,7 @@ class AppRoutes {
   static const String payment = '/payment';
   static const String checkout = '/checkout';
   static const String ai = '/ai';
+  static const String profile = '/profile';
   static const String notifications = '/notifications';
 
   // ===== PUBLIC NAVIGATION =====
@@ -71,6 +73,7 @@ class AppRoutes {
   static void toCheckout({required String url}) =>
       Get.toNamed(checkout, arguments: {'url': url});
   static void toAi() => Get.toNamed(ai);
+  static void toProfile() => Get.toNamed(profile);
   static void toNotifications() => Get.toNamed(notifications);
 
   /// Resolves and routes a notification or deep link.
@@ -245,6 +248,14 @@ class AppRoutes {
       page: () => const AiPage(),
       binding: BindingsBuilder(() {
         Get.lazyPut<AiController>(() => AiController());
+      }),
+      middlewares: [GuardRoutes()],
+    ),
+    GetPage(
+      name: profile,
+      page: () => const ProfilePage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<ProfileController>(() => ProfileController());
       }),
       middlewares: [GuardRoutes()],
     ),

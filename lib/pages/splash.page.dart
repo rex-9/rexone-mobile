@@ -33,6 +33,7 @@ class SplashPage extends GetView<AuthController> {
     // triggered in onInit before the widget tree was ready.
     await Future.delayed(const Duration(milliseconds: 10));
 
+
     if (controller.isLoggedIn.value) {
       final stack = storage.getRouteStack();
       const protectedRoutes = [

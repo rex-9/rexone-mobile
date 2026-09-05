@@ -64,9 +64,8 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 
 | Foundation             | What is ready                                                                            | Details                                                              |
 | ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Foundation             | What is ready                                                                            | Details                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions       | [Authentication & security](#authentication--security)               |
+| **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)       | [Profile](#profile)                                                  |
 | **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing     | [Push notifications](#push-notifications)                            |
 | **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                 | [Product analytics](#product-analytics)                              |
 | **In-App Upgrades**    | Upgrader alert system supporting soft and hard store version prompts                     | [In-app version upgrader](#in-app-version-upgrader)                  |
@@ -110,9 +109,9 @@ flowchart LR
 
 - `lib/modules/` owns product features. Each module keeps its pages, controllers, and optional feature service together, and exposes them through a barrel file (`auth.dart`, `payment.dart`, …).
 - `lib/controllers/` holds only app-wide coordinators that do not belong to one feature — today, `SocketController`.
-- `lib/services/` holds shared infrastructure: HTTP (`ApiService`), Action Cable, Firebase Analytics, OneSignal, storage, and client logs.
+- `lib/services/` holds shared infrastructure: HTTP (`ApiService`), Action Cable, Firebase Analytics, OneSignal, storage, device permissions, and client logs.
 - `lib/design/` centralizes design tokens, theme definitions, extensions, and reusable UI components.
-- `lib/bindings/` handles centralized dependency injection for shared services and permanent controllers. Feature controllers that are route-scoped (Payment, Checkout, AI) are bound on their `GetPage`.
+- `lib/bindings/` handles centralized dependency injection for shared services and permanent controllers. Feature controllers that are route-scoped (Payment, Checkout, AI, Profile) are bound on their `GetPage`.
 - `lib/models/` contains strongly typed JSON:API models, pagination metadata (`PaginationMeta`, `PaginatedResponse`), and response envelopes.
 - `lib/locales/` contains multi-language translations and runtime dictionary updates.
 - `lib/config/` and `lib/constants/` manage environment definitions, typed JSON keys (`JsonKeys`), log constants (`LogConstants`), and application constants.
@@ -133,6 +132,14 @@ flowchart LR
 - **Google Sign-In**: Native Google OAuth flow with Rexone Core challenge token support for first-time signups.
 - **Active Session Enforcement**: Sends `X-Platform: mobile` to ensure single-device active session rules enforced by the backend cache.
 - **Session Replacement Handling**: Detects active session invalidation and gracefully routes the user to sign-in with localized feedback.
+
+### Profile
+
+- Own feature module at `lib/modules/profile/` (route-scoped `ProfileController` on `/profile`).
+- Opened from the Settings account row (`AppRoutes.toProfile`).
+- Prefills full name, username, and email from the signed-in `UserModel`. Email is read-only.
+- Edit badge on the avatar opens a camera or gallery sheet (`image_picker`). Save PUTs name/username on `/v1/users/current` and uploads a picked avatar.
+- Camera and photo-library prompts go through shared `PermissionService` (same Settings dialog pattern as the AI microphone).
 
 ### IAM & RBAC Administrative Hierarchy
 
@@ -434,10 +441,11 @@ rexone_mobile/
 │   │   ├── auth/             # Welcome, password, signup, OTP, recovery
 │   │   ├── home/             # Main dashboard
 │   │   ├── payment/          # Plans, Stripe Checkout WebView, subscriptions
-│   │   ├── setting/          # Theme, language, and account
+│   │   ├── profile/          # Account profile, avatar upload
+│   │   ├── setting/          # Theme, language, and account row
 │   │   └── ai/               # Assistant chat, rooms, history
 │   ├── routes/               # GetX route declarations and auth route guards
-│   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage)
+│   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
 │   ├── rebrand.sh             # Unified mobile rebranding (Name + Package + Icon)
 │   ├── update_app_name.sh     # App display name updater (Android, iOS, .env)
