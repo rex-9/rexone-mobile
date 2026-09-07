@@ -50,7 +50,7 @@ class FeedbackController extends GetxController {
       String? appVersion;
       try {
         final info = await PackageInfo.fromPlatform();
-        appVersion = '${info.version}';
+        appVersion = info.version;
       } catch (_) {}
 
       String os = 'unknown';
