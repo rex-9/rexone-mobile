@@ -1,4 +1,4 @@
-/// JSON keys for `/v1/app_versions` request and response.
+/// JSON keys for `/v1/client/versions` requests and responses.
 class VersionKeys {
   const VersionKeys._();
 

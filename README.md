@@ -67,7 +67,7 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 | **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)       | [Profile](#profile)                                                  |
 | **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing     | [Push notifications](#push-notifications)                            |
 | **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                 | [Product analytics](#product-analytics)                              |
-| **In-App Upgrades**    | Splash checks `/v1/app_versions/current` and shows force or skippable update dialogs     | [In-app version upgrader](#in-app-version-upgrader)                  |
+| **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs  | [In-app version upgrader](#in-app-version-upgrader)                  |
 | **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows            | [Payments & entitlements](#payments--entitlements)                   |
 | **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications        | [AI capabilities](#ai-capabilities)                                  |
 | **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching       | [Real-time delivery](#real-time-delivery)                            |
@@ -164,7 +164,7 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 
 ### In-app version upgrader
 
-- Checked on splash via `VersionService` (`GET /v1/app_versions/current?app_version=`).
+- Checked on splash via `VersionService` (`GET /v1/client/versions/current?version=`).
 - `update_required` shows `AppDialog.update`; `must_update` blocks Later and keeps the user on splash.
 - Update opens the API `store_url` in the system store.
 
@@ -191,7 +191,7 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Client observability & telemetry
 
 - Global error capture through `FlutterError.onError` and `PlatformDispatcher.instance.onError`.
-- Structured diagnostic payloads (message, stack trace, device metadata, OS version, app version, local storage keys) delivered directly to Rexone Core's `POST /v1/log/clients`.
+- Structured diagnostic payloads (message, stack trace, device metadata, OS version, app version, local storage keys) delivered directly to Rexone Core's `POST /v1/client/logs`.
 - Environment names validated against canonical backend schemas (`development`, `staging`, `production`).
 
 ### Design system
