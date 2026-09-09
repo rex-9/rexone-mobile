@@ -25,4 +25,21 @@ class AuthKeys {
   static const provider = 'provider';
   static const avatarUrl = 'avatar_url';
   static const photo = 'photo';
+  static const iam = 'iam';
+  static const isAdmin = 'is_admin';
+  static const isSuperAdmin = 'is_super_admin';
+  static const roles = 'roles';
+  static const adminRoles = 'admin_roles';
+  static const nonAdminRoles = 'non_admin_roles';
+  static const permissions = 'permissions';
+  static const adminPermissions = 'admin_permissions';
+  static const nonAdminPermissions = 'non_admin_permissions';
+  static const attributes = 'attributes';
+  static const resourceType = 'type';
+  static const roleResourceType = 'role';
+  static const permissionResourceType = 'permission';
+  static const action = 'action';
+  static const resource = 'resource';
+  static const description = 'description';
+  static const system = 'system';
 }

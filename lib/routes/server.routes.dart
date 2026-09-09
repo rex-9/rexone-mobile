@@ -42,7 +42,6 @@ class ServerRoutes {
 
   // Users
   static String get currentUser => api('/users/current');
-  static String get currentUserIam => api('/users/current/iam');
 
   // Media
   static String get uploadAsset => api('/media/upload');
@@ -83,7 +82,8 @@ class ServerRoutes {
 
   // Notifications
   static String get notifications => api('/notifications');
-  static String get unreadNotificationsCount => api('/notifications/unread_count');
+  static String get unreadNotificationsCount =>
+      api('/notifications/unread_count');
   static String readNotification(String id) => api('/notifications/$id/read');
   static String get readAllNotifications => api('/notifications/read_all');
   static String deleteNotification(String id) => api('/notifications/$id');

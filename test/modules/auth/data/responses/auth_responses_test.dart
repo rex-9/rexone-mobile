@@ -59,6 +59,58 @@ void main() {
         expect(recreatedUser.provider, equals(originalUser.provider));
         expect(recreatedUser.photo, equals(originalUser.photo));
       });
+
+      test(
+        'parses and preserves the nested IAM snapshot for local storage',
+        () {
+          final user = UserModel.fromJson({
+            'id': 'admin-1',
+            'email': 'admin@example.com',
+            'iam': {
+              'is_admin': true,
+              'is_super_admin': false,
+              'roles': [
+                {
+                  'id': 'role-1',
+                  'type': 'role',
+                  'attributes': {
+                    'id': 'role-1',
+                    'name': 'feedback_admin',
+                    'system': false,
+                  },
+                },
+              ],
+              'admin_roles': [],
+              'non_admin_roles': [],
+              'permissions': [],
+              'admin_permissions': [
+                {
+                  'id': 'permission-1',
+                  'type': 'permission',
+                  'attributes': {
+                    'id': 'permission-1',
+                    'name': 'read_feedbacks',
+                    'action': 'read',
+                    'resource': 'feedbacks',
+                  },
+                },
+              ],
+              'non_admin_permissions': [],
+            },
+          });
+
+          final restored = UserModel.fromJson(user.toJson());
+
+          expect(restored.iam?.isAdmin, isTrue);
+          expect(restored.iam?.isSuperAdmin, isFalse);
+          expect(restored.iam?.roles.single.name, equals('feedback_admin'));
+          expect(restored.iam?.adminPermissions.single.action, equals('read'));
+          expect(
+            restored.iam?.adminPermissions.single.resource,
+            equals('feedbacks'),
+          );
+        },
+      );
     });
 
     group('SignInResponse', () {
