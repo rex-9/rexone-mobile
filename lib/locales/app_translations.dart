@@ -276,6 +276,18 @@ class AppTranslations extends Translations {
       AppLocales.update.prompt: 'Would you like to update it now?',
       AppLocales.update.update: 'UPDATE NOW',
       AppLocales.update.later: 'LATER',
+
+      // Audio
+      AppLocales.audio.title: 'Audio Playlist',
+      AppLocales.audio.playAll: 'Play All',
+      AppLocales.audio.nowPlaying: 'Now Playing',
+      AppLocales.audio.play: 'Play',
+      AppLocales.audio.pause: 'Pause',
+      AppLocales.audio.next: 'Next',
+      AppLocales.audio.previous: 'Previous',
+      AppLocales.audio.playlistSubtitle: 'Sample Mix',
+      AppLocales.audio.playbackFailed: 'Could not play this track. Try again.',
+      AppLocales.audio.close: 'Close',
     },
     'my_MM': {
       // Common
@@ -519,6 +531,19 @@ class AppTranslations extends Translations {
       AppLocales.update.prompt: 'ယခု အပ်ဒိတ်လုပ်လိုပါသလား?',
       AppLocales.update.update: 'ယခု အပ်ဒိတ်',
       AppLocales.update.later: 'နောက်မှ',
+
+      // Audio
+      AppLocales.audio.title: 'အသံစာရင်း',
+      AppLocales.audio.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.audio.nowPlaying: 'ယခုဖွင့်နေသည်',
+      AppLocales.audio.play: 'ဖွင့်မည်',
+      AppLocales.audio.pause: 'ရပ်မည်',
+      AppLocales.audio.next: 'ရှေ့သို့',
+      AppLocales.audio.previous: 'နောက်သို့',
+      AppLocales.audio.playlistSubtitle: 'နမူနာ သီချင်းများ',
+      AppLocales.audio.playbackFailed:
+          'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
+      AppLocales.audio.close: 'ပိတ်မည်',
     },
   };
 }

@@ -94,6 +94,21 @@ class FakeStorageService extends StorageService {
   bool getSkipPremium() => memory[StorageKeys.skipPremium] == true;
 
   @override
+  void saveAudioSession(Map<String, dynamic> session) {
+    memory[StorageKeys.audioSession] = Map<String, dynamic>.from(session);
+  }
+
+  @override
+  Map<String, dynamic>? getAudioSession() {
+    final data = memory[StorageKeys.audioSession];
+    if (data is! Map) return null;
+    return Map<String, dynamic>.from(data);
+  }
+
+  @override
+  void clearAudioSession() => memory.remove(StorageKeys.audioSession);
+
+  @override
   void clearAll() => memory.clear();
 }
 
@@ -598,6 +613,9 @@ class FakeSpeechService extends GetxService
 
   @override
   bool get isBusy => isListenSessionActive || isPlaying.value;
+
+  @override
+  Future<void> Function()? beforeTtsPlayback;
 
   SocketMessage? lastSpeechEvent;
   ESpeechEventType? lastSpeechEventType;

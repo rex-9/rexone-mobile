@@ -9,6 +9,7 @@ void main() {
       expect(SpeechKeys.channel, equals('SpeechLiveChannel'));
       expect(SpeechKeys.action, equals('action'));
       expect(SpeechKeys.audio, equals('audio'));
+      expect(SpeechKeys.ttsMediaId, equals('tts'));
       expect(SpeechKeys.audioUrl, equals('audio_url'));
       expect(SpeechKeys.text, equals('text'));
       expect(SpeechKeys.voiceName, equals('voice_name'));

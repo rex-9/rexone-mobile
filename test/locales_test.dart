@@ -30,6 +30,7 @@ void main() {
       expect(AppLocales.payment.title, 'payment.title');
       expect(AppLocales.notification.title, 'notification.title');
       expect(AppLocales.update.title, 'update.title');
+      expect(AppLocales.audio.title, 'audio.title');
     });
   });
 }

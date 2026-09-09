@@ -73,6 +73,21 @@ class StorageService extends GetxService {
   bool getSkipPremium() => _box.read(StorageKeys.skipPremium) == true;
 
   // ============================================================
+  // AUDIO PLAYBACK SESSION
+  // ============================================================
+  void saveAudioSession(Map<String, dynamic> session) {
+    _box.write(StorageKeys.audioSession, session);
+  }
+
+  Map<String, dynamic>? getAudioSession() {
+    final data = _box.read(StorageKeys.audioSession);
+    if (data is! Map) return null;
+    return Map<String, dynamic>.from(data);
+  }
+
+  void clearAudioSession() => _box.remove(StorageKeys.audioSession);
+
+  // ============================================================
   // UTILITY
   // ============================================================
   void clearAll() => _box.erase();

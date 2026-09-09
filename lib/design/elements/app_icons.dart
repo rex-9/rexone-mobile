@@ -54,6 +54,15 @@ class AppIcons {
   IconData get play => Icons.play_arrow_rounded;
   IconData get speaker => Icons.volume_up_rounded;
 
+  // ── Audio ─────────────────────────────────────────────────────
+ 
+  IconData get pause => Icons.pause_rounded;
+  IconData get skipNext => Icons.skip_next_rounded;
+  IconData get skipPrevious => Icons.skip_previous_rounded;
+  IconData get musicNote => Icons.music_note_rounded;
+  IconData get playlist => Icons.queue_music_rounded;
+  IconData get chevronDown => Icons.expand_more_rounded;
+
   // ── Payment / Subscription ────────────────────────────────────
   IconData get activeSubscription => Icons.check_circle_outline;
   IconData get scheduledCancel => Icons.access_time;

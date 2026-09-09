@@ -5,6 +5,7 @@ class SpeechKeys {
   static const channel = 'SpeechLiveChannel';
   static const action = 'action';
   static const audio = 'audio';
+  static const ttsMediaId = 'tts';
   static const audioUrl = 'audio_url';
   static const text = 'text';
   static const voiceName = 'voice_name';

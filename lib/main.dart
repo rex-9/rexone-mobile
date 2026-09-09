@@ -6,12 +6,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/services.dart';
 import 'bindings/initial.binding.dart';
 import 'locales/app_translations.dart';
+import 'modules/audio/components/app_mini_player_host.dart';
 import 'modules/setting/setting.dart';
 
 void main() async {
@@ -40,6 +42,11 @@ void main() async {
     debugPrint('⚠️ Firebase initializeApp skipped or failed: $e');
   }
   await GetStorage.init();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: '${AppConfig.androidAppId}.audio',
+    androidNotificationChannelName: AppConfig.appName,
+    androidNotificationOngoing: true,
+  );
   InitialBinding().dependencies();
 
   runApp(const MyApp());
@@ -76,10 +83,12 @@ class MyApp extends StatelessWidget {
           initialRoute: AppRoutes.splash,
           getPages: AppRoutes.pages,
           unknownRoute: AppRoutes.notFound,
-          navigatorObservers: [analytics.observer],
+          navigatorObservers: [analytics.observer, MiniPlayerRouteObserver()],
           builder: (context, child) {
             return AppNetworkBanner(
-              child: AppLoading.builder(context, child),
+              child: AppMiniPlayerHost(
+                child: AppLoading.builder(context, child),
+              ),
             );
           },
         ),

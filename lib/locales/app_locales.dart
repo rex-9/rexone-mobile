@@ -14,6 +14,7 @@ class AppLocales {
   static const user = _UserLocales();
   static const notification = _NotificationLocales();
   static const update = _UpdateLocales();
+  static const audio = _AudioLocales();
 }
 
 class _AuthLocales {
@@ -295,4 +296,19 @@ class _NotificationLocales {
   final loadMore = 'notification.load_more';
   final deleted = 'notification.deleted';
   final failedToLoad = 'notification.failed_to_load';
+}
+
+class _AudioLocales {
+  const _AudioLocales();
+
+  final title = 'audio.title';
+  final playAll = 'audio.play_all';
+  final nowPlaying = 'audio.now_playing';
+  final play = 'audio.play';
+  final pause = 'audio.pause';
+  final next = 'audio.next';
+  final previous = 'audio.previous';
+  final playlistSubtitle = 'audio.playlist_subtitle';
+  final playbackFailed = 'audio.playback_failed';
+  final close = 'audio.close';
 }

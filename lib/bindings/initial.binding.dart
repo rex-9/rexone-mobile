@@ -6,6 +6,7 @@ import '../modules/payment/payment.dart';
 import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
+import '../modules/audio/audio.dart';
 import '../services/services.dart';
 import '../controllers/controllers.dart';
 
@@ -46,6 +47,9 @@ class InitialBinding extends Bindings {
 
     // Shared live STT + TTS (depends on ApiService + SocketService)
     Get.put(SpeechService(), permanent: true);
+
+    // Playlist / background-capable audio (depends on SpeechService to pause TTS)
+    Get.put(AudioPlayerService(), permanent: true);
 
     // Payment Service (depends on ApiService)
     Get.put(PaymentService(), permanent: true);

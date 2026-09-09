@@ -15,6 +15,7 @@ import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
 import '../modules/splash/splash.dart';
+import '../modules/audio/audio.dart';
 
 class AppRoutes {
   // ===== SERVER ROUTES =====
@@ -38,6 +39,8 @@ class AppRoutes {
   static const String ai = '/ai';
   static const String profile = '/profile';
   static const String notifications = '/notifications';
+  static const String audioPlaylist = AudioRoutes.playlist;
+  static const String audioPlayer = AudioRoutes.player;
 
   // ===== PUBLIC NAVIGATION =====
   static void toSplash() => Get.offAllNamed(splash);
@@ -75,6 +78,13 @@ class AppRoutes {
   static void toAi() => Get.toNamed(ai);
   static void toProfile() => Get.toNamed(profile);
   static void toNotifications() => Get.toNamed(notifications);
+  static void toAudioPlaylist() => Get.toNamed(audioPlaylist);
+  static void toAudioPlayer() {
+    if (Get.isRegistered<AudioPlayerService>()) {
+      Get.find<AudioPlayerService>().isFullPlayerOpen.value = true;
+    }
+    Get.toNamed(audioPlayer);
+  }
 
   /// Resolves and routes a notification or deep link.
   ///
@@ -273,6 +283,22 @@ class AppRoutes {
       page: () => const NotificationPage(),
       binding: BindingsBuilder(() {
         Get.lazyPut<NotificationController>(() => NotificationController());
+      }),
+      middlewares: [GuardRoutes()],
+    ),
+    GetPage(
+      name: audioPlaylist,
+      page: () => const AudioPlaylistPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<AudioPlaylistController>(() => AudioPlaylistController());
+      }),
+      middlewares: [GuardRoutes()],
+    ),
+    GetPage(
+      name: audioPlayer,
+      page: () => const AudioPlayerPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<AudioPlayerController>(() => AudioPlayerController());
       }),
       middlewares: [GuardRoutes()],
     ),

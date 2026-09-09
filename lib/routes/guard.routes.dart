@@ -24,6 +24,8 @@ class GuardRoutes extends GetMiddleware {
       AppRoutes.ai,
       AppRoutes.profile,
       AppRoutes.notifications,
+      AppRoutes.audioPlaylist,
+      AppRoutes.audioPlayer,
     ];
 
     // ===== STACK-TRACKED ROUTES =====
@@ -35,6 +37,7 @@ class GuardRoutes extends GetMiddleware {
       AppRoutes.payment,
       AppRoutes.ai,
       AppRoutes.notifications,
+      AppRoutes.audioPlaylist,
     ];
 
     // Redirect unauthenticated access to auth
