@@ -15,6 +15,7 @@ class NotificationModel {
   final DateTime? updatedAt;
 
   String? get templateId => notificationId;
+  bool get isIamUpdated => data[NotificationKeys.type] == NotificationConstants.iamUpdated;
 
   NotificationModel({
     required this.id,
@@ -36,9 +37,7 @@ class NotificationModel {
         ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
         : json;
 
-    final id = json[ApiKeys.id]?.toString() ??
-        attributes[ApiKeys.id]?.toString() ??
-        '';
+    final id = json[ApiKeys.id]?.toString() ?? attributes[ApiKeys.id]?.toString() ?? '';
 
     DateTime? parseDateTime(dynamic val) {
       if (val == null) return null;
@@ -56,10 +55,10 @@ class NotificationModel {
           : const {},
       read: attributes[NotificationKeys.read] as bool? ?? false,
       readAt: parseDateTime(attributes[NotificationKeys.readAt]),
-      notificationId: attributes[NotificationKeys.notificationId]?.toString() ??
+      notificationId:
+          attributes[NotificationKeys.notificationId]?.toString() ??
           attributes[NotificationKeys.templateId]?.toString(),
-      createdAt: parseDateTime(attributes[NotificationKeys.createdAt]) ??
-          DateTime.now(),
+      createdAt: parseDateTime(attributes[NotificationKeys.createdAt]) ?? DateTime.now(),
       updatedAt: parseDateTime(attributes['updated_at']),
     );
   }

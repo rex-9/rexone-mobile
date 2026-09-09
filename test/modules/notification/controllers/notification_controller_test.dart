@@ -3,20 +3,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
+import 'package:rexone_mobile/modules/auth/auth.dart';
 import 'package:rexone_mobile/modules/notification/notification.dart';
+import 'package:rexone_mobile/services/analytics.service.dart';
+import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
+import 'package:rexone_mobile/services/storage.service.dart';
 import '../../../mocks/test_services.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late FakeNotificationService fakeService;
+  late FakeAuthService fakeAuthService;
+  late FakeStorageService fakeStorageService;
+  late AuthController authController;
   late NotificationController controller;
 
   setUp(() {
     Get.testMode = true;
     fakeService = FakeNotificationService();
+    fakeAuthService = FakeAuthService();
+    fakeStorageService = FakeStorageService();
     Get.put<NotificationService>(fakeService);
+    Get.put<AuthService>(fakeAuthService);
+    Get.put<StorageService>(fakeStorageService);
+    Get.put<AnalyticsService>(FakeAnalyticsService());
+    Get.put<PushNotiService>(FakePushNotiService());
+    Get.put<SocketService>(FakeSocketService());
+    authController = Get.put(AuthController());
     controller = Get.put(NotificationController());
   });
 
@@ -33,20 +48,8 @@ void main() {
 
     test('fetchNotifications populates notifications list and pagination', () async {
       final notifs = [
-        NotificationModel(
-          id: 'n_1',
-          title: 'Title 1',
-          message: 'Message 1',
-          read: false,
-          createdAt: DateTime.now(),
-        ),
-        NotificationModel(
-          id: 'n_2',
-          title: 'Title 2',
-          message: 'Message 2',
-          read: true,
-          createdAt: DateTime.now(),
-        ),
+        NotificationModel(id: 'n_1', title: 'Title 1', message: 'Message 1', read: false, createdAt: DateTime.now()),
+        NotificationModel(id: 'n_2', title: 'Title 2', message: 'Message 2', read: true, createdAt: DateTime.now()),
       ];
 
       fakeService.notificationsResponse = PaginatedResponse<NotificationModel>(
@@ -54,13 +57,7 @@ void main() {
         message: 'OK',
         statusCode: 200,
         success: true,
-        pagination: const PaginationMeta(
-          currentPage: 1,
-          totalPages: 2,
-          totalCount: 2,
-          limit: 20,
-          nextPage: 2,
-        ),
+        pagination: const PaginationMeta(currentPage: 1, totalPages: 2, totalCount: 2, limit: 20, nextPage: 2),
       );
 
       await controller.fetchNotifications();
@@ -106,20 +103,8 @@ void main() {
 
     test('markAllAsRead marks all notifications as read and resets unread count to 0', () async {
       final notifs = [
-        NotificationModel(
-          id: 'n_1',
-          title: '1',
-          message: '1',
-          read: false,
-          createdAt: DateTime.now(),
-        ),
-        NotificationModel(
-          id: 'n_2',
-          title: '2',
-          message: '2',
-          read: false,
-          createdAt: DateTime.now(),
-        ),
+        NotificationModel(id: 'n_1', title: '1', message: '1', read: false, createdAt: DateTime.now()),
+        NotificationModel(id: 'n_2', title: '2', message: '2', read: false, createdAt: DateTime.now()),
       ];
 
       controller.notifications.assignAll(notifs);
@@ -167,6 +152,31 @@ void main() {
       controller.onSocketNotification(event);
 
       expect(controller.notifications.first.id, equals('socket_n_1'));
+    });
+
+    test('IAM update tap refreshes and persists the current user', () async {
+      final refreshedUser = UserModel(
+        id: 'u1',
+        email: 'updated@example.com',
+        iam: const UserIamModel(isAdmin: true, isSuperAdmin: false),
+      );
+      fakeAuthService.currentUserResponse = ApiResponse.success(message: 'OK', statusCode: 200, data: refreshedUser);
+      final notification = NotificationModel(
+        id: 'iam_1',
+        title: 'Access updated',
+        message: 'Your access changed.',
+        data: const {NotificationKeys.type: NotificationConstants.iamUpdated},
+        createdAt: DateTime.now(),
+      );
+      controller.notifications.assignAll([notification]);
+      controller.unreadCount.value = 1;
+
+      await controller.handleNotificationTap(notification);
+
+      expect(authController.currentUser.value?.email, 'updated@example.com');
+      expect(authController.currentUser.value?.iam?.isAdmin, isTrue);
+      expect(fakeStorageService.getUserData()?.iam?.isAdmin, isTrue);
+      expect(fakeService.markedReadIds, contains('iam_1'));
     });
   });
 }
