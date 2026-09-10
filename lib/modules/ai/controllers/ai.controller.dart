@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/services/services.dart';
 
 import '../ai.dart';
@@ -114,7 +115,7 @@ class AiController extends GetxController {
               id: 'welcome',
               role: EChatRole.assistant.name,
               content: AppLocales.ai.defaultGreeting.tr,
-              createdAt: DateTime.now().toIso8601String(),
+              createdAt: AppDateTime.toUtcIso(DateTime.now())!,
             ),
           ]);
         } else {
@@ -144,7 +145,7 @@ class AiController extends GetxController {
       id: 'optimistic_${DateTime.now().millisecondsSinceEpoch}',
       role: EChatRole.user.name,
       content: clean,
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: AppDateTime.toUtcIso(DateTime.now())!,
     );
 
     messages.removeWhere((m) => m.id == 'welcome');

@@ -1,4 +1,5 @@
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class UserVersionModel {
   final String id;
@@ -25,9 +26,7 @@ class UserVersionModel {
       buildNumber: json[VersionKeys.buildNumber] is int
           ? json[VersionKeys.buildNumber] as int
           : int.tryParse(json[VersionKeys.buildNumber]?.toString() ?? ''),
-      lastSeenAt: json[VersionKeys.lastSeenAt] != null
-          ? DateTime.tryParse(json[VersionKeys.lastSeenAt].toString())
-          : null,
+      lastSeenAt: AppDateTime.fromUtc(json[VersionKeys.lastSeenAt]),
       versionId: json[VersionKeys.versionId]?.toString(),
     );
   }
@@ -39,7 +38,7 @@ class UserVersionModel {
       VersionKeys.number: number,
       if (buildNumber != null) VersionKeys.buildNumber: buildNumber,
       if (lastSeenAt != null)
-        VersionKeys.lastSeenAt: lastSeenAt!.toIso8601String(),
+        VersionKeys.lastSeenAt: AppDateTime.toUtcIso(lastSeenAt),
       if (versionId != null) VersionKeys.versionId: versionId,
     };
   }

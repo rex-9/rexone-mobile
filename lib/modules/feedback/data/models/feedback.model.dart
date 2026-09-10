@@ -1,5 +1,6 @@
 // lib/modules/feedback/data/models/feedback.model.dart
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class FeedbackModel {
   final String id;
@@ -65,12 +66,8 @@ class FeedbackModel {
       userId: json[FeedbackKeys.userId] as String?,
       userName: json[FeedbackKeys.userName] as String?,
       userEmail: json[FeedbackKeys.userEmail] as String?,
-      createdAt: json[FeedbackKeys.createdAt] != null
-          ? DateTime.tryParse(json[FeedbackKeys.createdAt].toString())
-          : null,
-      updatedAt: json[FeedbackKeys.updatedAt] != null
-          ? DateTime.tryParse(json[FeedbackKeys.updatedAt].toString())
-          : null,
+      createdAt: AppDateTime.fromUtc(json[FeedbackKeys.createdAt]),
+      updatedAt: AppDateTime.fromUtc(json[FeedbackKeys.updatedAt]),
     );
   }
 

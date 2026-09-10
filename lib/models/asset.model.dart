@@ -1,4 +1,5 @@
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class AssetModel {
   final String id;
@@ -47,12 +48,8 @@ class AssetModel {
       assetableType: json[AssetKeys.assetableType],
       assetableId: json[AssetKeys.assetableId],
       createdById: json[AssetKeys.createdById],
-      createdAt: json[AssetKeys.createdAt] != null
-          ? DateTime.tryParse(json[AssetKeys.createdAt].toString())
-          : null,
-      updatedAt: json[AssetKeys.updatedAt] != null
-          ? DateTime.tryParse(json[AssetKeys.updatedAt].toString())
-          : null,
+      createdAt: AppDateTime.fromUtc(json[AssetKeys.createdAt]),
+      updatedAt: AppDateTime.fromUtc(json[AssetKeys.updatedAt]),
     );
   }
 
