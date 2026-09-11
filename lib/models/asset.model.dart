@@ -62,17 +62,7 @@ class AssetModel {
     this.thumbnail,
   });
 
-  /// Playable when compression finished (`ready` or `optimal`).
-  bool get isReady =>
-      status == null ||
-      status!.isEmpty ||
-      AssetKeys.playableStatuses.contains(status);
 
-  bool get _isThumbnailUsable {
-    final thumbStatus = thumbnail?.status ?? '';
-    return thumbStatus.isEmpty ||
-        AssetKeys.playableStatuses.contains(thumbStatus);
-  }
 
   String get displayTitle {
     if (name.isEmpty) return '';

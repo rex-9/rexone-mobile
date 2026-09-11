@@ -67,11 +67,10 @@ class AudioPlaylistController extends GetxController {
       return;
     }
 
-    final ready = res.records.where((asset) => asset.isReady);
     if (append) {
-      assets.addAll(ready);
+      assets.addAll(res.records);
     } else {
-      assets.assignAll(ready);
+      assets.assignAll(res.records);
     }
 
     pagination.value = res.pagination;
