@@ -12,6 +12,7 @@ jobs:
   test:
     name: Build & Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,9 +24,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: |
-          touch .env.dev .env.uat .env.prod
-          flutter pub get
+        run: flutter pub get
 
       - name: Run Mobile CI
         run: ./scripts/ci.sh
