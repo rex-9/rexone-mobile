@@ -24,86 +24,97 @@ void main() {
   });
 
   group('PaymentController - Fetch and State', () {
-    test('fetchData populates products, subscriptions, transactions, and accesses', () async {
-      final mockProduct = ProductModel(
-        id: 'prod_1',
-        name: 'Pro Plan',
-        description: 'Pro subscription',
-        price: '\$19.99',
-        priceUnitAmount: 1999,
-        currency: 'USD',
-        cycle: 'month',
-        periodLabel: 'monthly',
-        recurring: true,
-        active: true,
-      );
+    test(
+      'fetchData populates products, subscriptions, transactions, and accesses',
+      () async {
+        final mockProduct = ProductModel(
+          id: 'prod_1',
+          name: 'Pro Plan',
+          description: 'Pro subscription',
+          price: '\$19.99',
+          unitAmount: 1999,
+          currency: 'USD',
+          interval: 'month',
+          periodLabel: 'monthly',
+          recurring: true,
+          active: true,
+        );
 
-      final mockAccess = AccessModel(
-        id: 'acc_1',
-        status: 'active',
-        productId: 'prod_1',
-        active: true,
-      );
+        final mockAccess = AccessModel(
+          id: 'acc_1',
+          status: 'active',
+          productId: 'prod_1',
+          active: true,
+        );
 
-      final mockSub = SubscriptionModel(
-        id: 'sub_1',
-        status: 'active',
-        productId: 'prod_1',
-        active: true,
-        canceled: false,
-        scheduledForCancellation: false,
-      );
+        final mockSub = SubscriptionModel(
+          id: 'sub_1',
+          status: 'active',
+          productId: 'prod_1',
+          stripeSubscriptionItemId: 'si_1',
+          stripePriceId: 'price_1',
+          currency: 'usd',
+          unitAmount: 1999,
+          quantity: 1,
+          interval: 'month',
+          intervalCount: 1,
+          active: true,
+          canceled: false,
+          scheduledForCancellation: false,
+        );
 
-      final mockTx = TransactionModel(
-        id: 'tx_1',
-        productId: 'prod_1',
-        priceUnitAmount: 1999,
-        currency: 'USD',
-        paid: true,
-        status: 'succeeded',
-      );
+        final mockTx = TransactionModel(
+          id: 'tx_1',
+          productId: 'prod_1',
+          unitAmount: 1999,
+          currency: 'USD',
+          paid: true,
+          status: 'succeeded',
+        );
 
-      fakePayment.productsResponse = PaginatedResponse<ProductModel>(
-        records: [mockProduct],
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-      );
+        fakePayment.productsResponse = PaginatedResponse<ProductModel>(
+          records: [mockProduct],
+          message: 'OK',
+          statusCode: 200,
+          success: true,
+        );
 
-      fakePayment.accessesResponse = PaginatedResponse<AccessModel>(
-        records: [mockAccess],
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-      );
+        fakePayment.accessesResponse = PaginatedResponse<AccessModel>(
+          records: [mockAccess],
+          message: 'OK',
+          statusCode: 200,
+          success: true,
+        );
 
-      fakePayment.subscriptionsResponse = PaginatedResponse<SubscriptionModel>(
-        records: [mockSub],
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-      );
+        fakePayment.subscriptionsResponse =
+            PaginatedResponse<SubscriptionModel>(
+              records: [mockSub],
+              message: 'OK',
+              statusCode: 200,
+              success: true,
+            );
 
-      fakePayment.transactionsResponse = PaginatedResponse<TransactionModel>(
-        records: [mockTx],
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-      );
+        fakePayment.transactionsResponse = PaginatedResponse<TransactionModel>(
+          records: [mockTx],
+          message: 'OK',
+          statusCode: 200,
+          success: true,
+        );
 
-      await controller.fetchData();
+        await controller.fetchData();
 
-      expect(controller.products.length, equals(1));
-      expect(controller.products.first.id, equals('prod_1'));
-      expect(controller.accesses.length, equals(1));
-      expect(controller.subscriptions.length, equals(1));
-      expect(controller.transactions.length, equals(1));
+        expect(controller.products.length, equals(1));
+        expect(controller.products.first.id, equals('prod_1'));
+        expect(controller.accesses.length, equals(1));
+        expect(controller.subscriptions.length, equals(1));
+        expect(controller.transactions.length, equals(1));
 
-      expect(controller.hasActiveAccess('prod_1'), isTrue);
-      expect(controller.hasActiveAccess('prod_unknown'), isFalse);
-      expect(controller.getActiveSubscription('prod_1'), isNotNull);
-      expect(controller.getPurchaseCount('prod_1'), equals(1));
-    });
+        expect(controller.hasActiveAccess('prod_1'), isTrue);
+        expect(controller.hasActiveAccess('prod_unknown'), isFalse);
+        expect(controller.getActiveSubscription('prod_1'), isNotNull);
+        expect(controller.getPurchaseCount('prod_1'), equals(1));
+      },
+    );
   });
 
   group('PaymentController - Actions and Socket Events', () {
@@ -133,9 +144,9 @@ void main() {
         name: 'Premium',
         description: 'Yearly access',
         price: '\$49.99',
-        priceUnitAmount: 4999,
+        unitAmount: 4999,
         currency: 'USD',
-        cycle: 'year',
+        interval: 'year',
         periodLabel: 'yearly',
         recurring: true,
         active: true,

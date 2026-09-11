@@ -6,9 +6,9 @@ class ProductModel {
   final String name;
   final String description;
   final String price;
-  final int priceUnitAmount;
+  final int unitAmount;
   final String currency;
-  final String? cycle;
+  final String? interval;
   final String periodLabel;
   final bool recurring;
   final bool active;
@@ -19,22 +19,22 @@ class ProductModel {
     required this.name,
     required this.description,
     required this.price,
-    required this.priceUnitAmount,
+    required this.unitAmount,
     required this.currency,
-    this.cycle,
+    this.interval,
     required this.periodLabel,
     required this.recurring,
     required this.active,
     this.free = false,
   });
 
-  bool get isFree => free || priceUnitAmount == 0;
+  bool get isFree => free || unitAmount == 0;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    final amount = json[PaymentKeys.priceUnitAmount] is int
-        ? json[PaymentKeys.priceUnitAmount] as int
+    final amount = json[PaymentKeys.unitAmount] is int
+        ? json[PaymentKeys.unitAmount] as int
         : int.tryParse(
-                json[PaymentKeys.priceUnitAmount]?.toString() ?? '0',
+                json[PaymentKeys.unitAmount]?.toString() ?? '0',
               ) ??
               0;
 
@@ -43,9 +43,9 @@ class ProductModel {
       name: json[PaymentKeys.name]?.toString() ?? '',
       description: json[PaymentKeys.description]?.toString() ?? '',
       price: json[PaymentKeys.price]?.toString() ?? (amount == 0 ? 'Free' : '\$0.00'),
-      priceUnitAmount: amount,
+      unitAmount: amount,
       currency: json[PaymentKeys.currency]?.toString() ?? 'usd',
-      cycle: json[PaymentKeys.cycle]?.toString(),
+      interval: json[PaymentKeys.interval]?.toString(),
       periodLabel: json[PaymentKeys.periodLabel]?.toString() ?? '',
       recurring: json[PaymentKeys.recurring] == true,
       active: json[PaymentKeys.active] != false,
@@ -58,9 +58,9 @@ class ProductModel {
     PaymentKeys.name: name,
     PaymentKeys.description: description,
     PaymentKeys.price: price,
-    PaymentKeys.priceUnitAmount: priceUnitAmount,
+    PaymentKeys.unitAmount: unitAmount,
     PaymentKeys.currency: currency,
-    PaymentKeys.cycle: cycle,
+    PaymentKeys.interval: interval,
     PaymentKeys.periodLabel: periodLabel,
     PaymentKeys.recurring: recurring,
     PaymentKeys.active: active,

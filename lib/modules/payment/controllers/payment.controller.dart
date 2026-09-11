@@ -10,7 +10,7 @@ import '../payment.dart';
 
 class PaymentController extends GetxController {
   late final PaymentService _payment;
-  late final AnalyticsService _analytics;
+  AnalyticsService? _analytics;
   final Set<String> _viewedProductIds = <String>{};
 
   final RxList<ProductModel> products = <ProductModel>[].obs;
@@ -22,7 +22,9 @@ class PaymentController extends GetxController {
   void onInit() {
     super.onInit();
     _payment = Get.find<PaymentService>();
-    _analytics = Get.find<AnalyticsService>();
+    _analytics = Get.isRegistered<AnalyticsService>()
+        ? Get.find<AnalyticsService>()
+        : null;
   }
 
   @override
@@ -112,7 +114,7 @@ class PaymentController extends GetxController {
       products.assignAll(res.records);
       for (final product in res.records) {
         if (_viewedProductIds.add(product.id)) {
-          _analytics.logViewProduct(
+          _analytics?.logViewProduct(
             productId: product.id,
             productName: product.name,
           );

@@ -15,9 +15,8 @@ class PaymentKeys {
   static const name = 'name';
   static const description = 'description';
   static const price = 'price';
-  static const priceUnitAmount = 'price_unit_amount';
+  static const unitAmount = 'unit_amount';
   static const currency = 'currency';
-  static const cycle = 'cycle';
   static const periodLabel = 'period_label';
   static const recurring = 'recurring';
   static const active = 'active';
@@ -25,6 +24,11 @@ class PaymentKeys {
 
   // ===== Subscription =====
   static const status = 'status';
+  static const stripeSubscriptionItemId = 'stripe_subscription_item_id';
+  static const stripePriceId = 'stripe_price_id';
+  static const quantity = 'quantity';
+  static const interval = 'interval';
+  static const intervalCount = 'interval_count';
   static const currentPeriodStart = 'current_period_start';
   static const currentPeriodEnd = 'current_period_end';
   static const startedAt = 'started_at';

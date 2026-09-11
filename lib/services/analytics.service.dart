@@ -7,10 +7,10 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 
 class AnalyticsService extends GetxService {
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  FirebaseAnalytics? _analytics;
   late final NavigatorObserver _observer = AnalyticsNavigationObserver(this);
 
-  FirebaseAnalytics get analytics => _analytics;
+  FirebaseAnalytics get analytics => _analytics ??= FirebaseAnalytics.instance;
   NavigatorObserver get observer => _observer;
 
   String get _platform => defaultTargetPlatform == TargetPlatform.iOS
@@ -24,7 +24,7 @@ class AnalyticsService extends GetxService {
   // ===== USER PROPERTIES =====
   void setUserId(String userId) {
     try {
-      _analytics.setUserId(id: userId);
+      analytics.setUserId(id: userId);
     } catch (e) {
       debugPrint('❌ Analytics setUserId failed: $e');
     }
@@ -32,7 +32,7 @@ class AnalyticsService extends GetxService {
 
   void setUserProperty(String name, String value) {
     try {
-      _analytics.setUserProperty(name: name, value: value);
+      analytics.setUserProperty(name: name, value: value);
     } catch (e) {
       debugPrint('❌ Analytics setUserProperty failed: $e');
     }
@@ -40,7 +40,7 @@ class AnalyticsService extends GetxService {
 
   void clearUserId() {
     try {
-      _analytics.setUserId(id: null);
+      analytics.setUserId(id: null);
     } catch (e) {
       debugPrint('❌ Analytics clearUserId failed: $e');
     }
@@ -49,7 +49,7 @@ class AnalyticsService extends GetxService {
   // ===== EVENTS =====
   void logEvent(String name, {Map<String, Object>? parameters}) {
     try {
-      _analytics.logEvent(
+      analytics.logEvent(
         name: name,
         parameters: {
           AnalyticsConstants.paramPlatform: _platform,
