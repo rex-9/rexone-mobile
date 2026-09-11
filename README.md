@@ -327,6 +327,12 @@ cd rexone-mobile
 flutter pub get
 ```
 
+Run the same centralized checks used by GitHub Actions:
+
+```sh
+./scripts/ci.sh
+```
+
 3. Configure environment variables:
    Create `.env.dev`, `.env.uat`, or `.env.prod` in the project root:
 
