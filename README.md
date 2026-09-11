@@ -73,7 +73,7 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 | **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching       | [Real-time delivery](#real-time-delivery)                            |
 | **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core     | [Client observability & telemetry](#client-observability--telemetry) |
 | **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes     | [Design system](#design-system)                                      |
-| **Localization**       | English, Spanish, and Burmese with dynamic runtime switching and `X-Locale` backend sync | [Localization](#localization)                                        |
+| **Localization**       | English and Burmese with dynamic runtime switching and `X-Locale` backend sync          | [Localization](#localization)                                        |
 | **Testing (E2E)**      | Real on-device automated user journey specs via Flutter Integration Test Driver          | [End-to-End Testing](#end-to-end-testing-flutter-driver)             |
 | **Quality**            | Strongly typed Dart models, analyzer compliance, and automated test suite                | [Quality & testing](#quality--testing)                               |
 
@@ -206,7 +206,6 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 
 - Fully localized into:
   - 🇬🇧 **English (`en_US`)**
-  - 🇪🇸 **Spanish (`es_ES`)**
   - 🇲🇲 **Burmese (`my_MM`)**
 - Complete parity across all user-facing texts with dynamic runtime GetX translation reload.
 - Automatically sends `X-Locale` and `Accept-Language` headers on all HTTP requests to ensure backend responses match the user's selected language.
@@ -386,11 +385,19 @@ Run static analysis:
 flutter analyze lib/ test/ integration_test/
 ```
 
+Validate locale parity, interpolation placeholders, and `AppLocales` usage:
+
+```sh
+./scripts/check_locales.sh
+```
+
 Run unit and widget tests:
 
 ```sh
 flutter test test/
 ```
+
+GitHub Actions restores Flutter and Pub packages from cache before running the same centralized `scripts/ci.sh` checks.
 
 Run on-device integration tests:
 
@@ -439,7 +446,7 @@ rexone_mobile/
 │   │   ├── elements/         # Design tokens (Colors, Spacing, Typography, Icons, Timers)
 │   │   └── extensions/       # Theme context extensions
 │   ├── helpers/              # Utility helpers (API JSON:API parser, flags, validators)
-│   ├── locales/              # Multi-language translations (en_US, es_ES, my_MM)
+│   ├── locales/              # Multi-language translations (en_US, my_MM)
 │   ├── models/               # Strongly typed models and JSON:API response envelopes
 │   ├── modules/              # Feature modules (pages + controllers + feature services)
 │   │   ├── splash/           # Launch / session restore
