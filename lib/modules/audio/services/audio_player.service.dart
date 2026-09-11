@@ -7,17 +7,16 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/speech.service.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
-import '../data/models/track.model.dart';
-import '../data/sample_playlist.dart';
 import 'now_playing.bridge.dart';
 
 class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   AudioPlayer? _player;
 
-  final RxList<TrackModel> tracks = <TrackModel>[].obs;
+  final RxList<AssetModel> assets = <AssetModel>[].obs;
   final RxInt currentIndex = (-1).obs;
   final RxBool isPlaying = false.obs;
   final RxBool isLoading = false.obs;
@@ -35,16 +34,44 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   bool _sourcesLoaded = false;
   int _nowPlayingEpoch = 0;
 
-  TrackModel? get currentTrack {
+  AssetModel? get currentAsset {
     final index = currentIndex.value;
-    if (index < 0 || index >= tracks.length) return null;
-    return tracks[index];
+    if (index < 0 || index >= assets.length) return null;
+    return assets[index];
+  }
+
+  /// Replaces the playlist and rebuilds audio sources when already playing.
+  Future<void> setAssets(List<AssetModel> next) async {
+    assets.assignAll(next);
+    _sourcesLoaded = false;
+
+    if (assets.isEmpty) {
+      if (hasSession.value) await dismiss();
+      return;
+    }
+
+    if (_player == null || !hasSession.value) return;
+
+    final index = currentIndex.value;
+    if (index < 0 || index >= assets.length) {
+      await dismiss();
+      return;
+    }
+
+    try {
+      await _player!.setAudioSources(
+        assets.map(_audioSourceFor).toList(),
+        initialIndex: index,
+      );
+      _sourcesLoaded = true;
+    } catch (error) {
+      debugPrint('Error: $error');
+    }
   }
 
   @override
   void onInit() {
     super.onInit();
-    tracks.assignAll(samplePlaylist);
     WidgetsBinding.instance.addObserver(this);
     if (Get.isRegistered<SpeechService>()) {
       Get.find<SpeechService>().beforeTtsPlayback = yieldToSpeech;
@@ -72,9 +99,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> play([int? index]) async {
-    if (tracks.isEmpty) return;
+    if (assets.isEmpty) return;
     final nextIndex =
-        (index ?? currentIndex.value).clamp(0, tracks.length - 1);
+        (index ?? currentIndex.value).clamp(0, assets.length - 1);
     hasSession.value = true;
     currentIndex.value = nextIndex;
     isLoading.value = true;
@@ -113,11 +140,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     if (Get.isRegistered<StorageService>()) {
       Get.find<StorageService>().clearAudioSession();
     }
-    final shouldClosePlayer = isFullPlayerOpen.value;
     isFullPlayerOpen.value = false;
     unawaited(NowPlayingBridge.clear());
     await _releaseNativePlayer();
-    if (shouldClosePlayer) Get.back();
   }
 
   Future<void> toggle() async {
@@ -146,17 +171,17 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> next() async {
-    if (tracks.isEmpty) return;
+    if (assets.isEmpty) return;
     final nextIndex = hasSession.value
-        ? (currentIndex.value + 1) % tracks.length
+        ? (currentIndex.value + 1) % assets.length
         : 0;
     await play(nextIndex);
   }
 
   Future<void> previous() async {
-    if (tracks.isEmpty) return;
+    if (assets.isEmpty) return;
     final prevIndex = hasSession.value
-        ? (currentIndex.value - 1 + tracks.length) % tracks.length
+        ? (currentIndex.value - 1 + assets.length) % assets.length
         : 0;
     await play(prevIndex);
   }
@@ -176,7 +201,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     final session = Get.find<StorageService>().getAudioSession();
     if (session == null) return;
     final index = _asInt(session[AudioSessionKeys.currentIndex]);
-    if (index == null || index < 0 || index >= tracks.length) return;
+    if (index == null || index < 0 || index >= assets.length) return;
     final savedPosition = Duration(
       milliseconds: _asInt(session[AudioSessionKeys.positionMs]) ?? 0,
     );
@@ -303,21 +328,23 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   Future<void> _ensureSources({int initialIndex = 0}) async {
     if (_sourcesLoaded || _player == null) return;
     await _player!.setAudioSources(
-      tracks.map((track) {
-        return AudioSource.uri(
-          Uri.parse(track.audioUrl),
-          tag: MediaItem(
-            id: track.id,
-            title: track.title,
-            artist: track.artist,
-            album: AppLocales.audio.playlistSubtitle.tr,
-            artUri: Uri.tryParse(track.artworkUrl),
-          ),
-        );
-      }).toList(),
+      assets.map(_audioSourceFor).toList(),
       initialIndex: initialIndex,
     );
     _sourcesLoaded = true;
+  }
+
+  AudioSource _audioSourceFor(AssetModel asset) {
+    return AudioSource.uri(
+      Uri.parse(asset.url),
+      tag: MediaItem(
+        id: asset.id,
+        title: asset.displayTitle,
+        artist: asset.displaySubtitle,
+        album: AppLocales.audio.playlistSubtitle.tr,
+        artUri: Uri.tryParse(asset.displayThumbnailUrl),
+      ),
+    );
   }
 
   Future<void> _stopSpeech() async {

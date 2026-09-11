@@ -311,4 +311,5 @@ class _AudioLocales {
   final playlistSubtitle = 'audio.playlist_subtitle';
   final playbackFailed = 'audio.playback_failed';
   final close = 'audio.close';
+  final empty = 'audio.empty';
 }

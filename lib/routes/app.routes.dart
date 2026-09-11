@@ -78,7 +78,8 @@ class AppRoutes {
   static void toAi() => Get.toNamed(ai);
   static void toProfile() => Get.toNamed(profile);
   static void toNotifications() => Get.toNamed(notifications);
-  static void toAudioPlaylist() => Get.toNamed(audioPlaylist);
+  static void toAudioPlaylist({String? type}) =>
+      Get.toNamed(audioPlaylist, arguments: type != null ? {'type': type} : null);
   static void toAudioPlayer() {
     if (Get.isRegistered<AudioPlayerService>()) {
       Get.find<AudioPlayerService>().isFullPlayerOpen.value = true;

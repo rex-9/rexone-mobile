@@ -288,6 +288,7 @@ class AppTranslations extends Translations {
       AppLocales.audio.playlistSubtitle: 'Sample Mix',
       AppLocales.audio.playbackFailed: 'Could not play this track. Try again.',
       AppLocales.audio.close: 'Close',
+      AppLocales.audio.empty: 'No audio tracks yet',
     },
     'my_MM': {
       // Common
@@ -544,6 +545,7 @@ class AppTranslations extends Translations {
       AppLocales.audio.playbackFailed:
           'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
       AppLocales.audio.close: 'ပိတ်မည်',
+      AppLocales.audio.empty: 'အသံဖိုင်များ မရှိသေးပါ',
     },
   };
 }

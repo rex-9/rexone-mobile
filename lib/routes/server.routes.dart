@@ -46,6 +46,7 @@ class ServerRoutes {
 
   // Media
   static String get uploadAsset => api('/media/upload');
+  static String get assets => api('/assets');
 
   // Accesses
   static String get accesses => api('/accesses');

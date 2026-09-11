@@ -17,8 +17,8 @@ class MiniPlayer extends StatelessWidget {
 
     return Obx(() {
       if (!player.hasSession.value) return const SizedBox.shrink();
-      final track = player.currentTrack;
-      if (track == null) return const SizedBox.shrink();
+      final asset = player.currentAsset;
+      if (asset == null) return const SizedBox.shrink();
 
       return Material(
         color: context.colors.surface,
@@ -40,7 +40,7 @@ class MiniPlayer extends StatelessWidget {
             child: Row(
               children: [
                 TrackArtwork(
-                  url: track.artworkUrl,
+                  url: asset.displayThumbnailUrl,
                   size: Design.spacing.iconXLarge + Design.spacing.lg,
                 ),
                 SizedBox(width: Design.spacing.md),
@@ -50,13 +50,13 @@ class MiniPlayer extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        track.title,
+                        asset.displayTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.typo.labelLarge,
                       ),
                       Text(
-                        track.artist,
+                        asset.displaySubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.typo.caption,

@@ -16,7 +16,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       showBackButton: false,
       padding: EdgeInsets.zero,
       child: Obx(() {
-        final track = player.currentTrack;
+        final asset = player.currentAsset;
         final duration = player.duration.value;
         final position = player.position.value;
         final maxMs = duration.inMilliseconds <= 0
@@ -29,14 +29,22 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
             padding: EdgeInsets.all(Design.spacing.screenPadding),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: AppButton(
-                    type: EButtonType.icon,
-                    icon: Design.icons.chevronDown,
-                    tooltip: AppLocales.common.goBack.tr,
-                    onPressed: Get.back,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.chevronDown,
+                      tooltip: AppLocales.common.goBack.tr,
+                      onPressed: Get.back,
+                    ),
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.close,
+                      tooltip: AppLocales.audio.close.tr,
+                      onPressed: player.dismiss,
+                    ),
+                  ],
                 ),
                 SizedBox(height: Design.spacing.lg),
                 Expanded(
@@ -45,7 +53,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                       builder: (context, constraints) {
                         final size = constraints.maxWidth;
                         return TrackArtwork(
-                          url: track?.artworkUrl ?? '',
+                          url: asset?.displayThumbnailUrl ?? '',
                           size: size,
                           radius: Design.spacing.radiusLarge,
                         );
@@ -55,13 +63,13 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                 ),
                 SizedBox(height: Design.spacing.xxl),
                 Text(
-                  track?.title ?? AppLocales.audio.nowPlaying.tr,
+                  asset?.displayTitle ?? AppLocales.audio.nowPlaying.tr,
                   textAlign: TextAlign.center,
                   style: context.typo.headline3,
                 ),
                 SizedBox(height: Design.spacing.xs),
                 Text(
-                  track?.artist ?? '',
+                  asset?.displaySubtitle ?? '',
                   textAlign: TextAlign.center,
                   style: context.typo.bodyMedium,
                 ),
@@ -117,9 +125,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                                 ? AppLocales.audio.pause.tr
                                 : AppLocales.audio.play.tr,
                             color: context.colors.primary,
-                            onPressed: player.isPlaying.value
-                                ? player.dismiss
-                                : player.toggle,
+                            onPressed: player.toggle,
                           ),
                     AppButton(
                       type: EButtonType.icon,

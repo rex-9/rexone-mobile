@@ -21,6 +21,18 @@ class AssetKeys {
   static const bytes = 'bytes';
   static const createdAt = 'created_at';
   static const updatedAt = 'updated_at';
+  static const thumbnail = 'thumbnail';
+  static const status = 'status';
+  static const parentAssetId = 'parent_asset_id';
+
+  // ===== Asset type filters =====
+  static const typeAudio = 'audio';
+  static const statusReady = 'ready';
+  static const statusOptimal = 'optimal';
+  static const statusProcessing = 'processing';
+  static const statusPending = 'pending';
+
+  static const playableStatuses = {statusReady, statusOptimal};
 
   // ===== Upload constants (FormData values) =====
   static const typeAvatar = 'avatar';

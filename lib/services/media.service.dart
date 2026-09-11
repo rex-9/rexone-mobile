@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
@@ -7,7 +8,7 @@ import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/api.service.dart';
 
-/// Shared media upload client. Any controller can `Get.find<MediaService>()`.
+/// Shared media client — upload and paginated asset listing.
 class MediaService extends GetxService {
   late final ApiService _api;
 
@@ -51,6 +52,39 @@ class MediaService extends GetxService {
       (data) =>
           ApiHelper.parseRecord(data, AssetUploadResponse.fromJson) ??
           AssetUploadResponse.fromJson(const {}),
+    );
+  }
+
+  /// Lists paginated assets from `GET /v1/assets`.
+  /// [type] is omitted from the query when null or empty.
+  Future<PaginatedResponse<AssetModel>> getAssets({
+    String? type,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final query = <String, dynamic>{
+      ApiKeys.page: page.toString(),
+      ApiKeys.limit: limit.toString(),
+    };
+    if (type != null && type.isNotEmpty) {
+      query[AssetKeys.type] = type;
+    }
+
+    final response = await _api.get(
+      ServerRoutes.assets,
+      query: query,
+      showLoading: false,
+    );
+
+    debugPrint("audio ==>${response.body.toString()}");
+
+    return _api.parsePaginatedResponse(
+      response,
+      (item) => AssetModel.fromJson(
+        item is Map<String, dynamic>
+            ? item
+            : Map<String, dynamic>.from(item as Map),
+      ),
     );
   }
 }

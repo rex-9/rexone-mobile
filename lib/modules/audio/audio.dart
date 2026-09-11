@@ -1,6 +1,4 @@
 export 'audio.routes.dart';
-export 'data/models/track.model.dart';
-export 'data/sample_playlist.dart';
 export 'services/audio_player.service.dart';
 export 'controllers/audio_playlist.controller.dart';
 export 'controllers/audio_player.controller.dart';
