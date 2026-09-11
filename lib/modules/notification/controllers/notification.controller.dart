@@ -7,6 +7,7 @@ import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/controllers/auth.controller.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
+import 'package:rexone_mobile/services/analytics.service.dart';
 import '../services/notification.service.dart';
 
 class NotificationController extends GetxController {
@@ -124,6 +125,9 @@ class NotificationController extends GetxController {
 
   /// Handles notification interactions that affect application state.
   Future<void> handleNotificationTap(NotificationModel item) async {
+    if (Get.isRegistered<AnalyticsService>()) {
+      Get.find<AnalyticsService>().logOpenNotification(item.id);
+    }
     await markAsRead(item);
 
     if (item.isIamUpdated) {

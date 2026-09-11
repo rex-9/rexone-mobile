@@ -61,21 +61,21 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 
 ## Feature map
 
-| Foundation             | What is ready                                                                            | Details                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions       | [Authentication & security](#authentication--security)               |
-| **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)       | [Profile](#profile)                                                  |
-| **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing     | [Push notifications](#push-notifications)                            |
-| **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                 | [Product analytics](#product-analytics)                              |
-| **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs  | [In-app version upgrader](#in-app-version-upgrader)                  |
-| **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows            | [Payments & entitlements](#payments--entitlements)                   |
-| **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications        | [AI capabilities](#ai-capabilities)                                  |
-| **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching       | [Real-time delivery](#real-time-delivery)                            |
-| **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core     | [Client observability & telemetry](#client-observability--telemetry) |
-| **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes     | [Design system](#design-system)                                      |
+| Foundation             | What is ready                                                                           | Details                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions      | [Authentication & security](#authentication--security)               |
+| **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)      | [Profile](#profile)                                                  |
+| **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing    | [Push notifications](#push-notifications)                            |
+| **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                | [Product analytics](#product-analytics)                              |
+| **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs | [In-app version upgrader](#in-app-version-upgrader)                  |
+| **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows           | [Payments & entitlements](#payments--entitlements)                   |
+| **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications       | [AI capabilities](#ai-capabilities)                                  |
+| **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching      | [Real-time delivery](#real-time-delivery)                            |
+| **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core    | [Client observability & telemetry](#client-observability--telemetry) |
+| **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes    | [Design system](#design-system)                                      |
 | **Localization**       | English and Burmese with dynamic runtime switching and `X-Locale` backend sync          | [Localization](#localization)                                        |
-| **Testing (E2E)**      | Real on-device automated user journey specs via Flutter Integration Test Driver          | [End-to-End Testing](#end-to-end-testing-flutter-driver)             |
-| **Quality**            | Strongly typed Dart models, analyzer compliance, and automated test suite                | [Quality & testing](#quality--testing)                               |
+| **Testing (E2E)**      | Real on-device automated user journey specs via Flutter Integration Test Driver         | [End-to-End Testing](#end-to-end-testing-flutter-driver)             |
+| **Quality**            | Strongly typed Dart models, analyzer compliance, and automated test suite               | [Quality & testing](#quality--testing)                               |
 
 ---
 
@@ -158,9 +158,11 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Product analytics
 
 - Powered by **Firebase Analytics** (`firebase_core` & `firebase_analytics`).
-- Automatic screen tracking via `FirebaseAnalyticsObserver` registered in `GetMaterialApp.navigatorObservers`.
-- Pre-defined event tracking for sign-up, sign-in, sign-out, password resets, onboarding, and error captures via `Constants.analytics`.
+- Central navigation tracking emits the shared `view_page` event from `GetMaterialApp.navigatorObservers`.
+- Constantized `action_noun` events cover `sign_up`, `sign_in`, `sign_out`, `begin_onboarding`, `complete_onboarding`, `view_page`, `view_product`, `purchase_product`, and `open_notification`.
+- Every event includes `platform: android` or `platform: ios` so the shared GA4 property can filter Web and Mobile consistently.
 - User ID tagging synchronized with authenticated sessions.
+- Email addresses and other personal data are never sent to Firebase Analytics.
 
 ### In-app version upgrader
 

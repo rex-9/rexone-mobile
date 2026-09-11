@@ -4,11 +4,14 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/routes/routes.dart';
+import 'package:rexone_mobile/services/analytics.service.dart';
 
 import '../payment.dart';
 
 class PaymentController extends GetxController {
   late final PaymentService _payment;
+  late final AnalyticsService _analytics;
+  final Set<String> _viewedProductIds = <String>{};
 
   final RxList<ProductModel> products = <ProductModel>[].obs;
   final RxList<SubscriptionModel> subscriptions = <SubscriptionModel>[].obs;
@@ -19,6 +22,7 @@ class PaymentController extends GetxController {
   void onInit() {
     super.onInit();
     _payment = Get.find<PaymentService>();
+    _analytics = Get.find<AnalyticsService>();
   }
 
   @override
@@ -106,6 +110,14 @@ class PaymentController extends GetxController {
     );
     if (res.success) {
       products.assignAll(res.records);
+      for (final product in res.records) {
+        if (_viewedProductIds.add(product.id)) {
+          _analytics.logViewProduct(
+            productId: product.id,
+            productName: product.name,
+          );
+        }
+      }
     }
   }
 
