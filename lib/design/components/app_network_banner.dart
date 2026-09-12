@@ -11,10 +11,7 @@ import '../design.dart';
 class AppNetworkBanner extends StatelessWidget {
   final Widget child;
 
-  const AppNetworkBanner({
-    super.key,
-    required this.child,
-  });
+  const AppNetworkBanner({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -29,73 +26,102 @@ class AppNetworkBanner extends StatelessWidget {
           final network = Get.find<NetworkService>();
           final isVisible = network.isBannerVisible.value;
           final isRestored = network.isRestored.value;
-          final contentColor = isRestored
-              ? context.colors.onSuccess
-              : context.colors.onError;
+          final statusColor = isRestored
+              ? context.colors.success
+              : context.colors.error;
 
           return Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: IgnorePointer(
-              ignoring: !isVisible,
-              child: AnimatedSlide(
-                duration: Design.timers.medium,
-                curve: Design.timers.easeInOut,
-                offset: isVisible ? Offset.zero : const Offset(0, -1.2),
-                child: AnimatedOpacity(
-                  duration: Design.timers.short,
-                  opacity: isVisible ? 1.0 : 0.0,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Design.spacing.md,
-                        vertical: Design.spacing.xs,
-                      ),
-                      child: AnimatedContainer(
-                        duration: Design.timers.medium,
-                        curve: Design.timers.easeInOut,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: Design.spacing.md,
-                          vertical: Design.spacing.sm,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: IgnorePointer(
+                ignoring: !isVisible,
+                child: AnimatedSlide(
+                  duration: Design.timers.medium,
+                  curve: Design.timers.easeInOut,
+                  offset: isVisible ? Offset.zero : const Offset(0, -1.2),
+                  child: AnimatedOpacity(
+                    duration: Design.timers.short,
+                    opacity: isVisible ? 1.0 : 0.0,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: Design.spacing.paddingSymmetric(
+                          h: Design.spacing.md,
+                          v: Design.spacing.xs,
                         ),
-                        decoration: BoxDecoration(
-                          color: isRestored
-                              ? context.colors.success
-                              : context.colors.error,
-                          borderRadius: BorderRadius.circular(
-                            Design.spacing.radiusXLarge,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: Design.spacing.bannerMaxWidth,
                           ),
-                          boxShadow: Design.colors.shadows.md,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isRestored
-                                  ? Design.icons.wifi
-                                  : Design.icons.wifiOff,
-                              color: contentColor,
-                              size: Design.spacing.iconMedium,
+                          child: Material(
+                            color: context.colors.surface,
+                            borderRadius: BorderRadius.circular(
+                              Design.spacing.radiusLarge,
                             ),
-                            SizedBox(width: Design.spacing.sm),
-                            Flexible(
-                              child: Text(
-                                isRestored
-                                    ? AppLocales.common.connectionRestored.tr
-                                    : AppLocales.common.connectionLost.tr,
-                                style: context.typo.labelMedium.copyWith(
-                                  color: contentColor,
-                                  fontWeight: FontWeight.w600,
+                            elevation: 0,
+                            child: AnimatedContainer(
+                              duration: Design.timers.medium,
+                              curve: Design.timers.easeInOut,
+                              padding: Design.spacing.paddingSymmetric(
+                                h: Design.spacing.md,
+                                v: Design.spacing.sm,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.1),
+                                border: Border.all(
+                                  color: statusColor.withValues(alpha: 0.35),
                                 ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                borderRadius: BorderRadius.circular(
+                                  Design.spacing.radiusLarge,
+                                ),
+                                boxShadow: Design.colors.shadows.sm,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: Design.spacing.padding(
+                                      Design.spacing.xs,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(
+                                        alpha: 0.14,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      isRestored
+                                          ? Design.icons.wifi
+                                          : Design.icons.wifiOff,
+                                      color: statusColor,
+                                      size: Design.spacing.iconSmall,
+                                    ),
+                                  ),
+                                  SizedBox(width: Design.spacing.sm),
+                                  Flexible(
+                                    child: Text(
+                                      isRestored
+                                          ? AppLocales
+                                                .common
+                                                .connectionRestored
+                                                .tr
+                                          : AppLocales.common.connectionLost.tr,
+                                      style: context.typo.labelMedium.copyWith(
+                                        color: context.colors.textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),

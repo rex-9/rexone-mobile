@@ -46,10 +46,7 @@ class PushNotiService extends GetxService {
           _analytics.logOpenNotification(notificationId);
         }
 
-        final link =
-            data?['link']?.toString() ??
-            data?['url']?.toString() ??
-            event.notification.launchUrl;
+        final link = data?[NotificationKeys.link]?.toString();
 
         if (link != null && link.isNotEmpty) {
           AppRoutes.handleNotificationLink(link);

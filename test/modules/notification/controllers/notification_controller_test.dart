@@ -5,6 +5,7 @@ import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
 import 'package:rexone_mobile/modules/notification/notification.dart';
+import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
@@ -46,38 +47,64 @@ void main() {
       expect(controller.unreadCount.value, equals(7));
     });
 
-    test('fetchNotifications populates notifications list and pagination', () async {
-      final notifs = [
-        NotificationModel(id: 'n_1', title: 'Title 1', message: 'Message 1', read: false, createdAt: DateTime.now()),
-        NotificationModel(id: 'n_2', title: 'Title 2', message: 'Message 2', read: true, createdAt: DateTime.now()),
-      ];
+    test(
+      'fetchNotifications populates notifications list and pagination',
+      () async {
+        final notifs = [
+          NotificationModel(
+            id: 'n_1',
+            title: 'Title 1',
+            message: 'Message 1',
+            read: false,
+            createdAt: DateTime.now(),
+          ),
+          NotificationModel(
+            id: 'n_2',
+            title: 'Title 2',
+            message: 'Message 2',
+            read: true,
+            createdAt: DateTime.now(),
+          ),
+        ];
 
-      fakeService.notificationsResponse = PaginatedResponse<NotificationModel>(
-        records: notifs,
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-        pagination: const PaginationMeta(currentPage: 1, totalPages: 2, totalCount: 2, limit: 20, nextPage: 2),
-      );
+        fakeService.notificationsResponse =
+            PaginatedResponse<NotificationModel>(
+              records: notifs,
+              message: 'OK',
+              statusCode: 200,
+              success: true,
+              pagination: const PaginationMeta(
+                currentPage: 1,
+                totalPages: 2,
+                totalCount: 2,
+                limit: 20,
+                nextPage: 2,
+              ),
+            );
 
-      await controller.fetchNotifications();
+        await controller.fetchNotifications();
 
-      expect(controller.notifications.length, equals(2));
-      expect(controller.notifications.first.id, equals('n_1'));
-      expect(controller.hasMore.value, isTrue);
-    });
+        expect(controller.notifications.length, equals(2));
+        expect(controller.notifications.first.id, equals('n_1'));
+        expect(controller.hasMore.value, isTrue);
+      },
+    );
 
     test('changeFilter switches filter and fetches notifications', () async {
-      fakeService.notificationsResponse = const PaginatedResponse<NotificationModel>(
-        records: [],
-        message: 'OK',
-        statusCode: 200,
-        success: true,
-      );
+      fakeService.notificationsResponse =
+          const PaginatedResponse<NotificationModel>(
+            records: [],
+            message: 'OK',
+            statusCode: 200,
+            success: true,
+          );
 
       await controller.changeFilter(NotificationConstants.filterUnread);
 
-      expect(controller.currentFilter.value, equals(NotificationConstants.filterUnread));
+      expect(
+        controller.currentFilter.value,
+        equals(NotificationConstants.filterUnread),
+      );
     });
   });
 
@@ -101,57 +128,96 @@ void main() {
       expect(fakeService.markedReadIds, contains('n_unread_1'));
     });
 
-    test('markAllAsRead marks all notifications as read and resets unread count to 0', () async {
-      final notifs = [
-        NotificationModel(id: 'n_1', title: '1', message: '1', read: false, createdAt: DateTime.now()),
-        NotificationModel(id: 'n_2', title: '2', message: '2', read: false, createdAt: DateTime.now()),
-      ];
+    test(
+      'markAllAsRead marks all notifications as read and resets unread count to 0',
+      () async {
+        final notifs = [
+          NotificationModel(
+            id: 'n_1',
+            title: '1',
+            message: '1',
+            read: false,
+            createdAt: DateTime.now(),
+          ),
+          NotificationModel(
+            id: 'n_2',
+            title: '2',
+            message: '2',
+            read: false,
+            createdAt: DateTime.now(),
+          ),
+        ];
 
-      controller.notifications.assignAll(notifs);
-      controller.unreadCount.value = 2;
+        controller.notifications.assignAll(notifs);
+        controller.unreadCount.value = 2;
 
-      await controller.markAllAsRead();
+        await controller.markAllAsRead();
 
-      expect(controller.notifications.every((n) => n.read), isTrue);
-      expect(controller.unreadCount.value, equals(0));
-      expect(fakeService.markedAllRead, isTrue);
-    });
+        expect(controller.notifications.every((n) => n.read), isTrue);
+        expect(controller.unreadCount.value, equals(0));
+        expect(fakeService.markedAllRead, isTrue);
+      },
+    );
 
-    test('deleteNotification removes item and decrements unread count if unread', () async {
-      final notif = NotificationModel(
-        id: 'n_del',
-        title: 'Delete me',
-        message: 'Msg',
-        read: false,
-        createdAt: DateTime.now(),
-      );
+    test(
+      'deleteNotification removes item and decrements unread count if unread',
+      () async {
+        final notif = NotificationModel(
+          id: 'n_del',
+          title: 'Delete me',
+          message: 'Msg',
+          read: false,
+          createdAt: DateTime.now(),
+        );
 
-      controller.notifications.assignAll([notif]);
-      controller.unreadCount.value = 1;
+        controller.notifications.assignAll([notif]);
+        controller.unreadCount.value = 1;
 
-      await controller.deleteNotification(notif);
+        await controller.deleteNotification(notif);
 
-      expect(controller.notifications, isEmpty);
-      expect(controller.unreadCount.value, equals(0));
-      expect(fakeService.deletedIds, contains('n_del'));
-    });
+        expect(controller.notifications, isEmpty);
+        expect(controller.unreadCount.value, equals(0));
+        expect(fakeService.deletedIds, contains('n_del'));
+      },
+    );
 
     test('onSocketNotification inserts incoming notification at top', () {
       final event = SocketMessage(
+        id: 'socket_n_1',
         type: SocketKeys.notification,
-        data: {
-          'id': 'socket_n_1',
-          'title': 'Realtime Title',
-          'message': 'Realtime Message',
-          'read': false,
-          'created_at': DateTime.now().toIso8601String(),
-        },
+        title: 'Realtime Title',
+        message: 'Realtime Message',
+        link: AppRoutes.payment,
+        data: {NotificationKeys.type: NotificationConstants.paymentSuccess},
+        createdAt: DateTime.now().toIso8601String(),
       );
 
       fakeService.unreadCount = 10;
       controller.onSocketNotification(event);
 
       expect(controller.notifications.first.id, equals('socket_n_1'));
+      expect(controller.notifications.first.title, equals('Realtime Title'));
+      expect(
+        controller.notifications.first.message,
+        equals('Realtime Message'),
+      );
+      expect(controller.notifications.first.link, equals(AppRoutes.payment));
+    });
+
+    test('onSocketNotification ignores Web-only notifications', () {
+      final event = SocketMessage(
+        id: 'web_only',
+        type: SocketKeys.notification,
+        title: 'Admin operation',
+        message: 'Completed',
+        clients: const [AppConstants.platformWeb],
+        data: const {},
+      );
+
+      controller.onSocketNotification(event);
+
+      expect(controller.notifications, isEmpty);
+      expect(controller.unreadCount.value, equals(0));
     });
 
     test('IAM update tap refreshes and persists the current user', () async {
@@ -160,7 +226,11 @@ void main() {
         email: 'updated@example.com',
         iam: const UserIamModel(isAdmin: true, isSuperAdmin: false),
       );
-      fakeAuthService.currentUserResponse = ApiResponse.success(message: 'OK', statusCode: 200, data: refreshedUser);
+      fakeAuthService.currentUserResponse = ApiResponse.success(
+        message: 'OK',
+        statusCode: 200,
+        data: refreshedUser,
+      );
       final notification = NotificationModel(
         id: 'iam_1',
         title: 'Access updated',

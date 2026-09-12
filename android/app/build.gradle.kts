@@ -25,7 +25,8 @@ plugins {
 
 android {
     namespace = "com.rexone.mobile" // $APPLICATION_ID
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
+    // compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

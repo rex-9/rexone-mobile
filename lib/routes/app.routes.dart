@@ -2,8 +2,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/design/components/app_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/routes/guard.routes.dart';
 import 'package:rexone_mobile/routes/server.routes.dart';
 
@@ -78,125 +79,100 @@ class AppRoutes {
 
   /// Resolves and routes a notification or deep link.
   ///
-  /// - Links matching internal stacked routes (Payment, AI, Settings, Home, Notifications)
-  ///   keep the user inside the app and route to the corresponding native screen.
-  /// - Links not matching any mobile stacked routes (e.g. external websites, web-only admin paths)
-  ///   are launched in the external system browser via [url_launcher].
+  /// Notification links always stay inside the native application. Unsupported
+  /// or Web-only routes keep the current page open and explain where to view
+  /// the update.
   static Future<void> handleNotificationLink(String? rawLink) async {
-    if (rawLink == null) return;
-    final link = rawLink.trim();
-    if (link.isEmpty) return;
-
     try {
-      final uri = Uri.tryParse(link);
-      final hasScheme =
-          uri != null && (uri.isScheme('http') || uri.isScheme('https'));
-      final path = hasScheme ? uri.path.toLowerCase() : link.toLowerCase();
+      if (isExternalNotificationLink(rawLink)) {
+        final context = Get.context;
+        if (context == null) return;
 
-      final normalizedPath = (path.length > 1 && path.endsWith('/'))
-          ? path.substring(0, path.length - 1)
-          : path;
+        final shouldOpen = await AppDialog.confirm(
+          context: context,
+          title: AppLocales.notification.externalTitle.tr,
+          message: AppLocales.notification.externalMessage.tr,
+          confirmLabel: AppLocales.notification.externalConfirm.tr,
+        );
+        if (shouldOpen) {
+          await launchUrl(
+            Uri.parse(rawLink!.trim()),
+            mode: LaunchMode.externalApplication,
+          );
+        }
+        return;
+      }
 
-      // 1. Payment & Billing (keep in app without leaving or opening checkout webview)
-      if (_matchesPaymentRoute(normalizedPath)) {
+      final target = resolveNotificationRoute(rawLink);
+      if (target == null) {
+        if (rawLink?.trim().isNotEmpty == true) {
+          await showWebOnlyNotificationNotice();
+        }
+        return;
+      }
+      if (target == payment) {
         toPayment();
         return;
       }
-
-      // 2. AI / Chat
-      if (_matchesAiRoute(normalizedPath)) {
-        toAi();
+      if (target == ai || target.startsWith('$ai?')) {
+        Get.toNamed(target);
         return;
       }
-
-      // 3. Settings & Profile
-      if (_matchesSettingsRoute(normalizedPath)) {
-        toSettings();
+      if (target == profile) {
+        toProfile();
         return;
       }
-
-      // 4. Notifications
-      if (_matchesNotificationsRoute(normalizedPath)) {
+      if (target == notifications) {
         toNotifications();
         return;
       }
-
-      // 5. Home / Root
-      if (normalizedPath == '/' || normalizedPath == home) {
-        toHome();
-        return;
-      }
-
-      // 6. Any other registered mobile page in AppRoutes
-      if (normalizedPath.startsWith('/')) {
-        final matchesRegistered = pages.any(
-          (p) => p.name.toLowerCase() == normalizedPath,
-        );
-        if (matchesRegistered) {
-          Get.toNamed(normalizedPath);
-          return;
-        }
-      }
-
-      // 7. Unmatched link -> launch in external browser
-      final targetUri = hasScheme
-          ? uri
-          : Uri.tryParse(
-              '${_getWebBaseUrl()}${normalizedPath.startsWith('/') ? normalizedPath : '/$normalizedPath'}',
-            );
-
-      if (targetUri != null) {
-        final launched = await launchUrl(
-          targetUri,
-          mode: LaunchMode.externalApplication,
-        );
-        if (!launched) {
-          debugPrint('⚠️ Could not launch external URL: $targetUri');
-        }
-        return;
-      }
-
-      debugPrint('⚠️ Unhandled notification link: $link');
+      if (target == home) toHome();
     } catch (e) {
       debugPrint('❌ Error routing notification link: $e');
     }
   }
 
-  static bool _matchesPaymentRoute(String path) {
-    return path == payment ||
-        path.startsWith('/payment') ||
-        path.startsWith('/checkout') ||
-        path.startsWith('/pricing') ||
-        path.startsWith('/subscription') ||
-        path.startsWith('/transaction') ||
-        path.startsWith('/invoice');
-  }
+  /// Converts Core's platform-neutral link into a registered Mobile route.
+  static String? resolveNotificationRoute(String? rawLink) {
+    final value = rawLink?.trim();
+    if (value == null || value.isEmpty) return null;
 
-  static bool _matchesAiRoute(String path) {
-    return path == ai || path.startsWith('/ai') || path.startsWith('/chat');
-  }
+    final uri = Uri.tryParse(value);
+    if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
 
-  static bool _matchesSettingsRoute(String path) {
-    return path == settings ||
-        path.startsWith('/settings') ||
-        path.startsWith('/profile') ||
-        path.startsWith('/account');
-  }
-
-  static bool _matchesNotificationsRoute(String path) {
-    return path == notifications || path.startsWith('/notification');
-  }
-
-  static String _getWebBaseUrl() {
-    final api = AppConfig.apiBaseUrl;
-    if (api.contains('localhost:3000')) {
-      return 'http://localhost:4000';
-    } else if (api.contains('10.0.2.2:3000')) {
-      return 'http://10.0.2.2:4000';
-    } else if (api.contains('api.')) {
-      return api.replaceFirst('api.', '');
+    var path = uri.path.toLowerCase();
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
     }
-    return 'https://rexone.org';
+
+    if (path == '/' || path == home) return home;
+    if (path == profile) return profile;
+    if (path == payment || path.startsWith('$payment/')) return payment;
+    if (path == ai) {
+      return uri.hasQuery ? '$ai?${uri.query}' : ai;
+    }
+    if (path == notifications) return notifications;
+
+    return null;
+  }
+
+  static bool isExternalNotificationLink(String? rawLink) {
+    final uri = Uri.tryParse(rawLink?.trim() ?? '');
+    return uri != null &&
+        uri.scheme == NotificationConstants.externalLinkScheme &&
+        uri.host.isNotEmpty;
+  }
+
+  static Future<void> showWebOnlyNotificationNotice() async {
+    final context = Get.context;
+    if (context == null) return;
+
+    await AppDialog.confirm(
+      context: context,
+      title: AppLocales.notification.webOnlyTitle.tr,
+      message: AppLocales.notification.webOnlyMessage.tr,
+      confirmLabel: AppLocales.notification.webOnlyConfirm.tr,
+    );
   }
 
   static final pages = [

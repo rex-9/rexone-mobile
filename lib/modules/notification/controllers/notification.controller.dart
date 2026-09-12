@@ -184,11 +184,24 @@ class NotificationController extends GetxController {
 
   /// Handle incoming real-time socket notification
   void onSocketNotification(SocketMessage event) {
+    if (event.clients != null &&
+        !event.clients!.contains(AppConstants.platformMobile)) {
+      return;
+    }
+
     unreadCount.value++;
 
     if (event.data != null && event.data is Map) {
       try {
-        final notiMap = Map<String, dynamic>.from(event.data! as Map);
+        final notiMap = <String, dynamic>{
+          ApiKeys.id: event.id,
+          NotificationKeys.title: event.title,
+          NotificationKeys.message: event.message,
+          NotificationKeys.link: event.link,
+          NotificationKeys.clients: event.clients,
+          NotificationKeys.data: event.data,
+          NotificationKeys.createdAt: event.createdAt,
+        };
         final newNotification = NotificationModel.fromJson(notiMap);
 
         if (currentFilter.value != NotificationConstants.filterRead) {

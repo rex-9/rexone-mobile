@@ -296,4 +296,10 @@ class _NotificationLocales {
   final loadMore = 'notification.load_more';
   final deleted = 'notification.deleted';
   final failedToLoad = 'notification.failed_to_load';
+  final webOnlyTitle = 'notification.web_only_title';
+  final webOnlyMessage = 'notification.web_only_message';
+  final webOnlyConfirm = 'notification.web_only_confirm';
+  final externalTitle = 'notification.external_title';
+  final externalMessage = 'notification.external_message';
+  final externalConfirm = 'notification.external_confirm';
 }

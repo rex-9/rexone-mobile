@@ -269,6 +269,14 @@ class AppTranslations extends Translations {
       AppLocales.notification.loadMore: 'Load more',
       AppLocales.notification.deleted: 'Notification deleted',
       AppLocales.notification.failedToLoad: 'Failed to load notifications',
+      AppLocales.notification.webOnlyTitle: 'Available on Rexone Web',
+      AppLocales.notification.webOnlyMessage:
+          'This change is managed in the Rexone Web admin portal. View it there for full details.',
+      AppLocales.notification.webOnlyConfirm: 'Understood',
+      AppLocales.notification.externalTitle: 'Open external website?',
+      AppLocales.notification.externalMessage:
+          'This link will leave Rexone and open in your browser.',
+      AppLocales.notification.externalConfirm: 'Open website',
 
       // Update
       AppLocales.update.title: 'Update App?',
@@ -297,7 +305,8 @@ class AppTranslations extends Translations {
       AppLocales.common.exitTitle: 'အက်ပ်မှ ထွက်မည်',
       AppLocales.common.exitConfirm: 'ထွက်ရန် သေချာပါသလား?',
       AppLocales.common.connectionLost: 'အင်တာနက်လိုင်း ပြတ်တောက်သွားပါသည်',
-      AppLocales.common.connectionRestored: 'အင်တာနက်လိုင်း ပြန်လည်ကောင်းမွန်သွားပါပြီ',
+      AppLocales.common.connectionRestored:
+          'အင်တာနက်လိုင်း ပြန်လည်ကောင်းမွန်သွားပါပြီ',
       AppLocales.common.noInternet: 'အင်တာနက်လိုင်း မရှိပါ',
 
       // Auth Shared
@@ -305,15 +314,16 @@ class AppTranslations extends Translations {
       AppLocales.auth.shared.emailHint: 'your@email.com',
       AppLocales.auth.shared.continueButton: 'ဆက်လုပ်မည်',
       AppLocales.auth.shared.useDifferentEmail: 'အခြားအီးမေးလ် သုံးမည်',
-      AppLocales.auth.shared.passcodeLength: 'စကားဝှက်သည် ဂဏန်း ၆ လုံး ဖြစ်ရမည်',
-      AppLocales.auth.shared.sessionExpired: 'အသုံးပြုချိန် ကုန်ဆုံးသွားပါပြီ။ ပြန်ဝင်ပါ။',
+      AppLocales.auth.shared.passcodeLength:
+          'စကားဝှက်သည် ဂဏန်း ၆ လုံး ဖြစ်ရမည်',
+      AppLocales.auth.shared.sessionExpired:
+          'အသုံးပြုချိန် ကုန်ဆုံးသွားပါပြီ။ ပြန်ဝင်ပါ။',
       AppLocales.auth.shared.sessionReplaced:
           'ဤစက်ပေါ်တွင် အသစ်ဝင်ရောက်မှုကြောင့် session အစားထိုးခံရပါသည်။',
 
       // Auth Initial
       AppLocales.auth.initial.title: '✨ Rexone မှ ကြိုဆိုပါသည် ✨',
-      AppLocales.auth.initial.subtitle:
-          'အိပ်မက်များကို အကောင်အထည်ဖော်လိုက်ပါ',
+      AppLocales.auth.initial.subtitle: 'အိပ်မက်များကို အကောင်အထည်ဖော်လိုက်ပါ',
       AppLocales.auth.initial.continueWithGoogle: 'Google ဖြင့် ဆက်ရန်',
       AppLocales.auth.initial.or: 'သို့မဟုတ်',
       AppLocales.auth.initial.emailHelper:
@@ -334,14 +344,18 @@ class AppTranslations extends Translations {
           '@email အတွက် ဂဏန်း ၆ လုံး စကားဝှက် ထည့်ပါ',
       AppLocales.auth.signInPasscode.passcodeLabel: 'စကားဝှက်',
       AppLocales.auth.signInPasscode.signingIn: 'ဝင်နေဆဲ...',
-      AppLocales.auth.signInPasscode.forgotPasscodeLink: 'စကားဝှက် မေ့နေပါသလား?',
-      AppLocales.auth.signInPasscode.passcode6Digits: 'ဂဏန်း ၆ လုံး စကားဝှက် ထည့်ပါ',
+      AppLocales.auth.signInPasscode.forgotPasscodeLink:
+          'စကားဝှက် မေ့နေပါသလား?',
+      AppLocales.auth.signInPasscode.passcode6Digits:
+          'ဂဏန်း ၆ လုံး စကားဝှက် ထည့်ပါ',
       AppLocales.auth.signInPasscode.attemptsRemaining:
           'ကျန်ကြိုးစားခွင့်: @left/@total',
       AppLocales.auth.signInPasscode.cooldownMessage:
           'စကားဝှက် မှားလွန်းပါသည်။ @seconds စက္ကန့် စောင့်ပါ။',
-      AppLocales.auth.signInPasscode.tryAgainIn: '@seconds⁠s အကြာတွင် ထပ်စမ်းပါ',
-      AppLocales.auth.signInPasscode.signInFailed: 'လော့ဂ်အင် မအောင်မြင်ပါ။ ထပ်စမ်းပါ။',
+      AppLocales.auth.signInPasscode.tryAgainIn:
+          '@seconds⁠s အကြာတွင် ထပ်စမ်းပါ',
+      AppLocales.auth.signInPasscode.signInFailed:
+          'လော့ဂ်အင် မအောင်မြင်ပါ။ ထပ်စမ်းပါ။',
 
       // Auth SignUp Passcode Create
       AppLocales.auth.signUpPasscodeCreate.title: 'အကောင့်ဖွင့်မည်',
@@ -359,8 +373,10 @@ class AppTranslations extends Translations {
       AppLocales.auth.signUpPasscodeConfirm.heading: 'စကားဝှက် အတည်ပြုပါ',
       AppLocales.auth.signUpPasscodeConfirm.subtitle: 'စကားဝှက်ကို အတည်ပြုပါ။',
       AppLocales.auth.signUpPasscodeConfirm.confirm: 'အတည်ပြု',
-      AppLocales.auth.signUpPasscodeConfirm.changePasscode: 'စကားဝှက် ပြောင်းမည်',
-      AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch: 'စကားဝှက်များ မကိုက်ညီပါ',
+      AppLocales.auth.signUpPasscodeConfirm.changePasscode:
+          'စကားဝှက် ပြောင်းမည်',
+      AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch:
+          'စကားဝှက်များ မကိုက်ညီပါ',
       AppLocales.auth.signUpPasscodeConfirm.sendingCode: 'ကုဒ် ပို့နေဆဲ...',
 
       // Auth SignUp Info
@@ -377,7 +393,8 @@ class AppTranslations extends Translations {
           'နာမည် အများဆုံး အလုံး ၅၀ သာ ဖြစ်ရပါမည်',
       AppLocales.auth.signUpInfo.fullNameForbiddenChars:
           'နာမည်တွင် ခွင့်မပြုသော စာလုံးများ (<, >, :, ;, ?) မပါဝင်ရပါ',
-      AppLocales.auth.signUpInfo.usernameMinLength: 'Username အနည်းဆုံး ၃ လုံး ရှိရမည်',
+      AppLocales.auth.signUpInfo.usernameMinLength:
+          'Username အနည်းဆုံး ၃ လုံး ရှိရမည်',
       AppLocales.auth.signUpInfo.usernameMaxLength:
           'Username အများဆုံး အလုံး ၃၀ သာ ဖြစ်ရမည်',
       AppLocales.auth.signUpInfo.usernameCharset:
@@ -387,13 +404,16 @@ class AppTranslations extends Translations {
       // Auth Confirm Email
       AppLocales.auth.confirmEmail.title: 'အီးမေးလ် အတည်ပြုပါ',
       AppLocales.auth.confirmEmail.heading: 'အီးမေးလ်ကို အတည်ပြုပါ',
-      AppLocales.auth.confirmEmail.subtitle: '@email သို့ ဂဏန်း ၆ လုံး ကုဒ် ပို့ထားပါသည်',
+      AppLocales.auth.confirmEmail.subtitle:
+          '@email သို့ ဂဏန်း ၆ လုံး ကုဒ် ပို့ထားပါသည်',
       AppLocales.auth.confirmEmail.confirmCodeButton: 'ကုဒ် အတည်ပြုမည်',
       AppLocales.auth.confirmEmail.verifying: 'အတည်ပြုနေဆဲ...',
       AppLocales.auth.confirmEmail.resendCode: 'ကုဒ် ပြန်ပို့မည်',
-      AppLocales.auth.confirmEmail.resendCodeIn: '@seconds⁠s အတွင်း ပြန်ပို့နိုင်သည်',
+      AppLocales.auth.confirmEmail.resendCodeIn:
+          '@seconds⁠s အတွင်း ပြန်ပို့နိုင်သည်',
       AppLocales.auth.confirmEmail.enter6DigitCode: 'ဂဏန်း ၆ လုံး ကုဒ် ထည့်ပါ',
-      AppLocales.auth.confirmEmail.verificationFailed: 'အတည်ပြုမှု မအောင်မြင်ပါ',
+      AppLocales.auth.confirmEmail.verificationFailed:
+          'အတည်ပြုမှု မအောင်မြင်ပါ',
       AppLocales.auth.confirmEmail.sendCodeFailed: 'အတည်ပြုကုဒ် ပို့၍မရပါ',
 
       // Auth Forgot Passcode
@@ -491,7 +511,8 @@ class AppTranslations extends Translations {
       AppLocales.user.cameraPermissionTitle: 'ကင်မရာ ခွင့်ပြုချက် လိုအပ်သည်',
       AppLocales.user.cameraPermissionMessage:
           'ပရိုဖိုင်ပုံ ရိုက်ရန် ကင်မရာ ခွင့်ပြုချက် လိုအပ်သည်။ Settings တွင် ဤအက်ပ်အတွက် ဖွင့်ပါ။',
-      AppLocales.user.photosPermissionTitle: 'ဓာတ်ပုံပြခန်း ခွင့်ပြုချက် လိုအပ်သည်',
+      AppLocales.user.photosPermissionTitle:
+          'ဓာတ်ပုံပြခန်း ခွင့်ပြုချက် လိုအပ်သည်',
       AppLocales.user.photosPermissionMessage:
           'ပရိုဖိုင်ပုံ ရွေးရန် ဓာတ်ပုံပြခန်း ခွင့်ပြုချက် လိုအပ်သည်။ Settings တွင် ဤအက်ပ်အတွက် ဖွင့်ပါ။',
       AppLocales.user.uploadAvatarFailed: 'ပရိုဖိုင်ပုံ တင်၍ မရပါ',
@@ -512,6 +533,14 @@ class AppTranslations extends Translations {
       AppLocales.notification.loadMore: 'ထပ်မံကြည့်ရှုရန်',
       AppLocales.notification.deleted: 'အသိပေးချက် ဖျက်ပြီးပါပြီ',
       AppLocales.notification.failedToLoad: 'အသိပေးချက်များ ရယူ၍မရပါ',
+      AppLocales.notification.webOnlyTitle: 'Rexone Web တွင် ရနိုင်သည်',
+      AppLocales.notification.webOnlyMessage:
+          'ဤအပြောင်းအလဲကို Rexone Web admin portal တွင် စီမံထားသည်။ အသေးစိတ်ကို ထိုနေရာတွင် ကြည့်ပါ။',
+      AppLocales.notification.webOnlyConfirm: 'နားလည်ပါပြီ',
+      AppLocales.notification.externalTitle: 'ပြင်ပ ဝဘ်ဆိုက်ကို ဖွင့်မလား?',
+      AppLocales.notification.externalMessage:
+          'ဤလင့်ခ်သည် Rexone မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
+      AppLocales.notification.externalConfirm: 'ဝဘ်ဆိုက် ဖွင့်မည်',
 
       // Update
       AppLocales.update.title: 'အက်ပ်ကို အပ်ဒိတ်လုပ်မလား?',
