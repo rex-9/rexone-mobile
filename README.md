@@ -17,7 +17,7 @@ Built under the same creed as Rexone Core and Rexone Web: **clear in thought, ex
 
 **Typed · Modular · Localized · Observable · Push-ready · Analytics-enabled · API-driven · Fully Tested**
 
-[Explore the foundation](#feature-map) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Run it locally](#getting-started) · [Meet the architecture](#architecture) · [E2E Testing](#end-to-end-testing-flutter-driver) · [Connect the API](#configuration--environment-management)
+[Explore the client](#feature-map) · [Who it is for](#who-rexone-mobile-is-for) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Run it locally](#getting-started) · [Meet the architecture](#architecture) · [Connect the API](#configuration--environment-management)
 
 </div>
 
@@ -42,6 +42,29 @@ This is not a template of screens pretending to be an architecture. Feature modu
 - **Observability listeners** automatically capture uncaught Flutter and platform errors and ship structured diagnostic payloads to Rexone Core's client log store.
 
 The client is designed to **bend around the product**, never to make the product kneel before the foundation.
+
+## Who Rexone Mobile is for
+
+Rexone Mobile is built for Flutter teams, founder-engineers, and agencies creating Android and iOS products on Rexone Core that need native device integration without fragmenting the ecosystem's identity, commerce, notification, and API contracts.
+
+It is a particularly good fit when a mobile product needs several of these capabilities to work together:
+
+- Complete identity, confirmation, recovery, Google sign-in, and platform-isolated sessions.
+- Stripe checkout, subscriptions, purchases, and entitlement-aware experiences.
+- Push and in-app notifications with deep-link handling and conversion analytics.
+- Queued AI responses and real-time operation updates that survive navigation or app backgrounding.
+- Camera, gallery, microphone, permissions, app-version checks, and device-aware telemetry.
+- Shared localization, device-local date and time presentation, themes, and reusable interface primitives.
+
+Rexone Mobile is not a collection of disconnected Flutter screens or a replacement for product-specific UX. It is the reference Android and iOS client for Rexone Core, leaving each product free to define its own domain and experience.
+
+## What you get
+
+- **One cross-platform client architecture:** Android and iOS share typed models, feature modules, routing, localization, and lifecycle behavior.
+- **Native delivery foundations:** permissions, push notifications, deep links, version upgrades, media input, and device telemetry are already coordinated.
+- **Durable product flows:** authentication, commerce, AI, profile, and notification behavior follow the same Core contracts as Rexone Web.
+- **Centralized infrastructure:** API handling, socket reconnection, analytics, logging, storage, and device orchestration remain outside individual pages.
+- **A customizable design system:** reusable components and tokens support product-specific interfaces without discarding the application structure.
 
 ---
 
@@ -129,7 +152,7 @@ flowchart LR
 - **Escalating Attempt Protection**: Reactive password retry limits and cooldown counters driven dynamically by rexone-core.
 - **Email Confirmation**: 6-digit email OTP verification with countdown-guarded resend capabilities.
 - **Google Sign-In**: Native Google OAuth flow with Rexone Core challenge token support for first-time signups.
-- **Active Session Enforcement**: Sends `X-Platform: mobile` to ensure single-device active session rules enforced by the backend cache.
+- **Active Session Enforcement**: Sends `X-Platform: android` or `X-Platform: ios` so Core maintains an isolated active session for each native platform.
 - **Session Replacement Handling**: Detects active session invalidation and gracefully routes the user to sign-in with localized feedback.
 
 ### Profile
