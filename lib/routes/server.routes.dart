@@ -44,7 +44,7 @@ class ServerRoutes {
   static String get currentUser => api('/users/current');
 
   // Media
-  static String get uploadAsset => api('/media/upload');
+  static String get uploadAsset => api('/assets/upload');
 
   // Accesses
   static String get accesses => api('/accesses');
