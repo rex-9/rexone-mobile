@@ -26,6 +26,16 @@ class GuardRoutes extends GetMiddleware {
       AppRoutes.notifications,
     ];
 
+    const authFlowRoutes = [
+      AppRoutes.auth,
+      AppRoutes.signinPassword,
+      AppRoutes.signupPasswordCreate,
+      AppRoutes.signupPasswordConfirm,
+      AppRoutes.signupInfo,
+      AppRoutes.confirmEmail,
+      AppRoutes.forgotPassword,
+    ];
+
     // ===== STACK-TRACKED ROUTES =====
     // Their position in the navigation history is persisted and restored after login.
     // Transient routes like /checkout must NOT be added here.
@@ -43,8 +53,8 @@ class GuardRoutes extends GetMiddleware {
       return const RouteSettings(name: AppRoutes.auth);
     }
 
-    // If already logged in and landing on auth page — restore last tracked route
-    if (route == AppRoutes.auth && isLoggedIn) {
+    // If already logged in and landing on auth flow — restore last tracked route
+    if (route != null && authFlowRoutes.contains(route) && isLoggedIn) {
       final stack = storage.getRouteStack();
       if (stack.isNotEmpty) {
         return RouteSettings(name: stack.last);
