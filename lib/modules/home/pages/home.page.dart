@@ -135,9 +135,9 @@ class HomePage extends GetView<AuthController> {
                     SizedBox(height: Design.spacing.md),
                     AppButton(
                       type: EButtonType.secondary,
-                      text: AppLocales.audio.title.tr,
+                      text: AppLocales.media.playlistTitle.tr,
                       icon: Design.icons.playlist,
-                      onPressed: AppRoutes.toAudioPlaylist,
+                      onPressed: AppRoutes.toPlaylist,
                     ),
                     SizedBox(height: Design.spacing.lg),
                     AppButton(

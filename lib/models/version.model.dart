@@ -1,4 +1,5 @@
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class VersionModel {
   final String id;
@@ -32,9 +33,7 @@ class VersionModel {
       title: json[VersionKeys.title] as String?,
       description: json[VersionKeys.description] as String?,
       status: json[VersionKeys.status] as String?,
-      releasedAt: json[VersionKeys.releasedAt] != null
-          ? DateTime.tryParse(json[VersionKeys.releasedAt].toString())
-          : null,
+      releasedAt: AppDateTime.fromUtc(json[VersionKeys.releasedAt]),
       updateRequired: json[VersionKeys.updateRequired] == true,
       mustUpdate: json[VersionKeys.mustUpdate] == true,
       skipPremium: json[VersionKeys.skipPremium] == true,
@@ -50,7 +49,7 @@ class VersionModel {
       if (description != null) VersionKeys.description: description,
       if (status != null) VersionKeys.status: status,
       if (releasedAt != null)
-        VersionKeys.releasedAt: releasedAt!.toIso8601String(),
+        VersionKeys.releasedAt: AppDateTime.toUtcIso(releasedAt),
       VersionKeys.updateRequired: updateRequired,
       VersionKeys.mustUpdate: mustUpdate,
       VersionKeys.skipPremium: skipPremium,

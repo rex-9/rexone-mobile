@@ -21,6 +21,7 @@ import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
 import 'package:rexone_mobile/services/speech.service.dart';
 import 'package:rexone_mobile/services/version.service.dart';
+import 'package:rexone_mobile/modules/media/media.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
 /// In-memory storage service that replaces GetStorage box for unit tests.
@@ -846,13 +847,46 @@ class FakeVersionService extends VersionService {
 /// Fake Media Service.
 class FakeMediaService extends MediaService {
   ApiResponse<AssetUploadResponse>? uploadResponse;
+  PaginatedResponse<AssetModel>? assetsResponse;
+  final Map<String, ApiResponse<AssetPlaybackResponse>> playbackByAssetId = {};
+  String? lastPlaybackAssetId;
   String? lastUploadedFilePath;
   String? lastUploadedType;
   String? lastUploadedAssetableType;
   String? lastUploadedAssetableId;
+  String? lastAssetsType;
+  int? lastAssetsPage;
+  int? lastAssetsLimit;
 
   @override
   void onInit() {}
+
+  @override
+  Future<ApiResponse<AssetPlaybackResponse>> getAssetPlayback(
+    String assetId,
+  ) async {
+    lastPlaybackAssetId = assetId;
+    return playbackByAssetId[assetId] ??
+        ApiResponse.error(message: 'Playback unavailable', statusCode: 404);
+  }
+
+  @override
+  Future<PaginatedResponse<AssetModel>> getAssets({
+    String? type,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    lastAssetsType = type;
+    lastAssetsPage = page;
+    lastAssetsLimit = limit;
+    return assetsResponse ??
+        const PaginatedResponse<AssetModel>(
+          records: [],
+          message: 'OK',
+          statusCode: 200,
+          success: true,
+        );
+  }
 
   @override
   Future<ApiResponse<AssetUploadResponse>> uploadImage({
@@ -892,6 +926,82 @@ class FakeMediaService extends MediaService {
             ),
           ),
         );
+  }
+}
+
+/// Lightweight audio player double for controller unit tests.
+class FakeAudioPlayerService extends AudioPlayerService {
+  bool playResult = true;
+  int? lastPlayedIndex;
+  int? lastQueueIndex;
+
+  @override
+  void onInit() {}
+
+  @override
+  Future<void> setAssets(List<AssetModel> next) async {
+    assets.assignAll(next);
+  }
+
+  @override
+  Future<bool> playQueueAt(int index) async {
+    lastQueueIndex = index;
+    if (index < 0 || index >= queue.length) return false;
+    queueIndex.value = index;
+    final asset = queue[index];
+
+    if (asset.isAudioMedia) {
+      final audioIndex = assets.indexWhere((item) => item.id == asset.id);
+      if (audioIndex < 0) return false;
+      return play(audioIndex);
+    }
+
+    if (asset.isVideoMedia && Get.isRegistered<VideoPlayerService>()) {
+      final video = Get.find<VideoPlayerService>();
+      final videoIndex = video.assets.indexWhere((item) => item.id == asset.id);
+      if (videoIndex < 0) return false;
+      return video.play(videoIndex);
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> play([int? index]) async {
+    if (assets.isEmpty) return true;
+    lastPlayedIndex = (index ?? currentIndex.value).clamp(0, assets.length - 1);
+    hasSession.value = true;
+    currentIndex.value = lastPlayedIndex!;
+    return playResult;
+  }
+
+  @override
+  Future<bool> toggle() async => playResult;
+}
+
+/// Lightweight video player double for controller unit tests.
+class FakeVideoPlayerService extends VideoPlayerService {
+  bool playResult = true;
+  int? lastPlayedIndex;
+  bool toggleCalled = false;
+
+  @override
+  Future<void> setAssets(List<AssetModel> next) async {
+    assets.assignAll(next);
+  }
+
+  @override
+  Future<bool> play(int index) async {
+    if (assets.isEmpty) return true;
+    lastPlayedIndex = index.clamp(0, assets.length - 1);
+    hasSession.value = true;
+    currentIndex.value = lastPlayedIndex!;
+    return playResult;
+  }
+
+  @override
+  Future<void> toggle() async {
+    toggleCalled = true;
   }
 }
 

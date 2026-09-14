@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
+import 'package:rexone_mobile/modules/auth/controllers/auth.controller.dart';
+import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
 import '../services/notification.service.dart';
 
@@ -114,7 +116,25 @@ class NotificationController extends GetxController {
     try {
       await _service.markAsRead(item.id);
     } catch (e) {
-      debugPrint('⚠️ [NotificationController] Failed to mark as read on server: $e');
+      debugPrint(
+        '⚠️ [NotificationController] Failed to mark as read on server: $e',
+      );
+    }
+  }
+
+  /// Handles notification interactions that affect application state.
+  Future<void> handleNotificationTap(NotificationModel item) async {
+    await markAsRead(item);
+
+    if (item.isIamUpdated) {
+      if (Get.isRegistered<AuthController>()) {
+        await Get.find<AuthController>().getCurrentUser();
+      }
+      return;
+    }
+
+    if (item.link?.isNotEmpty ?? false) {
+      await AppRoutes.handleNotificationLink(item.link);
     }
   }
 
@@ -152,7 +172,9 @@ class NotificationController extends GetxController {
     try {
       await _service.deleteNotification(item.id);
     } catch (e) {
-      debugPrint('⚠️ [NotificationController] Failed to delete notification: $e');
+      debugPrint(
+        '⚠️ [NotificationController] Failed to delete notification: $e',
+      );
     }
   }
 

@@ -1,5 +1,7 @@
 // lib/modules/ai/data/models/ai.model.dart
+import 'package:flutter/cupertino.dart';
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class AiAssetModel {
   final String id;
@@ -60,7 +62,8 @@ class AiMessageModel {
   final String role; // EChatRole.name // "user" | "assistant"
   final String content;
   final String? roomId;
-  final String? status; // EAiMessageStatus.name //"queued" | "processing" | "completed" | "failed"
+  final String?
+  status; // EAiMessageStatus.name //"queued" | "processing" | "completed" | "failed"
   final String? ttsStatus;
   final List<AiAssetModel> assets;
   final String createdAt;
@@ -83,13 +86,12 @@ class AiMessageModel {
     final rawAssets = json[AiKeys.assets];
     final assets = rawAssets is List
         ? rawAssets
-            .whereType<Map>()
-            .map(
-              (item) => AiAssetModel.fromJson(
-                Map<String, dynamic>.from(item),
-              ),
-            )
-            .toList()
+              .whereType<Map>()
+              .map(
+                (item) =>
+                    AiAssetModel.fromJson(Map<String, dynamic>.from(item)),
+              )
+              .toList()
         : const <AiAssetModel>[];
 
     return AiMessageModel(
@@ -104,7 +106,7 @@ class AiMessageModel {
       assets: assets,
       createdAt:
           json[AiKeys.createdAt]?.toString() ??
-          DateTime.now().toIso8601String(),
+          AppDateTime.toUtcIso(DateTime.now())!,
     );
   }
 
@@ -124,7 +126,8 @@ class AiMessageModel {
 
   String? get audioUrl {
     for (final asset in assets) {
-      if (asset.type == AiKeys.audio && asset.url.isNotEmpty) {
+      debugPrint("type==>${asset.type}");
+      if (asset.type == AiKeys.tts && asset.url.isNotEmpty) {
         return asset.url;
       }
     }

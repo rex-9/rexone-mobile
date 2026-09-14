@@ -22,6 +22,7 @@ class AiKeys {
   static const url = 'url';
   static const type = 'type';
   static const audio = 'audio';
+  static const tts = 'tts';
   static const name = 'name';
   static const format = 'format';
   static const extension = 'extension';

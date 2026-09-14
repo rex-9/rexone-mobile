@@ -27,8 +27,5 @@ jobs:
           touch .env.dev .env.uat .env.prod
           flutter pub get
 
-      - name: Static Analysis & Syntax Check
-        run: flutter analyze
-
-      - name: Run unit & widget tests
-        run: flutter test test/
+      - name: Run Mobile CI
+        run: ./scripts/ci.sh

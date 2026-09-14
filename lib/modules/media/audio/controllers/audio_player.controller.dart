@@ -1,10 +1,30 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/design/design.dart';
 
-import '../audio.dart';
+import '../../media.dart';
 
 class AudioPlayerController extends GetxController {
   final AudioPlayerService player = Get.find<AudioPlayerService>();
+
+  Future<void> togglePlayback() async {
+    if (!await player.toggle()) {
+      AppSnackbar.error(AppLocales.audio.playbackFailed.tr);
+    }
+  }
+
+  Future<void> skipNext() async {
+    if (!await player.next()) {
+      AppSnackbar.error(AppLocales.audio.playbackFailed.tr);
+    }
+  }
+
+  Future<void> skipPrevious() async {
+    if (!await player.previous()) {
+      AppSnackbar.error(AppLocales.audio.playbackFailed.tr);
+    }
+  }
 
   @override
   void onInit() {

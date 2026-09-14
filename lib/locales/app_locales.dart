@@ -15,6 +15,8 @@ class AppLocales {
   static const notification = _NotificationLocales();
   static const update = _UpdateLocales();
   static const audio = _AudioLocales();
+  static const video = _VideoLocales();
+  static const media = _MediaLocales();
 }
 
 class _AuthLocales {
@@ -298,6 +300,15 @@ class _NotificationLocales {
   final failedToLoad = 'notification.failed_to_load';
 }
 
+class _MediaLocales {
+  const _MediaLocales();
+
+  final playlistTitle = 'media.playlist_title';
+  final playlistSubtitle = 'media.playlist_subtitle';
+  final playlistEmpty = 'media.playlist_empty';
+  final playAll = 'media.play_all';
+}
+
 class _AudioLocales {
   const _AudioLocales();
 
@@ -312,4 +323,33 @@ class _AudioLocales {
   final playbackFailed = 'audio.playback_failed';
   final close = 'audio.close';
   final empty = 'audio.empty';
+  final lyrics = 'audio.lyrics';
+  final lyricsLoading = 'audio.lyrics_loading';
+  final lyricsUnavailable = 'audio.lyrics_unavailable';
+  final lyricsLoadFailed = 'audio.lyrics_load_failed';
+  final lyricsTrack = 'audio.lyrics_track';
+}
+
+class _VideoLocales {
+  const _VideoLocales();
+
+  final title = 'video.title';
+  final playAll = 'video.play_all';
+  final nowPlaying = 'video.now_playing';
+  final play = 'video.play';
+  final pause = 'video.pause';
+  final next = 'video.next';
+  final previous = 'video.previous';
+  final playlistSubtitle = 'video.playlist_subtitle';
+  final playbackFailed = 'video.playback_failed';
+  final close = 'video.close';
+  final empty = 'video.empty';
+  final settings = 'video.settings';
+  final playbackSpeed = 'video.playback_speed';
+  final speedNormal = 'video.speed_normal';
+  final volume = 'video.volume';
+  final subtitles = 'video.subtitles';
+  final subtitlesOff = 'video.subtitles_off';
+  final subtitlesUnavailable = 'video.subtitles_unavailable';
+  final captions = 'video.captions';
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:rexone_mobile/routes/routes.dart';
 import '../controllers/notification.controller.dart';
 import '../data/models/notification.model.dart';
 
@@ -55,11 +54,7 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   void _handleNotificationTap(NotificationModel item) {
-    _controller.markAsRead(item);
-
-    if (item.link != null && item.link!.isNotEmpty) {
-      AppRoutes.handleNotificationLink(item.link);
-    }
+    _controller.handleNotificationTap(item);
   }
 
   @override
@@ -77,11 +72,15 @@ class _NotificationPageState extends State<NotificationPage> {
             type: EButtonType.icon,
             icon: Design.icons.checkAll,
             tooltip: AppLocales.notification.markAllAsRead.tr,
-            color: hasUnread ? colors.primary : colors.textSecondary.withValues(alpha: 0.5),
+            color: hasUnread
+                ? colors.primary
+                : colors.textSecondary.withValues(alpha: 0.5),
             onPressed: hasUnread
                 ? () {
                     _controller.markAllAsRead();
-                    AppSnackbar.success(AppLocales.notification.markAllAsRead.tr);
+                    AppSnackbar.success(
+                      AppLocales.notification.markAllAsRead.tr,
+                    );
                   }
                 : null,
           );
@@ -107,7 +106,8 @@ class _NotificationPageState extends State<NotificationPage> {
                   _buildFilterTab(
                     label: AppLocales.notification.all.tr,
                     filter: NotificationConstants.filterAll,
-                    isActive: _controller.currentFilter.value ==
+                    isActive:
+                        _controller.currentFilter.value ==
                         NotificationConstants.filterAll,
                   ),
                   SizedBox(width: Design.spacing.sm),
@@ -115,14 +115,16 @@ class _NotificationPageState extends State<NotificationPage> {
                     label: AppLocales.notification.unread.tr,
                     filter: NotificationConstants.filterUnread,
                     badgeCount: _controller.unreadCount.value,
-                    isActive: _controller.currentFilter.value ==
+                    isActive:
+                        _controller.currentFilter.value ==
                         NotificationConstants.filterUnread,
                   ),
                   SizedBox(width: Design.spacing.sm),
                   _buildFilterTab(
                     label: AppLocales.notification.read.tr,
                     filter: NotificationConstants.filterRead,
-                    isActive: _controller.currentFilter.value ==
+                    isActive:
+                        _controller.currentFilter.value ==
                         NotificationConstants.filterRead,
                   ),
                 ],
@@ -133,7 +135,8 @@ class _NotificationPageState extends State<NotificationPage> {
           // ── Notifications List ─────────────────────────────
           Expanded(
             child: Obx(() {
-              if (_controller.isLoading.value && _controller.notifications.isEmpty) {
+              if (_controller.isLoading.value &&
+                  _controller.notifications.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(color: colors.primary),
                 );
@@ -141,12 +144,15 @@ class _NotificationPageState extends State<NotificationPage> {
 
               if (_controller.notifications.isEmpty) {
                 return RefreshIndicator(
-                  onRefresh: () => _controller.fetchNotifications(refresh: true),
+                  onRefresh: () =>
+                      _controller.fetchNotifications(refresh: true),
                   color: colors.primary,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.2,
+                      ),
                       Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -154,7 +160,9 @@ class _NotificationPageState extends State<NotificationPage> {
                             Icon(
                               Design.icons.bell,
                               size: 64,
-                              color: colors.textSecondary.withValues(alpha: 0.3),
+                              color: colors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                             SizedBox(height: Design.spacing.md),
                             Text(
@@ -182,13 +190,17 @@ class _NotificationPageState extends State<NotificationPage> {
                     horizontal: Design.spacing.lg,
                     vertical: Design.spacing.md,
                   ),
-                  itemCount: _controller.notifications.length +
+                  itemCount:
+                      _controller.notifications.length +
                       (_controller.isLoadingMore.value ? 1 : 0),
-                  separatorBuilder: (_, _) => SizedBox(height: Design.spacing.sm),
+                  separatorBuilder: (_, _) =>
+                      SizedBox(height: Design.spacing.sm),
                   itemBuilder: (context, index) {
                     if (index == _controller.notifications.length) {
                       return Padding(
-                        padding: EdgeInsets.symmetric(vertical: Design.spacing.lg),
+                        padding: EdgeInsets.symmetric(
+                          vertical: Design.spacing.lg,
+                        ),
                         child: Center(
                           child: SizedBox(
                             width: 24,
@@ -258,7 +270,9 @@ class _NotificationPageState extends State<NotificationPage> {
                   ),
                   decoration: BoxDecoration(
                     color: colors.primary,
-                    borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+                    borderRadius: BorderRadius.circular(
+                      Design.spacing.radiusMedium,
+                    ),
                   ),
                   child: Text(
                     badgeCount > 99 ? '99+' : '$badgeCount',
@@ -312,7 +326,10 @@ class _NotificationPageState extends State<NotificationPage> {
           children: [
             // Unread Dot or Icon
             Container(
-              margin: EdgeInsets.only(top: Design.spacing.xs, right: Design.spacing.md),
+              margin: EdgeInsets.only(
+                top: Design.spacing.xs,
+                right: Design.spacing.md,
+              ),
               child: item.read
                   ? Icon(
                       Design.icons.bell,
@@ -342,7 +359,9 @@ class _NotificationPageState extends State<NotificationPage> {
                         child: Text(
                           item.title,
                           style: item.read
-                              ? typo.bodyLarge.copyWith(fontWeight: FontWeight.w500)
+                              ? typo.bodyLarge.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                )
                               : typo.bodyLarge.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: colors.primary,

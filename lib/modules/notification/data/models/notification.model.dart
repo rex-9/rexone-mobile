@@ -1,5 +1,6 @@
 // lib/modules/notification/data/models/notification.model.dart
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 /// Representation of an in-app user notification in the mobile client.
 class NotificationModel {
@@ -15,6 +16,8 @@ class NotificationModel {
   final DateTime? updatedAt;
 
   String? get templateId => notificationId;
+  bool get isIamUpdated =>
+      data[NotificationKeys.type] == NotificationConstants.iamUpdated;
 
   NotificationModel({
     required this.id,
@@ -36,15 +39,10 @@ class NotificationModel {
         ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
         : json;
 
-    final id = json[ApiKeys.id]?.toString() ??
+    final id =
+        json[ApiKeys.id]?.toString() ??
         attributes[ApiKeys.id]?.toString() ??
         '';
-
-    DateTime? parseDateTime(dynamic val) {
-      if (val == null) return null;
-      if (val is DateTime) return val;
-      return DateTime.tryParse(val.toString())?.toLocal();
-    }
 
     return NotificationModel(
       id: id,
@@ -55,12 +53,14 @@ class NotificationModel {
           ? Map<String, dynamic>.from(attributes[NotificationKeys.data] as Map)
           : const {},
       read: attributes[NotificationKeys.read] as bool? ?? false,
-      readAt: parseDateTime(attributes[NotificationKeys.readAt]),
-      notificationId: attributes[NotificationKeys.notificationId]?.toString() ??
+      readAt: AppDateTime.fromUtc(attributes[NotificationKeys.readAt]),
+      notificationId:
+          attributes[NotificationKeys.notificationId]?.toString() ??
           attributes[NotificationKeys.templateId]?.toString(),
-      createdAt: parseDateTime(attributes[NotificationKeys.createdAt]) ??
+      createdAt:
+          AppDateTime.fromUtc(attributes[NotificationKeys.createdAt]) ??
           DateTime.now(),
-      updatedAt: parseDateTime(attributes['updated_at']),
+      updatedAt: AppDateTime.fromUtc(attributes['updated_at']),
     );
   }
 
@@ -72,11 +72,11 @@ class NotificationModel {
       NotificationKeys.link: link,
       NotificationKeys.data: data,
       NotificationKeys.read: read,
-      NotificationKeys.readAt: readAt?.toIso8601String(),
+      NotificationKeys.readAt: AppDateTime.toUtcIso(readAt),
       NotificationKeys.notificationId: notificationId,
       NotificationKeys.templateId: notificationId,
-      NotificationKeys.createdAt: createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
+      NotificationKeys.createdAt: AppDateTime.toUtcIso(createdAt),
+      'updated_at': AppDateTime.toUtcIso(updatedAt),
     };
   }
 

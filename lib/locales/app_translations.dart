@@ -277,6 +277,12 @@ class AppTranslations extends Translations {
       AppLocales.update.update: 'UPDATE NOW',
       AppLocales.update.later: 'LATER',
 
+      // Media
+      AppLocales.media.playlistTitle: 'Playlist',
+      AppLocales.media.playlistSubtitle: 'Audio & video',
+      AppLocales.media.playlistEmpty: 'No media yet',
+      AppLocales.media.playAll: 'Play All',
+
       // Audio
       AppLocales.audio.title: 'Audio Playlist',
       AppLocales.audio.playAll: 'Play All',
@@ -289,6 +295,32 @@ class AppTranslations extends Translations {
       AppLocales.audio.playbackFailed: 'Could not play this track. Try again.',
       AppLocales.audio.close: 'Close',
       AppLocales.audio.empty: 'No audio tracks yet',
+      AppLocales.audio.lyrics: 'Lyrics',
+      AppLocales.audio.lyricsLoading: 'Loading lyrics…',
+      AppLocales.audio.lyricsUnavailable:
+          'Lyrics aren\'t available for this track',
+      AppLocales.audio.lyricsLoadFailed: 'Could not load lyrics. Try again.',
+      AppLocales.audio.lyricsTrack: 'Lyrics track',
+      AppLocales.video.title: 'Video Playlist',
+      AppLocales.video.playAll: 'Play All',
+      AppLocales.video.nowPlaying: 'Now Playing',
+      AppLocales.video.play: 'Play',
+      AppLocales.video.pause: 'Pause',
+      AppLocales.video.next: 'Next',
+      AppLocales.video.previous: 'Previous',
+      AppLocales.video.playlistSubtitle: 'Stream videos',
+      AppLocales.video.playbackFailed: 'Could not play this video. Try again.',
+      AppLocales.video.close: 'Close',
+      AppLocales.video.empty: 'No videos yet',
+      AppLocales.video.settings: 'Settings',
+      AppLocales.video.playbackSpeed: 'Playback speed',
+      AppLocales.video.speedNormal: 'Normal',
+      AppLocales.video.volume: 'Volume',
+      AppLocales.video.subtitles: 'Subtitles',
+      AppLocales.video.subtitlesOff: 'Off',
+      AppLocales.video.subtitlesUnavailable:
+          'No subtitle tracks are available for this video',
+      AppLocales.video.captions: 'Captions',
     },
     'my_MM': {
       // Common
@@ -533,6 +565,12 @@ class AppTranslations extends Translations {
       AppLocales.update.update: 'ယခု အပ်ဒိတ်',
       AppLocales.update.later: 'နောက်မှ',
 
+      // Media
+      AppLocales.media.playlistTitle: 'စာရင်း',
+      AppLocales.media.playlistSubtitle: 'အသံနှင့် ဗီဒီယို',
+      AppLocales.media.playlistEmpty: 'မီဒီယာ မရှိသေးပါ',
+      AppLocales.media.playAll: 'အားလုံးဖွင့်မည်',
+
       // Audio
       AppLocales.audio.title: 'အသံစာရင်း',
       AppLocales.audio.playAll: 'အားလုံးဖွင့်မည်',
@@ -546,6 +584,34 @@ class AppTranslations extends Translations {
           'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
       AppLocales.audio.close: 'ပိတ်မည်',
       AppLocales.audio.empty: 'အသံဖိုင်များ မရှိသေးပါ',
+      AppLocales.audio.lyrics: 'သီချင်းစာသား',
+      AppLocales.audio.lyricsLoading: 'သီချင်းစာသား ဖွင့်နေသည်…',
+      AppLocales.audio.lyricsUnavailable:
+          'ဤသီချင်းအတွက် သီချင်းစာသား မရှိပါ',
+      AppLocales.audio.lyricsLoadFailed:
+          'သီချင်းစာသား ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
+      AppLocales.audio.lyricsTrack: 'သီချင်းစာသား ခေါင်းစဉ်',
+      AppLocales.video.title: 'ဗီဒီယိုစာရင်း',
+      AppLocales.video.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.video.nowPlaying: 'ယခုဖွင့်နေသည်',
+      AppLocales.video.play: 'ဖွင့်မည်',
+      AppLocales.video.pause: 'ရပ်မည်',
+      AppLocales.video.next: 'ရှေ့သို့',
+      AppLocales.video.previous: 'နောက်သို့',
+      AppLocales.video.playlistSubtitle: 'ဗီဒီယိုများ',
+      AppLocales.video.playbackFailed:
+          'ဤဗီဒီယိုကို ဖွင့်၍မရပါ။ ထပ်စမ်းကြည့်ပါ။',
+      AppLocales.video.close: 'ပိတ်မည်',
+      AppLocales.video.empty: 'ဗီဒီယိုများ မရှိသေးပါ',
+      AppLocales.video.settings: 'ဆက်တင်များ',
+      AppLocales.video.playbackSpeed: 'ဖွင့်နှုန်း',
+      AppLocales.video.speedNormal: 'ပုံမှန်',
+      AppLocales.video.volume: 'အသံအတိုး',
+      AppLocales.video.subtitles: 'စာတန်းထိုး',
+      AppLocales.video.subtitlesOff: 'ပိတ်မည်',
+      AppLocales.video.subtitlesUnavailable:
+          'ဤဗီဒီယိုအတွက် စာတန်းထိုး မရှိပါ',
+      AppLocales.video.captions: 'စာတန်းထိုး',
     },
   };
 }

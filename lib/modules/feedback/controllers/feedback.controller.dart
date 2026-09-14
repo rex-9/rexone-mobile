@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import '../services/feedback.service.dart';
 
 class FeedbackController extends GetxController {
@@ -67,7 +68,7 @@ class FeedbackController extends GetxController {
         ...?appVersion != null ? {FeedbackKeys.appVersion: appVersion} : null,
         FeedbackKeys.metadata: {
           'current_route': Get.currentRoute,
-          'timestamp': DateTime.now().toIso8601String(),
+          'timestamp': AppDateTime.toUtcIso(DateTime.now()),
         },
       };
 

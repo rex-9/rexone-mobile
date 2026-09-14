@@ -21,18 +21,28 @@ class AssetKeys {
   static const bytes = 'bytes';
   static const createdAt = 'created_at';
   static const updatedAt = 'updated_at';
+  static const children = 'children';
   static const thumbnail = 'thumbnail';
+  static const subtitle = 'subtitle';
+  static const subtitles = 'subtitles';
   static const status = 'status';
   static const parentAssetId = 'parent_asset_id';
-
-  // ===== Asset type filters =====
-  static const typeAudio = 'audio';
   static const statusReady = 'ready';
-  static const statusOptimal = 'optimal';
-  static const statusProcessing = 'processing';
-  static const statusPending = 'pending';
 
-  static const playableStatuses = {statusReady, statusOptimal};
+  // ===== Playback response keys =====
+  static const assetId = 'asset_id';
+  static const delivery = 'delivery';
+  static const expiresAt = 'expires_at';
+  static const contentType = 'content_type';
+  static const media = 'media';
+
+  // ===== Asset type filters (legacy query param) =====
+  static const typeAudio = 'audio';
+  static const typeVideo = 'video';
+
+  // ===== Asset format values (attributes.format) =====
+  static const formatAudio = 'audio';
+  static const formatVideo = 'video';
 
   // ===== Upload constants (FormData values) =====
   static const typeAvatar = 'avatar';

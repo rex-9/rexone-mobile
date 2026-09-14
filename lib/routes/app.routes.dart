@@ -15,7 +15,7 @@ import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
 import '../modules/splash/splash.dart';
-import '../modules/audio/audio.dart';
+import '../modules/media/media.dart';
 
 class AppRoutes {
   // ===== SERVER ROUTES =====
@@ -39,8 +39,9 @@ class AppRoutes {
   static const String ai = '/ai';
   static const String profile = '/profile';
   static const String notifications = '/notifications';
-  static const String audioPlaylist = AudioRoutes.playlist;
-  static const String audioPlayer = AudioRoutes.player;
+  static const String mediaPlaylist = '/media-playlist';
+  static const String audioPlayer = '/audio-player';
+  static const String videoPlayer = '/video-player';
 
   // ===== PUBLIC NAVIGATION =====
   static void toSplash() => Get.offAllNamed(splash);
@@ -78,14 +79,16 @@ class AppRoutes {
   static void toAi() => Get.toNamed(ai);
   static void toProfile() => Get.toNamed(profile);
   static void toNotifications() => Get.toNamed(notifications);
-  static void toAudioPlaylist({String? type}) =>
-      Get.toNamed(audioPlaylist, arguments: type != null ? {'type': type} : null);
+  static void toPlaylist() => Get.toNamed(mediaPlaylist);
+
   static void toAudioPlayer() {
     if (Get.isRegistered<AudioPlayerService>()) {
       Get.find<AudioPlayerService>().isFullPlayerOpen.value = true;
     }
     Get.toNamed(audioPlayer);
   }
+
+  static void toVideoPlayer() => Get.toNamed(videoPlayer);
 
   /// Resolves and routes a notification or deep link.
   ///
@@ -288,10 +291,10 @@ class AppRoutes {
       middlewares: [GuardRoutes()],
     ),
     GetPage(
-      name: audioPlaylist,
-      page: () => const AudioPlaylistPage(),
+      name: mediaPlaylist,
+      page: () => const MediaPlaylistPage(),
       binding: BindingsBuilder(() {
-        Get.lazyPut<AudioPlaylistController>(() => AudioPlaylistController());
+        Get.lazyPut<MediaPlaylistController>(() => MediaPlaylistController());
       }),
       middlewares: [GuardRoutes()],
     ),
@@ -300,6 +303,14 @@ class AppRoutes {
       page: () => const AudioPlayerPage(),
       binding: BindingsBuilder(() {
         Get.lazyPut<AudioPlayerController>(() => AudioPlayerController());
+      }),
+      middlewares: [GuardRoutes()],
+    ),
+    GetPage(
+      name: videoPlayer,
+      page: () => const VideoPlayerPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<VideoPlayerController>(() => VideoPlayerController());
       }),
       middlewares: [GuardRoutes()],
     ),

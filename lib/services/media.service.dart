@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
@@ -8,14 +7,23 @@ import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/api.service.dart';
 
-/// Shared media client — upload and paginated asset listing.
+/// Shared media client — upload, paginated asset listing, and playback URLs.
 class MediaService extends GetxService {
   late final ApiService _api;
+  final Map<String, AssetPlaybackResponse> _playbackCache = {};
 
   @override
   void onInit() {
     super.onInit();
     _api = Get.find<ApiService>();
+  }
+
+  void clearPlaybackCache({String? assetId}) {
+    if (assetId == null) {
+      _playbackCache.clear();
+      return;
+    }
+    _playbackCache.remove(assetId);
   }
 
   /// Uploads a local file to `POST /v1/media/upload`.
@@ -76,8 +84,6 @@ class MediaService extends GetxService {
       showLoading: false,
     );
 
-    debugPrint("audio ==>${response.body.toString()}");
-
     return _api.parsePaginatedResponse(
       response,
       (item) => AssetModel.fromJson(
@@ -86,5 +92,42 @@ class MediaService extends GetxService {
             : Map<String, dynamic>.from(item as Map),
       ),
     );
+  }
+
+  /// Resolves a signed playback URL from `GET /v1/assets/:id/playback`.
+  /// Results are cached until [AssetPlaybackResponse.isNearExpiry].
+  Future<ApiResponse<AssetPlaybackResponse>> getAssetPlayback(
+    String assetId,
+  ) async {
+    if (assetId.isEmpty) {
+      return ApiResponse.error(message: 'Invalid asset id', statusCode: 400);
+    }
+
+    final cached = _playbackCache[assetId];
+    if (cached != null && !cached.isNearExpiry) {
+      return ApiResponse.success(
+        data: cached,
+        message: 'Playback ready',
+        statusCode: 200,
+      );
+    }
+
+    final response = await _api.get(
+      ServerRoutes.assetPlayback(assetId),
+      showLoading: false,
+    );
+
+    final parsed = _api.parseResponse<AssetPlaybackResponse>(
+      response,
+      (data) =>
+          ApiHelper.parseRecord(data, AssetPlaybackResponse.fromJson) ??
+          AssetPlaybackResponse.fromJson(const {}),
+    );
+
+    if (parsed.success && parsed.data != null) {
+      _playbackCache[assetId] = parsed.data!;
+    }
+
+    return parsed;
   }
 }

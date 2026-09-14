@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/routes/app.routes.dart';
 
-import '../audio.dart';
+import '../../media.dart';
 
 class MiniPlayer extends StatelessWidget {
   const MiniPlayer({super.key});
@@ -25,7 +26,7 @@ class MiniPlayer extends StatelessWidget {
         child: InkWell(
           onTap: () {
             player.isFullPlayerOpen.value = true;
-            Get.toNamed(AudioRoutes.player);
+            Get.toNamed(AppRoutes.audioPlayer);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -33,9 +34,9 @@ class MiniPlayer extends StatelessWidget {
                 top: BorderSide(color: context.colors.divider),
               ),
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: Design.spacing.lg,
-              vertical: Design.spacing.sm,
+            padding: Design.spacing.paddingSymmetric(
+              h: Design.spacing.lg,
+              v: Design.spacing.sm,
             ),
             child: Row(
               children: [
@@ -56,7 +57,7 @@ class MiniPlayer extends StatelessWidget {
                         style: context.typo.labelLarge,
                       ),
                       Text(
-                        asset.displaySubtitle,
+                        asset.displayDuration,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.typo.caption,
@@ -77,13 +78,23 @@ class MiniPlayer extends StatelessWidget {
                         tooltip: player.isPlaying.value
                             ? AppLocales.audio.pause.tr
                             : AppLocales.audio.play.tr,
-                        onPressed: player.toggle,
+                        onPressed: () async {
+                          if (!await player.toggle()) {
+                            AppSnackbar.error(
+                              AppLocales.audio.playbackFailed.tr,
+                            );
+                          }
+                        },
                       ),
                 AppButton(
                   type: EButtonType.icon,
                   icon: Design.icons.skipNext,
                   tooltip: AppLocales.audio.next.tr,
-                  onPressed: player.next,
+                  onPressed: () async {
+                    if (!await player.next()) {
+                      AppSnackbar.error(AppLocales.audio.playbackFailed.tr);
+                    }
+                  },
                 ),
                 AppButton(
                   type: EButtonType.icon,

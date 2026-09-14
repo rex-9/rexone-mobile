@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 
-import '../audio.dart';
+import '../../media.dart';
 
 class AudioPlayerPage extends GetView<AudioPlayerController> {
   const AudioPlayerPage({super.key});
@@ -14,9 +14,14 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
 
     return AppPage(
       showBackButton: false,
-      padding: EdgeInsets.zero,
+      padding: Design.spacing.zero,
       child: Obx(() {
         final asset = player.currentAsset;
+        final subtitleTracks = player.effectiveSubtitles;
+        final hasLyrics = player.hasEffectiveSubtitles;
+        final showLyrics = player.lyricsVisible.value && hasLyrics;
+        final showLyricsTrackPicker =
+            showLyrics && subtitleTracks.length > 1;
         final duration = player.duration.value;
         final position = player.position.value;
         final maxMs = duration.inMilliseconds <= 0
@@ -26,7 +31,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
 
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(Design.spacing.screenPadding),
+            padding: Design.spacing.padding(Design.spacing.screenPadding),
             child: Column(
               children: [
                 Row(
@@ -38,28 +43,58 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                       tooltip: AppLocales.common.goBack.tr,
                       onPressed: Get.back,
                     ),
-                    AppButton(
-                      type: EButtonType.icon,
-                      icon: Design.icons.close,
-                      tooltip: AppLocales.audio.close.tr,
-                      onPressed: player.dismiss,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (hasLyrics) ...[
+                          if (showLyricsTrackPicker)
+                            AppButton(
+                              type: EButtonType.icon,
+                              icon: Design.icons.playlist,
+                              tooltip: AppLocales.audio.lyricsTrack.tr,
+                              onPressed: () => AudioLyricsTrackSheet.show(
+                                context,
+                                player,
+                              ),
+                            ),
+                          AppButton(
+                            type: EButtonType.icon,
+                            icon: showLyrics
+                                ? Design.icons.lyricsActive
+                                : Design.icons.lyrics,
+                            tooltip: AppLocales.audio.lyrics.tr,
+                            color: showLyrics
+                                ? context.colors.primary
+                                : null,
+                            onPressed: player.toggleLyrics,
+                          ),
+                        ],
+                        AppButton(
+                          type: EButtonType.icon,
+                          icon: Design.icons.close,
+                          tooltip: AppLocales.audio.close.tr,
+                          onPressed: player.dismiss,
+                        ),
+                      ],
                     ),
                   ],
                 ),
                 SizedBox(height: Design.spacing.lg),
                 Expanded(
-                  child: Center(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final size = constraints.maxWidth;
-                        return TrackArtwork(
-                          url: asset?.displayThumbnailUrl ?? '',
-                          size: size,
-                          radius: Design.spacing.radiusLarge,
-                        );
-                      },
-                    ),
-                  ),
+                  child: showLyrics
+                      ? AudioLyricsView(player: player)
+                      : Center(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final size = constraints.maxWidth;
+                              return TrackArtwork(
+                                url: asset?.displayThumbnailUrl ?? '',
+                                size: size,
+                                radius: Design.spacing.radiusLarge,
+                              );
+                            },
+                          ),
+                        ),
                 ),
                 SizedBox(height: Design.spacing.xxl),
                 Text(
@@ -69,7 +104,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                 ),
                 SizedBox(height: Design.spacing.xs),
                 Text(
-                  asset?.displaySubtitle ?? '',
+                  asset?.displayDuration ?? '',
                   textAlign: TextAlign.center,
                   style: context.typo.bodyMedium,
                 ),
@@ -92,7 +127,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Design.spacing.sm),
+                  padding: Design.spacing.paddingSymmetric(h: Design.spacing.sm),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -109,7 +144,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                       type: EButtonType.icon,
                       icon: Design.icons.skipPrevious,
                       tooltip: AppLocales.audio.previous.tr,
-                      onPressed: player.previous,
+                      onPressed: controller.skipPrevious,
                     ),
                     player.isLoading.value
                         ? AppLoading(
@@ -125,13 +160,13 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                                 ? AppLocales.audio.pause.tr
                                 : AppLocales.audio.play.tr,
                             color: context.colors.primary,
-                            onPressed: player.toggle,
+                            onPressed: controller.togglePlayback,
                           ),
                     AppButton(
                       type: EButtonType.icon,
                       icon: Design.icons.skipNext,
                       tooltip: AppLocales.audio.next.tr,
-                      onPressed: player.next,
+                      onPressed: controller.skipNext,
                     ),
                   ],
                 ),

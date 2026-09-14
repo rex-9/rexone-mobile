@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 import '../payment.dart';
 
@@ -200,7 +201,7 @@ class PaymentPage extends GetView<PaymentController> {
     // 2. Active subscription -> Cancel button
     if (activeSub != null) {
       final periodEnd = activeSub.currentPeriodEnd != null
-          ? activeSub.currentPeriodEnd!.split('T').first
+          ? AppDateTime.formatLocalDate(activeSub.currentPeriodEnd)
           : 'end of period';
 
       return Column(
@@ -232,7 +233,7 @@ class PaymentPage extends GetView<PaymentController> {
     // 3. Canceled (pending end of cycle) -> Resume button
     if (canceledSub != null) {
       final periodEnd = canceledSub.currentPeriodEnd != null
-          ? canceledSub.currentPeriodEnd!.split('T').first
+          ? AppDateTime.formatLocalDate(canceledSub.currentPeriodEnd)
           : 'end of period';
 
       return Column(
@@ -240,9 +241,7 @@ class PaymentPage extends GetView<PaymentController> {
         children: [
           Text(
             'Access remains active until $periodEnd',
-            style: context.typo.caption.copyWith(
-              color: Design.colors.warning,
-            ),
+            style: context.typo.caption.copyWith(color: Design.colors.warning),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: Design.spacing.md),
@@ -326,7 +325,7 @@ class PaymentPage extends GetView<PaymentController> {
               Text(tx.productName ?? 'Payment', style: context.typo.bodyLarge),
               if (tx.createdAt != null)
                 Text(
-                  tx.createdAt!.split('T').first,
+                  AppDateTime.formatLocalDate(tx.createdAt),
                   style: context.typo.caption,
                 ),
             ],

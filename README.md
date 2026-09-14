@@ -70,6 +70,7 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 | **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs  | [In-app version upgrader](#in-app-version-upgrader)                  |
 | **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows            | [Payments & entitlements](#payments--entitlements)                   |
 | **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications        | [AI capabilities](#ai-capabilities)                                  |
+| **Media Playback**     | Paginated audio/video playlists, background audio, synced lyrics, and inline video CC    | [Media playback](#media-playback)                                    |
 | **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching       | [Real-time delivery](#real-time-delivery)                            |
 | **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core     | [Client observability & telemetry](#client-observability--telemetry) |
 | **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes     | [Design system](#design-system)                                      |
@@ -187,6 +188,15 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 - Real-time WebSocket connection to Rexone Core via Action Cable (`SolidCable`).
 - Auto-reconnect and token refresh on authentication.
 - Centralized `SocketController` dispatches notifications and manages global toast feedback.
+
+### Media playback
+
+- Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
+- **Playlist**: Single `GET /v1/assets` fetch (no type filter); audio vs video lists are filtered client-side by `attributes.format` (`audio` / `video`).
+- **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from `attributes.children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
+- **Video**: Inline 16:9 player via `media_kit`, YouTube-style settings sheet (speed/volume), and closed captions from the same `children.subtitles[]` list with per-track selection in the subtitle sheet.
+- **Shared helpers**: `SrtHelper` (parse + active cue), `VideoLayoutHelper` (inline viewport sizing), `MediaLayoutConstants`, and `MediaPlaybackConstants`.
+- Services return `Future<bool>` for playback failures; controllers and pages surface errors via `AppSnackbar` (LAW §3.3 — services never show UI).
 
 ### Client observability & telemetry
 
@@ -442,7 +452,13 @@ rexone_mobile/
 │   │   ├── payment/          # Plans, Stripe Checkout WebView, subscriptions
 │   │   ├── profile/          # Account profile, avatar upload
 │   │   ├── setting/          # Theme, language, and account row
-│   │   └── ai/               # Assistant chat, rooms, history
+│   │   ├── ai/               # Assistant chat, rooms, history
+│   │   └── media/            # Audio & video playback (shared + audio/ + video/)
+│   │       ├── components/   # TrackArtwork, playlist tile/header/empty/load-more
+│   │       ├── controllers/  # MediaPlaylistController (format-filtered playlist)
+│   │       ├── pages/        # MediaPlaylistPage
+│   │       ├── audio/        # Full player, mini player, synced lyrics
+│   │       └── video/        # Inline player, settings & subtitle sheets
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
@@ -457,7 +473,7 @@ rexone_mobile/
 ├── test/                      # Unit, controller, and localization tests (88 tests)
 │   ├── controllers/           # Socket controller tests
 │   ├── mocks/                 # In-memory test service doubles
-│   ├── modules/               # Auth, Notification, Feedback, Setting, Payment, AI controller tests
+│   ├── modules/               # Auth, Notification, Feedback, Setting, Payment, AI, Media tests
 │   └── services/              # Speech and core service tests
 ├── test_driver/
 │   └── integration_test.dart  # Flutter Driver test bridge

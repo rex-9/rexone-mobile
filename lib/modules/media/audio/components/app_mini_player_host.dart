@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 
-import '../audio.dart';
+import '../../media.dart';
 
 class AppMiniPlayerHost extends StatelessWidget {
   const AppMiniPlayerHost({super.key, required this.child});

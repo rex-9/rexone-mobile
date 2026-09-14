@@ -9,11 +9,7 @@ class NotificationConstants {
   static const String filterUnread = 'unread';
   static const String filterRead = 'read';
 
-  static const List<String> allFilters = [
-    filterAll,
-    filterUnread,
-    filterRead,
-  ];
+  static const List<String> allFilters = [filterAll, filterUnread, filterRead];
 
   // Real-time socket message types
   static const String paymentSuccess = 'payment_success';
@@ -28,4 +24,5 @@ class NotificationConstants {
   static const String assetCompressionFailed = 'asset_compression_failed';
   static const String assetCompressing = 'asset_compressing';
   static const String signInAlert = 'sign_in_alert';
+  static const String iamUpdated = 'iam_updated';
 }

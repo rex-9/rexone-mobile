@@ -6,7 +6,7 @@ import '../modules/payment/payment.dart';
 import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
-import '../modules/audio/audio.dart';
+import '../modules/media/media.dart';
 import '../services/services.dart';
 import '../controllers/controllers.dart';
 
@@ -50,6 +50,9 @@ class InitialBinding extends Bindings {
 
     // Playlist / background-capable audio (depends on SpeechService to pause TTS)
     Get.put(AudioPlayerService(), permanent: true);
+
+    // Video streaming (media_kit)
+    Get.put(VideoPlayerService(), permanent: true);
 
     // Payment Service (depends on ApiService)
     Get.put(PaymentService(), permanent: true);
