@@ -18,74 +18,79 @@ class ConfirmEmailPage extends GetView<AuthController> {
 
     return AppPage(
       title: AppLocales.auth.confirmEmail.title.tr,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocales.auth.confirmEmail.heading.tr,
-            style: context.typo.headline3,
-          ),
-          SizedBox(height: Design.spacing.sm),
-          Obx(
-            () => Text(
-              AppLocales.auth.confirmEmail.subtitle.trParams({
-                'email': controller.email.value,
-              }),
-              style: context.typo.bodyMedium,
-            ),
-          ),
-          SizedBox(height: Design.spacing.xxxl),
-
-          AppPasswordField(
-            pinController: controller.confirmPin,
-            obscureText: false,
-            onCompleted: (pin) {
-              controller.confirmOTPCode(pin);
-            },
-          ),
-
-          SizedBox(height: Design.spacing.xxxl),
-          AppButton(
-            text: AppLocales.auth.confirmEmail.confirmCodeButton.tr,
-            onPressed: () {
-              if (controller.confirmPin.text.length != 6) {
-                controller.confirmPin.triggerError();
-                AppSnackbar.error(AppLocales.auth.confirmEmail.enter6DigitCode.tr);
-                return;
-              }
-              controller.confirmOTPCode(controller.confirmPin.text);
-            },
-          ),
-
-          SizedBox(height: Design.spacing.lg),
-          Center(
-            child: Obx(
-              () => AppButton(
-                type: EButtonType.text,
-                onPressed: controller.resendSecondsLeft.value > 0
-                    ? null
-                    : () => controller.sendConfirmationOTPCode(),
-                text: controller.resendSecondsLeft.value > 0
-                    ? AppLocales.auth.confirmEmail.resendCodeIn.trParams({
-                        'seconds': '${controller.resendSecondsLeft.value}',
-                      })
-                    : AppLocales.auth.confirmEmail.resendCode.tr,
+      child: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                AppLocales.auth.confirmEmail.heading.tr,
+                style: context.typo.headline1,
+                textAlign: TextAlign.center,
               ),
-            ),
-          ),
+              SizedBox(height: Design.spacing.sm),
+              Obx(
+                () => Text(
+                  AppLocales.auth.confirmEmail.subtitle.trParams({
+                    'email': controller.email.value,
+                  }),
+                  style: context.typo.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: Design.spacing.xxxl),
 
-          SizedBox(height: Design.spacing.lg),
-          AppButton(
-            type: EButtonType.text,
-            onPressed: () {
-              // Clear everything and go back to auth page
-              controller.email.value = '';
-              controller.confirmPin.clear();
-              Get.offAllNamed(AppRoutes.auth);
-            },
-            text: AppLocales.auth.shared.useDifferentEmail.tr,
+              AppPasswordField(
+                pinController: controller.confirmPin,
+                obscureText: false,
+                onCompleted: controller.confirmOTPCode,
+              ),
+
+              SizedBox(height: Design.spacing.xxxl),
+              AppButton(
+                text: AppLocales.auth.confirmEmail.confirmCodeButton.tr,
+                onPressed: () {
+                  if (controller.confirmPin.text.length != 6) {
+                    controller.confirmPin.triggerError();
+                    AppSnackbar.error(
+                      AppLocales.auth.confirmEmail.enter6DigitCode.tr,
+                    );
+                    return;
+                  }
+                  controller.confirmOTPCode(controller.confirmPin.text);
+                },
+              ),
+
+              SizedBox(height: Design.spacing.lg),
+              Obx(
+                () => AppButton(
+                  type: EButtonType.text,
+                  onPressed: controller.resendSecondsLeft.value > 0
+                      ? null
+                      : controller.sendConfirmationOTPCode,
+                  text: controller.resendSecondsLeft.value > 0
+                      ? AppLocales.auth.confirmEmail.resendCodeIn.trParams({
+                          'seconds': '${controller.resendSecondsLeft.value}',
+                        })
+                      : AppLocales.auth.confirmEmail.resendCode.tr,
+                ),
+              ),
+
+              SizedBox(height: Design.spacing.lg),
+              AppButton(
+                type: EButtonType.text,
+                onPressed: () {
+                  controller.email.value = '';
+                  controller.confirmPin.clear();
+                  Get.offAllNamed(AppRoutes.auth);
+                },
+                text: AppLocales.auth.shared.useDifferentEmail.tr,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -8,6 +8,7 @@ class NotificationModel {
   final String title;
   final String message;
   final String? link;
+  final List<String> clients;
   final Map<String, dynamic> data;
   final bool read;
   final DateTime? readAt;
@@ -24,6 +25,10 @@ class NotificationModel {
     required this.title,
     required this.message,
     this.link,
+    this.clients = const [
+      AppConstants.platformWeb,
+      AppConstants.platformMobile,
+    ],
     this.data = const {},
     this.read = false,
     this.readAt,
@@ -49,6 +54,9 @@ class NotificationModel {
       title: attributes[NotificationKeys.title]?.toString() ?? '',
       message: attributes[NotificationKeys.message]?.toString() ?? '',
       link: attributes[NotificationKeys.link]?.toString(),
+      clients: attributes[NotificationKeys.clients] is List
+          ? List<String>.from(attributes[NotificationKeys.clients] as List)
+          : const [AppConstants.platformWeb, AppConstants.platformMobile],
       data: attributes[NotificationKeys.data] is Map
           ? Map<String, dynamic>.from(attributes[NotificationKeys.data] as Map)
           : const {},
@@ -70,6 +78,7 @@ class NotificationModel {
       NotificationKeys.title: title,
       NotificationKeys.message: message,
       NotificationKeys.link: link,
+      NotificationKeys.clients: clients,
       NotificationKeys.data: data,
       NotificationKeys.read: read,
       NotificationKeys.readAt: AppDateTime.toUtcIso(readAt),
@@ -85,6 +94,7 @@ class NotificationModel {
     String? title,
     String? message,
     String? link,
+    List<String>? clients,
     Map<String, dynamic>? data,
     bool? read,
     DateTime? readAt,
@@ -98,6 +108,7 @@ class NotificationModel {
       title: title ?? this.title,
       message: message ?? this.message,
       link: link ?? this.link,
+      clients: clients ?? this.clients,
       data: data ?? this.data,
       read: read ?? this.read,
       readAt: readAt ?? this.readAt,

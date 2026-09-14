@@ -17,7 +17,7 @@ Built under the same creed as Rexone Core and Rexone Web: **clear in thought, ex
 
 **Typed · Modular · Localized · Observable · Push-ready · Analytics-enabled · API-driven · Fully Tested**
 
-[Explore the foundation](#feature-map) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Run it locally](#getting-started) · [Meet the architecture](#architecture) · [E2E Testing](#end-to-end-testing-flutter-driver) · [Connect the API](#configuration--environment-management)
+[Explore the client](#feature-map) · [Who it is for](#who-rexone-mobile-is-for) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Run it locally](#getting-started) · [Meet the architecture](#architecture) · [Connect the API](#configuration--environment-management)
 
 </div>
 
@@ -43,6 +43,29 @@ This is not a template of screens pretending to be an architecture. Feature modu
 
 The client is designed to **bend around the product**, never to make the product kneel before the foundation.
 
+## Who Rexone Mobile is for
+
+Rexone Mobile is built for Flutter teams, founder-engineers, and agencies creating Android and iOS products on Rexone Core that need native device integration without fragmenting the ecosystem's identity, commerce, notification, and API contracts.
+
+It is a particularly good fit when a mobile product needs several of these capabilities to work together:
+
+- Complete identity, confirmation, recovery, Google sign-in, and platform-isolated sessions.
+- Stripe checkout, subscriptions, purchases, and entitlement-aware experiences.
+- Push and in-app notifications with deep-link handling and conversion analytics.
+- Queued AI responses and real-time operation updates that survive navigation or app backgrounding.
+- Camera, gallery, microphone, permissions, app-version checks, and device-aware telemetry.
+- Shared localization, device-local date and time presentation, themes, and reusable interface primitives.
+
+Rexone Mobile is not a collection of disconnected Flutter screens or a replacement for product-specific UX. It is the reference Android and iOS client for Rexone Core, leaving each product free to define its own domain and experience.
+
+## What you get
+
+- **One cross-platform client architecture:** Android and iOS share typed models, feature modules, routing, localization, and lifecycle behavior.
+- **Native delivery foundations:** permissions, push notifications, deep links, version upgrades, media input, and device telemetry are already coordinated.
+- **Durable product flows:** authentication, commerce, AI, profile, and notification behavior follow the same Core contracts as Rexone Web.
+- **Centralized infrastructure:** API handling, socket reconnection, analytics, logging, storage, and device orchestration remain outside individual pages.
+- **A customizable design system:** reusable components and tokens support product-specific interfaces without discarding the application structure.
+
 ---
 
 ## The philosophy
@@ -61,22 +84,21 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 
 ## Feature map
 
-| Foundation             | What is ready                                                                            | Details                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions       | [Authentication & security](#authentication--security)               |
-| **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)       | [Profile](#profile)                                                  |
-| **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing     | [Push notifications](#push-notifications)                            |
-| **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                 | [Product analytics](#product-analytics)                              |
-| **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs  | [In-app version upgrader](#in-app-version-upgrader)                  |
-| **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows            | [Payments & entitlements](#payments--entitlements)                   |
-| **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications        | [AI capabilities](#ai-capabilities)                                  |
-| **Media Playback**     | Paginated audio/video playlists, background audio, synced lyrics, and inline video CC    | [Media playback](#media-playback)                                    |
-| **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching       | [Real-time delivery](#real-time-delivery)                            |
-| **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core     | [Client observability & telemetry](#client-observability--telemetry) |
-| **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes     | [Design system](#design-system)                                      |
-| **Localization**       | English, Spanish, and Burmese with dynamic runtime switching and `X-Locale` backend sync | [Localization](#localization)                                        |
-| **Testing (E2E)**      | Real on-device automated user journey specs via Flutter Integration Test Driver          | [End-to-End Testing](#end-to-end-testing-flutter-driver)             |
-| **Quality**            | Strongly typed Dart models, analyzer compliance, and automated test suite                | [Quality & testing](#quality--testing)                               |
+| Foundation             | What is ready                                                                           | Details                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions      | [Authentication & security](#authentication--security)               |
+| **Profile**            | Settings account row opens Profile; camera/gallery photo pick (local preview only)      | [Profile](#profile)                                                  |
+| **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing    | [Push notifications](#push-notifications)                            |
+| **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                | [Product analytics](#product-analytics)                              |
+| **In-App Upgrades**    | Splash checks `/v1/client/versions/current` and shows force or skippable update dialogs | [In-app version upgrader](#in-app-version-upgrader)                  |
+| **Commerce**           | Products, Stripe Checkout WebView, subscriptions, and cancel/resume workflows           | [Payments & entitlements](#payments--entitlements)                   |
+| **AI Assistant**       | Non-blocking queued chat, persistent room history, and Action Cable notifications       | [AI capabilities](#ai-capabilities)                                  |
+| **Real Time**          | Action Cable WebSocket client, subscription channels, and global toast dispatching      | [Real-time delivery](#real-time-delivery)                            |
+| **Observability**      | Flutter and platform error capture with automated client log delivery to Rexone Core    | [Client observability & telemetry](#client-observability--telemetry) |
+| **Design System**      | Centralized design tokens, theme extensions, custom components, and light/dark modes    | [Design system](#design-system)                                      |
+| **Localization**       | English and Burmese with dynamic runtime switching and `X-Locale` backend sync          | [Localization](#localization)                                        |
+| **Testing (E2E)**      | Real on-device automated user journey specs via Flutter Integration Test Driver         | [End-to-End Testing](#end-to-end-testing-flutter-driver)             |
+| **Quality**            | Strongly typed Dart models, analyzer compliance, and automated test suite               | [Quality & testing](#quality--testing)                               |
 
 ---
 
@@ -130,7 +152,7 @@ flowchart LR
 - **Escalating Attempt Protection**: Reactive password retry limits and cooldown counters driven dynamically by rexone-core.
 - **Email Confirmation**: 6-digit email OTP verification with countdown-guarded resend capabilities.
 - **Google Sign-In**: Native Google OAuth flow with Rexone Core challenge token support for first-time signups.
-- **Active Session Enforcement**: Sends `X-Platform: mobile` to ensure single-device active session rules enforced by the backend cache.
+- **Active Session Enforcement**: Sends `X-Platform: android` or `X-Platform: ios` so Core maintains an isolated active session for each native platform.
 - **Session Replacement Handling**: Detects active session invalidation and gracefully routes the user to sign-in with localized feedback.
 
 ### Profile
@@ -159,9 +181,11 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Product analytics
 
 - Powered by **Firebase Analytics** (`firebase_core` & `firebase_analytics`).
-- Automatic screen tracking via `FirebaseAnalyticsObserver` registered in `GetMaterialApp.navigatorObservers`.
-- Pre-defined event tracking for sign-up, sign-in, sign-out, password resets, onboarding, and error captures via `Constants.analytics`.
+- Central navigation tracking emits the shared `view_page` event from `GetMaterialApp.navigatorObservers`.
+- Constantized `action_noun` events cover `sign_up`, `sign_in`, `sign_out`, `begin_onboarding`, `complete_onboarding`, `view_page`, `view_product`, `purchase_product`, and `open_notification`.
+- Every event includes `platform: android` or `platform: ios` so the shared GA4 property can filter Web and Mobile consistently.
 - User ID tagging synchronized with authenticated sessions.
+- Email addresses and other personal data are never sent to Firebase Analytics.
 
 ### In-app version upgrader
 
@@ -216,7 +240,6 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 
 - Fully localized into:
   - 🇬🇧 **English (`en_US`)**
-  - 🇪🇸 **Spanish (`es_ES`)**
   - 🇲🇲 **Burmese (`my_MM`)**
 - Complete parity across all user-facing texts with dynamic runtime GetX translation reload.
 - Automatically sends `X-Locale` and `Accept-Language` headers on all HTTP requests to ensure backend responses match the user's selected language.
@@ -337,6 +360,12 @@ cd rexone-mobile
 flutter pub get
 ```
 
+Run the same centralized checks used by GitHub Actions:
+
+```sh
+./scripts/ci.sh
+```
+
 3. Configure environment variables:
    Create `.env.dev`, `.env.uat`, or `.env.prod` in the project root:
 
@@ -390,11 +419,19 @@ Run static analysis:
 flutter analyze lib/ test/ integration_test/
 ```
 
+Validate locale parity, interpolation placeholders, and `AppLocales` usage:
+
+```sh
+./scripts/check_locales.sh
+```
+
 Run unit and widget tests:
 
 ```sh
 flutter test test/
 ```
+
+GitHub Actions restores Flutter and Pub packages from cache before running the same centralized `scripts/ci.sh` checks.
 
 Run on-device integration tests:
 
@@ -443,7 +480,7 @@ rexone_mobile/
 │   │   ├── elements/         # Design tokens (Colors, Spacing, Typography, Icons, Timers)
 │   │   └── extensions/       # Theme context extensions
 │   ├── helpers/              # Utility helpers (API JSON:API parser, flags, validators)
-│   ├── locales/              # Multi-language translations (en_US, es_ES, my_MM)
+│   ├── locales/              # Multi-language translations (en_US, my_MM)
 │   ├── models/               # Strongly typed models and JSON:API response envelopes
 │   ├── modules/              # Feature modules (pages + controllers + feature services)
 │   │   ├── splash/           # Launch / session restore

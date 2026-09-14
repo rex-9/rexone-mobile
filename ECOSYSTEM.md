@@ -46,7 +46,7 @@ flowchart TB
         DeepSeek["DeepSeek AI API"]
         Speech["Azure & Nova Speech (TTS / STT)"]
         OneSignal["OneSignal (Push & Email)"]
-        Firebase["Firebase Analytics (Mobile Telemetry)"]
+        Firebase["Firebase Analytics (Web & Mobile Telemetry)"]
     end
 
     Web -->|HTTPS| API
@@ -68,6 +68,7 @@ flowchart TB
     Services --> Speech
     Services --> OneSignal
     Services --> Garage
+    Web -.-> Firebase
     Mobile -.-> Firebase
     Mobile -.-> OneSignal
 ```
@@ -95,7 +96,7 @@ All tables use **UUID** primary keys (`gen_random_uuid()`), utilize **Discard** 
 | -------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Identity & Users** | `User`                                                                                       | Devise authentication, JWT JTI revocation strategy, 6-digit confirmation codes, 6-digit password reset codes, Google account linking, Stripe customer generation, profile pictures via Assets.                                                                                                         |
 | **IAM (RBAC)**       | `Iam::Role`, `Iam::Permission`, `Iam::UserRole`, `Iam::RolePermission`                       | Granular resource-action permissions (`user.can?(action, resource)`). System roles (`super_admin`, `admin`, default `user`). Auto-assigned default role on signup.                                                                                                                                     |
-| **Commerce**         | `Payment::Product`, `Payment::Subscription`, `Payment::Transaction`, `Payment::WebhookEvent` | Stripe synced products & prices, subscription lifecycle (`cancel_at_period_end`, resumption, periods), transactions with payment method details, durable webhook event queue with deduplication and retry state.                                                                                       |
+| **Commerce**         | `Payment::Product`, `Payment::Subscription`, `Payment::Transaction`, `Payment::WebhookEvent` | Stripe synced products and prices; Stripe-version-aligned subscription item snapshots (`unit_amount`, currency, quantity, interval, and billing periods); cancellation/resumption; transactions with payment method details; and durable webhook processing.                                              |
 | **Entitlements**     | `Access`                                                                                     | Granted/revoked/expired access records tied to `User` and `Product`.                                                                                                                                                                                                                                   |
 | **AI / Chat**        | `Chat::Room`, `Chat::Message`                                                                | Conversational rooms, messages with roles (`user`, `assistant`), `ai_status` (`queued`, `processing`, `completed`, `failed`), system prompts, temperature, max tokens, metadata.                                                                                                                       |
 | **Media**            | `Asset`                                                                                      | Unified media metadata (`storage_key` for Garage/S3/Cloudinary/Local, format, size_bytes, original_size_bytes, compressed_size_bytes, compression_ratio, compression_passes, status enum: `pending`/`processing`/`ready`/`optimal`, duration_secs, type, polymorphic `assetable_type`/`assetable_id`). Nested child assets under **`attributes.children`**: **`thumbnail`** (poster image) and **`subtitles[]`** (SRT caption tracks — mobile video CC and audio synced lyrics with per-track picker). |
@@ -108,7 +109,7 @@ All tables use **UUID** primary keys (`gen_random_uuid()`), utilize **Discard** 
 Heavy or external provider operations sit behind clean service interfaces and execute in dedicated background queues (`config/queue.yml` & `config/queue.media.yml`):
 
 - **AI & Speech Queue (`ai`)**: `Ai::ProcessChatJob` communicates with DeepSeek (`AiService::Client`) for chat completion. `Speech::ProcessTtsJob` communicates with Azure/Nova (`SpeechService::Client`) to synthesize audio for chat messages, saves MP3 assets via `StorageService::Client`, and alerts the user over WebSocket (`NotificationChannel`).
-- **Media Compression Queue (`media`)**: Dedicated `media` worker process running `Media::CompressImageJob` (libvips) and `Media::CompressVideoJob` (FFmpeg). Uses an **optimal-first pipeline**: if reduction is negligible (`< 3%`) or size doesn't decrease on initial upload, the asset is immediately marked as `optimal` without touching cache. If meaningful reduction is achieved, cache counter tracks passes with a fallback safety cap of 2 passes (`MAX_COMPRESSION_PASSES = 2`). Broadcasts real-time updates over ActionCable (`NotificationChannel`). Supports uploads up to 10 MB for images/non-videos and 100 MB for videos.
+- **Media Compression Queue (`media`)**: Dedicated `media` worker process running Core’s `Media::CompressMediaJob` for image, audio, and video compression, plus separate conversion/thumbnail jobs where needed. Uses an **optimal-first pipeline**: if reduction is negligible (`< 3%`) or size doesn't decrease on initial upload, the asset is immediately marked as `optimal` without touching cache. If meaningful reduction is achieved, cache counter tracks passes with the configured pass cap. Broadcasts real-time updates over ActionCable (`NotificationChannel`). Upload limits are configured by Core per format.
 - **Payments Queue (`payments`)**: `Payment::ProcessWebhookJob` asynchronously fulfills Stripe webhooks (checkout completed, invoice paid, subscription updated/deleted) with idempotency.
 - **Notifications Queue (`notifications`)**: `NotificationService` fans out work via `Notification::DispatchJob` to `Notification::DeliverJob` for Action Cable broadcasts (persisting `UserNotification` in-app receipts), push notifications, and transactional/broadcast emails.
 - **Storage Queue (`storage`)**: `Storage::DeleteJob` handles remote deletion asynchronously after DB commits.
@@ -223,7 +224,8 @@ Rexone Mobile has a strictly governed design system accessible via `lib/design/d
 - **Auth Flow**: Complete parity with Web & Core (email check, 6-digit password, OTP verification, Google OAuth challenge, session replacement). Zero hardcoded string literals.
 - **Profile**: Own Flutter module (`lib/modules/profile/`). Settings account row opens a Profile screen (name, username, disabled email). Save PUTs name/username and uploads a picked avatar.
 - **Push Notifications**: Powered by OneSignal (`PushNotiService`). Automatically syncs user IDs and tags on login/session restore and clears state on logout.
-- **Product Analytics**: Powered by Firebase Analytics (`AnalyticsService`). Integrates navigation observers for screen tracking and records authentication and application lifecycle events.
+- **Product Analytics**: Web and Mobile use separate Firebase streams in one GA4 property. Both emit the constantized `action_noun` contract `sign_up`, `sign_in`, `sign_out`, `begin_onboarding`, `complete_onboarding`, `view_page`, `view_product`, `purchase_product`, and `open_notification`, distinguished by `platform` (`web`, `android`, or `ios`). Core remains the source of authoritative business metrics and does not ingest raw behavioral events.
+- **Purchase & Notification Identity**: `purchase_product` uses `purchase_id` (a Core transaction ID for one-time payments or Core subscription ID for subscription creation) and integer-minor-unit `unit_amount`. `open_notification.notification_id` is always the persisted Core `UserNotification` ID; every push is also persisted and delivered in-app.
 - **In-App Upgrader**: Splash calls `GET /v1/client/versions/current` and shows `AppDialog.update` when Core sets `update_required` (force when `must_update`).
 - **Stripe & Billing**: In-app Stripe Checkout WebView (`CheckoutPage`), subscription state cards, billing history, and confirmation-guarded cancellation/resumption.
 - **AI Assistant**: Persistent multi-room chat, background processing indicator, real-time completion toasts via WebSocket, and chat history management.
@@ -267,7 +269,7 @@ All three pillars of the Rexone platform are fully aligned at **100% feature par
 | **Media: Multi-Select Batch Actions & Empty Recycle Bin**                        |      ✅       |          ✅          |           N/A            |
 | **Media: Audio/Video Playlist Playback & Subtitle (SRT) Child Assets**           |      ✅       |         N/A          |            ✅            |
 | **Push Notifications (OneSignal)**                                               |      ✅       |         N/A          |            ✅            |
-| **Product Analytics (Firebase)**                                                 |      N/A      |         N/A          |            ✅            |
+| **Product Analytics (Firebase)**                                                 |   Constants   |          ✅          |            ✅            |
 | **Client Admin Panel: User, IAM, Product, Chat, Asset, Notification Management** |      ✅       |          ✅          |           N/A            |
 | **In-App Version Upgrader**                                                      |      N/A      |         N/A          |            ✅            |
 | **Automated Localization Parity Test Suite**                                     |      N/A      |         N/A          |            ✅            |

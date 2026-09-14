@@ -3,7 +3,7 @@ import 'package:rexone_mobile/constants/constants.dart';
 class TransactionModel {
   final String id;
   final String? productId;
-  final int priceUnitAmount;
+  final int unitAmount;
   final String currency;
   final bool paid;
   final String status;
@@ -13,7 +13,7 @@ class TransactionModel {
   TransactionModel({
     required this.id,
     this.productId,
-    required this.priceUnitAmount,
+    required this.unitAmount,
     required this.currency,
     required this.paid,
     required this.status,
@@ -25,10 +25,10 @@ class TransactionModel {
     return TransactionModel(
       id: json[ApiKeys.id]?.toString() ?? '',
       productId: json[PaymentKeys.productId]?.toString(),
-      priceUnitAmount: json[PaymentKeys.priceUnitAmount] is int
-          ? json[PaymentKeys.priceUnitAmount] as int
+      unitAmount: json[PaymentKeys.unitAmount] is int
+          ? json[PaymentKeys.unitAmount] as int
           : int.tryParse(
-                  json[PaymentKeys.priceUnitAmount]?.toString() ?? '0',
+                  json[PaymentKeys.unitAmount]?.toString() ?? '0',
                 ) ??
                 0,
       currency: json[PaymentKeys.currency]?.toString() ?? 'usd',

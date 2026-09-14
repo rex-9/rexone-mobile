@@ -224,7 +224,9 @@ class AuthController extends GetxController {
 
     if (password.value != confirmPassword.value) {
       signupConfirmPin.triggerError();
-      AppSnackbar.error(AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch.tr);
+      AppSnackbar.error(
+        AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch.tr,
+      );
       return;
     }
 
@@ -275,12 +277,10 @@ class AuthController extends GetxController {
     if (Get.isRegistered<AnalyticsService>()) {
       // Set user ID and properties
       _analytics.setUserId(response.user.id);
-      _analytics.setUserProperty('email', response.user.email);
       _analytics.setUserProperty(
         'provider',
         response.user.provider ?? EAuthProvider.email.name,
       );
-      _analytics.logSignIn(method: response.user.provider);
     }
   }
 
@@ -332,7 +332,11 @@ class AuthController extends GetxController {
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
-      AppSnackbar.error(AppLocales.auth.signInPasscode.signInFailed.tr, e: e, stk: stk);
+      AppSnackbar.error(
+        AppLocales.auth.signInPasscode.signInFailed.tr,
+        e: e,
+        stk: stk,
+      );
     }
   }
 
@@ -351,7 +355,11 @@ class AuthController extends GetxController {
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
-      AppSnackbar.error(AppLocales.auth.confirmEmail.sendCodeFailed.tr, e: e, stk: stk);
+      AppSnackbar.error(
+        AppLocales.auth.confirmEmail.sendCodeFailed.tr,
+        e: e,
+        stk: stk,
+      );
     }
   }
 
@@ -362,8 +370,7 @@ class AuthController extends GetxController {
         ConfirmOtpRequest(signinKey: email.value, confirmationCode: code),
       );
       if (response.success && response.data != null) {
-        _analytics.logEmailVerified();
-        _analytics.logOnboardingCompleted();
+        _analytics.logCompleteOnboarding();
         // Sync noti user & Request permission after Email signup
         await _handleSuccessfulAuth(response.data!);
       } else {
@@ -371,7 +378,11 @@ class AuthController extends GetxController {
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
-      AppSnackbar.error(AppLocales.auth.confirmEmail.verificationFailed.tr, e: e, stk: stk);
+      AppSnackbar.error(
+        AppLocales.auth.confirmEmail.verificationFailed.tr,
+        e: e,
+        stk: stk,
+      );
     }
   }
 
@@ -402,13 +413,17 @@ class AuthController extends GetxController {
       if (response.success) {
         _startResendCountdown(30);
         _analytics.logSignUp(method: EAuthProvider.email.name);
-        _analytics.logOnboardingStarted();
+        _analytics.logBeginOnboarding();
         AppRoutes.toConfirmEmail(email: email.value);
       } else {
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
-      AppSnackbar.error(AppLocales.auth.signUpInfo.registrationFailed.tr, e: e, stk: stk);
+      AppSnackbar.error(
+        AppLocales.auth.signUpInfo.registrationFailed.tr,
+        e: e,
+        stk: stk,
+      );
     }
   }
 
@@ -441,11 +456,11 @@ class AuthController extends GetxController {
           confirmPassword.value = '';
           signupPin.clear();
           signupConfirmPin.clear();
+          _analytics.logBeginOnboarding();
           AppRoutes.toSignUpPasswordCreate();
         } else if (data.user != null && data.token != null) {
           email.value = user.email;
           _analytics.logSignIn(method: EAuthProvider.google.name);
-          _analytics.logOnboardingStarted();
           // Sync noti user & Request permission after Google signin
           await _handleSuccessfulAuth(
             AuthResponse(user: data.user!, token: data.token!),
@@ -472,7 +487,9 @@ class AuthController extends GetxController {
     }
     if (password.value != confirmPassword.value) {
       signupConfirmPin.triggerError();
-      AppSnackbar.error(AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch.tr);
+      AppSnackbar.error(
+        AppLocales.auth.signUpPasscodeConfirm.passcodesMismatch.tr,
+      );
       return;
     }
 
@@ -487,7 +504,7 @@ class AuthController extends GetxController {
       if (response.success && response.data != null) {
         googleChallengeToken.value = '';
         _analytics.logSignUp(method: EAuthProvider.google.name);
-        _analytics.logOnboardingCompleted();
+        _analytics.logCompleteOnboarding();
         await _handleSuccessfulAuth(response.data!);
       } else if (response.statusCode == 429) {
         AppSnackbar.error(AppLocales.auth.initial.googleTooManyAttempts.tr);
@@ -536,7 +553,11 @@ class AuthController extends GetxController {
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
-      AppSnackbar.error(AppLocales.auth.forgotPasscode.resetFailed.tr, e: e, stk: stk);
+      AppSnackbar.error(
+        AppLocales.auth.forgotPasscode.resetFailed.tr,
+        e: e,
+        stk: stk,
+      );
     }
   }
 
@@ -597,8 +618,8 @@ class AuthController extends GetxController {
     _clearLocalSession();
     _storage.clearRouteStack();
     if (Get.isRegistered<AnalyticsService>()) {
-      _analytics.clearUserId();
       _analytics.logSignOut();
+      _analytics.clearUserId();
     }
     AppRoutes.toAuth();
   }

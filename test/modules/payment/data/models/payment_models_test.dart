@@ -10,9 +10,9 @@ void main() {
         'name': 'Free Course',
         'description': 'A free course',
         'price': 'Free',
-        'price_unit_amount': 0,
+        'unit_amount': 0,
         'currency': 'usd',
-        'cycle': null,
+        'interval': null,
         'period_label': 'One-time purchase',
         'recurring': false,
         'active': true,
@@ -23,7 +23,7 @@ void main() {
 
       expect(product.id, 'prod_free_1');
       expect(product.name, 'Free Course');
-      expect(product.priceUnitAmount, 0);
+      expect(product.unitAmount, 0);
       expect(product.price, 'Free');
       expect(product.isFree, true);
       expect(product.recurring, false);
@@ -36,9 +36,9 @@ void main() {
         'name': 'Pro Plan',
         'description': 'Monthly subscription',
         'price': 'USD 10.00',
-        'price_unit_amount': 1000,
+        'unit_amount': 1000,
         'currency': 'usd',
-        'cycle': 'month',
+        'interval': 'month',
         'period_label': 'monthly',
         'recurring': true,
         'active': true,
@@ -48,9 +48,40 @@ void main() {
       final product = ProductModel.fromJson(json);
 
       expect(product.id, 'prod_paid_1');
-      expect(product.priceUnitAmount, 1000);
+      expect(product.unitAmount, 1000);
       expect(product.isFree, false);
       expect(product.recurring, true);
+    });
+  });
+
+  group('SubscriptionModel', () {
+    test('parses the Stripe subscription item price snapshot', () {
+      final subscription = SubscriptionModel.fromJson({
+        'id': 'subscription_1',
+        'product_id': 'product_1',
+        'status': 'active',
+        'stripe_subscription_item_id': 'si_1',
+        'stripe_price_id': 'price_1',
+        'currency': 'usd',
+        'unit_amount': 2500,
+        'quantity': 2,
+        'interval': 'month',
+        'interval_count': 1,
+        'current_period_start': '2026-09-01T00:00:00Z',
+        'current_period_end': '2026-10-01T00:00:00Z',
+        'started_at': '2026-09-01T00:00:00Z',
+        'active': true,
+        'canceled': false,
+        'scheduled_for_cancellation': false,
+      });
+
+      expect(subscription.stripeSubscriptionItemId, 'si_1');
+      expect(subscription.stripePriceId, 'price_1');
+      expect(subscription.unitAmount, 2500);
+      expect(subscription.quantity, 2);
+      expect(subscription.interval, 'month');
+      expect(subscription.intervalCount, 1);
+      expect(subscription.startedAt, '2026-09-01T00:00:00Z');
     });
   });
 

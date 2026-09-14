@@ -17,6 +17,7 @@ class AppSpacing {
   // Screen padding
   double get screenPadding => 20.0;
   double get screenPaddingSmall => 16.0;
+  double get bannerMaxWidth => 480.0;
 
   // Card padding
   double get cardPadding => 16.0;

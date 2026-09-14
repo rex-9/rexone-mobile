@@ -113,7 +113,8 @@ class _AuthSignUpInfoLocales {
   final creatingAccount = 'auth.signup_info.actions.creating_account';
   final enterFullName = 'auth.signup_info.validation.full_name_required';
   final fullNameMaxLength = 'auth.signup_info.validation.full_name_max_length';
-  final fullNameForbiddenChars = 'auth.signup_info.validation.full_name_forbidden';
+  final fullNameForbiddenChars =
+      'auth.signup_info.validation.full_name_forbidden';
   final usernameMinLength = 'auth.signup_info.validation.username_length';
   final usernameMaxLength = 'auth.signup_info.validation.username_max_length';
   final usernameCharset = 'auth.signup_info.validation.username_format';
@@ -225,7 +226,7 @@ class _AiLocales {
   final openSettings = 'ai.open_settings';
 
   // AI chat
-  String get aiSendMessageFailed => 'ai_send_message_failed';
+  final aiSendMessageFailed = 'ai.ai_send_message_failed';
   final aiResponseFailed = 'ai.ai_response_failed';
   final aiHistoryCleared = 'ai.ai_history_cleared';
   final aiClearHistoryFailed = 'ai.ai_clear_history_failed';
@@ -298,6 +299,12 @@ class _NotificationLocales {
   final loadMore = 'notification.load_more';
   final deleted = 'notification.deleted';
   final failedToLoad = 'notification.failed_to_load';
+  final webOnlyTitle = 'notification.web_only_title';
+  final webOnlyMessage = 'notification.web_only_message';
+  final webOnlyConfirm = 'notification.web_only_confirm';
+  final externalTitle = 'notification.external_title';
+  final externalMessage = 'notification.external_message';
+  final externalConfirm = 'notification.external_confirm';
 }
 
 class _MediaLocales {

@@ -7,6 +7,7 @@ import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/controllers/auth.controller.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
+import 'package:rexone_mobile/services/analytics.service.dart';
 import '../services/notification.service.dart';
 
 class NotificationController extends GetxController {
@@ -124,6 +125,9 @@ class NotificationController extends GetxController {
 
   /// Handles notification interactions that affect application state.
   Future<void> handleNotificationTap(NotificationModel item) async {
+    if (Get.isRegistered<AnalyticsService>()) {
+      Get.find<AnalyticsService>().logOpenNotification(item.id);
+    }
     await markAsRead(item);
 
     if (item.isIamUpdated) {
@@ -180,11 +184,24 @@ class NotificationController extends GetxController {
 
   /// Handle incoming real-time socket notification
   void onSocketNotification(SocketMessage event) {
+    if (event.clients != null &&
+        !event.clients!.contains(AppConstants.platformMobile)) {
+      return;
+    }
+
     unreadCount.value++;
 
     if (event.data != null && event.data is Map) {
       try {
-        final notiMap = Map<String, dynamic>.from(event.data! as Map);
+        final notiMap = <String, dynamic>{
+          ApiKeys.id: event.id,
+          NotificationKeys.title: event.title,
+          NotificationKeys.message: event.message,
+          NotificationKeys.link: event.link,
+          NotificationKeys.clients: event.clients,
+          NotificationKeys.data: event.data,
+          NotificationKeys.createdAt: event.createdAt,
+        };
         final newNotification = NotificationModel.fromJson(notiMap);
 
         if (currentFilter.value != NotificationConstants.filterRead) {
