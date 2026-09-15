@@ -157,44 +157,17 @@ class AiController extends GetxController {
         AiChatRequest(message: clean, roomId: currentRoomId.value),
       );
       if (response.success && response.data != null) {
-        final data = response.data!;
-        final meta = response.meta ??
-            (data[ApiKeys.meta] is Map
-                ? Map<String, dynamic>.from(data[ApiKeys.meta] as Map)
-                : null);
-        final rawData = data[ApiKeys.data] is Map
-            ? Map<String, dynamic>.from(data[ApiKeys.data] as Map)
-            : null;
-        final attrs = rawData?[ApiKeys.attributes] is Map
-            ? Map<String, dynamic>.from(rawData![ApiKeys.attributes] as Map)
-            : null;
+        final chat = response.data!;
 
-        final rId =
-            response.meta?[AiKeys.roomId]?.toString() ??
-            data[AiKeys.roomId]?.toString() ??
-            meta?[AiKeys.roomId]?.toString() ??
-            attrs?[AiKeys.roomId]?.toString();
-
-        if (rId != null && rId.isNotEmpty) {
-          currentRoomId.value = rId;
+        if (chat.roomId.isNotEmpty) {
+          currentRoomId.value = chat.roomId;
         }
 
-        final msgId =
-            rawData?[ApiKeys.id]?.toString() ??
-            (data[AiKeys.message] is Map
-                ? (data[AiKeys.message] as Map)[ApiKeys.id]?.toString()
-                : null);
-        if (msgId != null && msgId.isNotEmpty) {
+        if (chat.messages.isNotEmpty) {
           final idx = messages.indexOf(optimisticMessage);
           if (idx != -1) {
-            messages[idx] = AiMessageModel(
-              id: msgId,
-              role: optimisticMessage.role,
-              content: optimisticMessage.content,
-              roomId: rId ?? currentRoomId.value,
-              status: EAiMessageStatus.completed.name,
-              createdAt: optimisticMessage.createdAt,
-            );
+            messages.removeAt(idx);
+            messages.insertAll(idx, chat.messages);
           }
         }
       } else {

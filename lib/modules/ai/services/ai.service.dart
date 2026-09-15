@@ -21,15 +21,15 @@ class AiService extends GetxService {
   // ============================================================
   // CHAT
   // ============================================================
-  Future<ApiResponse<Map<String, dynamic>>> chat(AiChatRequest request) async {
+  Future<ApiResponse<AiChatResponse>> chat(AiChatRequest request) async {
     final response = await _api.post(
       ServerRoutes.aiChat,
       request.toJson(),
       showLoading: false,
     );
-    return _api.parseResponse<Map<String, dynamic>>(
+    return _api.parseResponse<AiChatResponse>(
       response,
-      (data) => data is Map ? Map<String, dynamic>.from(data) : {},
+      (data) => AiChatResponse.fromJson(data),
     );
   }
 

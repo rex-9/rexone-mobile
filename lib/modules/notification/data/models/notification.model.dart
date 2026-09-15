@@ -9,7 +9,7 @@ class NotificationModel {
   final String message;
   final String? link;
   final List<String> clients;
-  final Map<String, dynamic> data;
+  final Map<String, dynamic> metadata;
   final bool read;
   final DateTime? readAt;
   final String? notificationId;
@@ -18,7 +18,7 @@ class NotificationModel {
 
   String? get templateId => notificationId;
   bool get isIamUpdated =>
-      data[NotificationKeys.type] == NotificationConstants.iamUpdated;
+      metadata[NotificationKeys.type] == NotificationConstants.iamUpdated;
 
   NotificationModel({
     required this.id,
@@ -29,7 +29,7 @@ class NotificationModel {
       AppConstants.platformWeb,
       AppConstants.platformMobile,
     ],
-    this.data = const {},
+    this.metadata = const {},
     this.read = false,
     this.readAt,
     String? notificationId,
@@ -57,8 +57,10 @@ class NotificationModel {
       clients: attributes[NotificationKeys.clients] is List
           ? List<String>.from(attributes[NotificationKeys.clients] as List)
           : const [AppConstants.platformWeb, AppConstants.platformMobile],
-      data: attributes[NotificationKeys.data] is Map
-          ? Map<String, dynamic>.from(attributes[NotificationKeys.data] as Map)
+      metadata: attributes[NotificationKeys.metadata] is Map
+          ? Map<String, dynamic>.from(
+              attributes[NotificationKeys.metadata] as Map,
+            )
           : const {},
       read: attributes[NotificationKeys.read] as bool? ?? false,
       readAt: AppDateTime.fromUtc(attributes[NotificationKeys.readAt]),
@@ -79,7 +81,7 @@ class NotificationModel {
       NotificationKeys.message: message,
       NotificationKeys.link: link,
       NotificationKeys.clients: clients,
-      NotificationKeys.data: data,
+      NotificationKeys.metadata: metadata,
       NotificationKeys.read: read,
       NotificationKeys.readAt: AppDateTime.toUtcIso(readAt),
       NotificationKeys.notificationId: notificationId,
@@ -95,7 +97,7 @@ class NotificationModel {
     String? message,
     String? link,
     List<String>? clients,
-    Map<String, dynamic>? data,
+    Map<String, dynamic>? metadata,
     bool? read,
     DateTime? readAt,
     String? notificationId,
@@ -109,7 +111,7 @@ class NotificationModel {
       message: message ?? this.message,
       link: link ?? this.link,
       clients: clients ?? this.clients,
-      data: data ?? this.data,
+      metadata: metadata ?? this.metadata,
       read: read ?? this.read,
       readAt: readAt ?? this.readAt,
       notificationId: notificationId ?? templateId ?? this.notificationId,

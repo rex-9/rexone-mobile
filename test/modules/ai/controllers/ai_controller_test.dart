@@ -84,7 +84,7 @@ void main() {
       fakeAi.chatResponse = ApiResponse.success(
         message: 'Queued',
         statusCode: 200,
-        data: {AiKeys.roomId: 'room_123'},
+        data: const AiChatResponse(roomId: 'room_123'),
       );
 
       await controller.sendMessage('Test message');
@@ -216,13 +216,48 @@ void main() {
       fakeAi.chatResponse = ApiResponse.success(
         message: 'Queued',
         statusCode: 200,
-        data: {},
-        meta: {AiKeys.roomId: 'room_from_meta'},
+        data: AiChatResponse.fromJson(
+          const {},
+          meta: {AiKeys.roomId: 'room_from_meta'},
+        ),
       );
 
       await controller.sendMessage('Check meta room id');
 
       expect(controller.currentRoomId.value, equals('room_from_meta'));
+    });
+
+    test('sendMessage replaces optimistic message with returned chunked messages', () async {
+      final chunk1 = AiMessageModel(
+        id: 'msg_c1',
+        role: EChatRole.user.name,
+        content: 'Part 1 of long prompt',
+        roomId: 'room_chunks',
+        createdAt: DateTime.now().toIso8601String(),
+      );
+      final chunk2 = AiMessageModel(
+        id: 'msg_c2',
+        role: EChatRole.user.name,
+        content: 'Part 2 of long prompt',
+        roomId: 'room_chunks',
+        createdAt: DateTime.now().toIso8601String(),
+      );
+
+      fakeAi.chatResponse = ApiResponse.success(
+        message: 'Queued',
+        statusCode: 200,
+        data: AiChatResponse(
+          roomId: 'room_chunks',
+          messages: [chunk1, chunk2],
+        ),
+      );
+
+      await controller.sendMessage('Part 1 of long promptPart 2 of long prompt');
+
+      expect(controller.messages.length, equals(2));
+      expect(controller.messages[0].id, equals('msg_c1'));
+      expect(controller.messages[1].id, equals('msg_c2'));
+      expect(controller.currentRoomId.value, equals('room_chunks'));
     });
   });
 }

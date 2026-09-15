@@ -4,6 +4,8 @@ import 'package:rexone_mobile/helpers/helpers.dart';
 class AssetModel {
   final String id;
   final String name;
+  final String? displayName;
+  final String? description;
   final String url;
   final String type;
   final String? format;
@@ -16,6 +18,7 @@ class AssetModel {
   final String? createdById;
   final String? status;
   final String? parentAssetId;
+  final Map<String, dynamic>? metadata;
   final Map<String, dynamic>? children;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -23,6 +26,8 @@ class AssetModel {
   AssetModel({
     required this.id,
     required this.name,
+    this.displayName,
+    this.description,
     required this.url,
     required this.type,
     this.format,
@@ -35,6 +40,7 @@ class AssetModel {
     this.createdById,
     this.status,
     this.parentAssetId,
+    this.metadata,
     this.children,
     this.createdAt,
     this.updatedAt,
@@ -44,6 +50,8 @@ class AssetModel {
     return AssetModel(
       id: json[ApiKeys.id]?.toString() ?? '',
       name: json[AssetKeys.name] ?? '',
+      displayName: json[AssetKeys.displayName]?.toString(),
+      description: json[AssetKeys.description]?.toString(),
       url: json[AssetKeys.url] ?? '',
       type: json[AssetKeys.type] ?? '',
       format: json[AssetKeys.format],
@@ -56,6 +64,9 @@ class AssetModel {
       createdById: json[AssetKeys.createdById],
       status: json[AssetKeys.status]?.toString(),
       parentAssetId: json[AssetKeys.parentAssetId]?.toString(),
+      metadata: json[AssetKeys.metadata] is Map
+          ? Map<String, dynamic>.from(json[AssetKeys.metadata] as Map)
+          : null,
       children: json[AssetKeys.children] is Map
           ? Map<String, dynamic>.from(json[AssetKeys.children] as Map)
           : null,
@@ -68,6 +79,8 @@ class AssetModel {
     return {
       ApiKeys.id: id,
       AssetKeys.name: name,
+      if (displayName != null) AssetKeys.displayName: displayName,
+      if (description != null) AssetKeys.description: description,
       AssetKeys.url: url,
       AssetKeys.type: type,
       if (format != null) AssetKeys.format: format,
@@ -80,6 +93,7 @@ class AssetModel {
       if (createdById != null) AssetKeys.createdById: createdById,
       if (status != null) AssetKeys.status: status,
       if (parentAssetId != null) AssetKeys.parentAssetId: parentAssetId,
+      if (metadata != null) AssetKeys.metadata: metadata,
       if (children != null) AssetKeys.children: children,
     };
   }
@@ -87,6 +101,8 @@ class AssetModel {
   AssetModel copyWith({
     String? id,
     String? name,
+    String? displayName,
+    String? description,
     String? url,
     String? type,
     String? format,
@@ -99,6 +115,7 @@ class AssetModel {
     String? createdById,
     String? status,
     String? parentAssetId,
+    Map<String, dynamic>? metadata,
     Map<String, dynamic>? children,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -106,6 +123,8 @@ class AssetModel {
     return AssetModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      displayName: displayName ?? this.displayName,
+      description: description ?? this.description,
       url: url ?? this.url,
       type: type ?? this.type,
       format: format ?? this.format,
@@ -118,6 +137,7 @@ class AssetModel {
       createdById: createdById ?? this.createdById,
       status: status ?? this.status,
       parentAssetId: parentAssetId ?? this.parentAssetId,
+      metadata: metadata ?? this.metadata,
       children: children ?? this.children,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

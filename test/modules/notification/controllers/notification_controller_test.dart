@@ -235,7 +235,7 @@ void main() {
         id: 'iam_1',
         title: 'Access updated',
         message: 'Your access changed.',
-        data: const {NotificationKeys.type: NotificationConstants.iamUpdated},
+        metadata: const {NotificationKeys.type: NotificationConstants.iamUpdated},
         createdAt: DateTime.now(),
       );
       controller.notifications.assignAll([notification]);

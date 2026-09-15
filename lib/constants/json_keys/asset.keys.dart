@@ -8,6 +8,9 @@ class AssetKeys {
   static const file = 'file';
   static const folder = 'folder';
   static const name = 'name';
+  static const displayName = 'display_name';
+  static const description = 'description';
+  static const metadata = 'metadata';
   static const url = 'url';
   static const type = 'type';
   static const format = 'format';
