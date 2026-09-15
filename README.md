@@ -216,9 +216,11 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Media playback
 
 - Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
-- **Playlist**: Single `GET /v1/assets` fetch (no type filter); audio vs video lists are filtered client-side by `attributes.format` (`audio` / `video`).
-- **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from `attributes.children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
-- **Video**: Inline 16:9 player via `media_kit`, YouTube-style settings sheet (speed/volume), and closed captions from the same `children.subtitles[]` list with per-track selection in the subtitle sheet.
+- **Playlist**: Single mixed list from `GET /v1/assets` (no type filter); playable items (`attributes.format` `audio` / `video`) shown together. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
+- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]`. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`.
+- **Mixed queue**: Next/previous follow the full playlist order via `AudioPlayerService.playQueueAt()` — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
+- **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
+- **Video**: Inline 16:9 player via `media_kit`, YouTube-style settings sheet (speed/volume), and closed captions from the same subtitle tracks with per-track selection in the subtitle sheet.
 - **Shared helpers**: `SrtHelper` (parse + active cue), `VideoLayoutHelper` (inline viewport sizing), `MediaLayoutConstants`, and `MediaPlaybackConstants`.
 - Services return `Future<bool>` for playback failures; controllers and pages surface errors via `AppSnackbar` (LAW §3.3 — services never show UI).
 
@@ -492,7 +494,7 @@ rexone_mobile/
 │   │   ├── ai/               # Assistant chat, rooms, history
 │   │   └── media/            # Audio & video playback (shared + audio/ + video/)
 │   │       ├── components/   # TrackArtwork, playlist tile/header/empty/load-more
-│   │       ├── controllers/  # MediaPlaylistController (format-filtered playlist)
+│   │       ├── controllers/  # MediaPlaylistController (mixed audio/video playlist)
 │   │       ├── pages/        # MediaPlaylistPage
 │   │       ├── audio/        # Full player, mini player, synced lyrics
 │   │       └── video/        # Inline player, settings & subtitle sheets

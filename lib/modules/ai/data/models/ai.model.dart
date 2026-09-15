@@ -1,5 +1,4 @@
 // lib/modules/ai/data/models/ai.model.dart
-import 'package:flutter/cupertino.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 
@@ -126,7 +125,6 @@ class AiMessageModel {
 
   String? get audioUrl {
     for (final asset in assets) {
-      debugPrint("type==>${asset.type}");
       if (asset.type == AiKeys.tts && asset.url.isNotEmpty) {
         return asset.url;
       }
