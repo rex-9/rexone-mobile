@@ -299,6 +299,14 @@ class _NotificationPageState extends State<NotificationPage> {
     return Dismissible(
       key: Key('notif_${item.id}'),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        return await AppDialog.confirm(
+          context: context,
+          title: AppLocales.notification.deleteTitle.tr,
+          message: AppLocales.notification.deleteConfirm.tr,
+          confirmLabel: AppLocales.common.delete.tr,
+        );
+      },
       onDismissed: (_) {
         _controller.deleteNotification(item);
         AppSnackbar.info(AppLocales.notification.deleted.tr);
@@ -420,9 +428,17 @@ class _NotificationPageState extends State<NotificationPage> {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               tooltip: AppLocales.common.delete.tr,
-              onPressed: () {
-                _controller.deleteNotification(item);
-                AppSnackbar.info(AppLocales.notification.deleted.tr);
+              onPressed: () async {
+                final confirmed = await AppDialog.confirm(
+                  context: context,
+                  title: AppLocales.notification.deleteTitle.tr,
+                  message: AppLocales.notification.deleteConfirm.tr,
+                  confirmLabel: AppLocales.common.delete.tr,
+                );
+                if (confirmed) {
+                  _controller.deleteNotification(item);
+                  AppSnackbar.info(AppLocales.notification.deleted.tr);
+                }
               },
             ),
           ],

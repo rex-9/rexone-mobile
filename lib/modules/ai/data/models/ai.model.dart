@@ -79,10 +79,15 @@ class AiMessageModel {
   });
 
   factory AiMessageModel.fromJson(Map<String, dynamic> json) {
-    final metadata = json[AiKeys.metadata] is Map
-        ? Map<String, dynamic>.from(json[AiKeys.metadata] as Map)
+    final attrs = json[ApiKeys.attributes] is Map
+        ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
         : null;
-    final rawAssets = json[AiKeys.assets];
+    final source = attrs ?? json;
+
+    final metadata = source[AiKeys.metadata] is Map
+        ? Map<String, dynamic>.from(source[AiKeys.metadata] as Map)
+        : null;
+    final rawAssets = source[AiKeys.assets];
     final assets = rawAssets is List
         ? rawAssets
               .whereType<Map>()
@@ -94,17 +99,17 @@ class AiMessageModel {
         : const <AiAssetModel>[];
 
     return AiMessageModel(
-      id: json[ApiKeys.id]?.toString() ?? '',
-      role: json[AiKeys.role]?.toString() ?? EChatRole.user.name,
-      content: json[AiKeys.content]?.toString() ?? '',
-      roomId: json[AiKeys.roomId]?.toString(),
+      id: json[ApiKeys.id]?.toString() ?? source[ApiKeys.id]?.toString() ?? '',
+      role: source[AiKeys.role]?.toString() ?? EChatRole.user.name,
+      content: source[AiKeys.content]?.toString() ?? '',
+      roomId: source[AiKeys.roomId]?.toString(),
       status:
           metadata?[AiKeys.status]?.toString() ??
-          json[AiKeys.status]?.toString(),
+          source[AiKeys.status]?.toString(),
       ttsStatus: metadata?[AiKeys.ttsStatus]?.toString(),
       assets: assets,
       createdAt:
-          json[AiKeys.createdAt]?.toString() ??
+          source[AiKeys.createdAt]?.toString() ??
           AppDateTime.toUtcIso(DateTime.now())!,
     );
   }
@@ -155,16 +160,41 @@ class AiRoomModel {
   });
 
   factory AiRoomModel.fromJson(Map<String, dynamic> json) {
+    final attrs = json[ApiKeys.attributes] is Map
+        ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
+        : null;
+    final source = attrs ?? json;
+
     return AiRoomModel(
-      id: json[ApiKeys.id]?.toString() ?? '',
-      title: json[AiKeys.title]?.toString() ?? 'New Chat',
-      messageCount: json[AiKeys.messageCount] is int
-          ? json[AiKeys.messageCount] as int
-          : int.tryParse(json[AiKeys.messageCount]?.toString() ?? '0') ?? 0,
-      lastMessage: json[AiKeys.lastMessage]?.toString(),
-      createdAt: json[AiKeys.createdAt]?.toString() ?? '',
-      updatedAt: json[AiKeys.updatedAt]?.toString() ?? '',
-      processing: json[AiKeys.processing] == true,
+      id: json[ApiKeys.id]?.toString() ?? source[ApiKeys.id]?.toString() ?? '',
+      title: source[AiKeys.title]?.toString() ?? 'New Chat',
+      messageCount: source[AiKeys.messageCount] is int
+          ? source[AiKeys.messageCount] as int
+          : int.tryParse(source[AiKeys.messageCount]?.toString() ?? '0') ?? 0,
+      lastMessage: source[AiKeys.lastMessage]?.toString(),
+      createdAt: source[AiKeys.createdAt]?.toString() ?? '',
+      updatedAt: source[AiKeys.updatedAt]?.toString() ?? '',
+      processing: source[AiKeys.processing] == true,
+    );
+  }
+
+  AiRoomModel copyWith({
+    String? id,
+    String? title,
+    int? messageCount,
+    String? lastMessage,
+    String? createdAt,
+    String? updatedAt,
+    bool? processing,
+  }) {
+    return AiRoomModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      messageCount: messageCount ?? this.messageCount,
+      lastMessage: lastMessage ?? this.lastMessage,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      processing: processing ?? this.processing,
     );
   }
 }

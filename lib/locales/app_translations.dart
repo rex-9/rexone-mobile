@@ -268,6 +268,9 @@ class AppTranslations extends Translations {
       AppLocales.notification.empty: 'No notifications yet',
       AppLocales.notification.loadMore: 'Load more',
       AppLocales.notification.deleted: 'Notification deleted',
+      AppLocales.notification.deleteTitle: 'Delete Notification?',
+      AppLocales.notification.deleteConfirm:
+          'Are you sure you want to delete this notification? This action cannot be undone.',
       AppLocales.notification.failedToLoad: 'Failed to load notifications',
       AppLocales.notification.webOnlyTitle: 'Available on Rexone Web',
       AppLocales.notification.webOnlyMessage:
@@ -532,6 +535,9 @@ class AppTranslations extends Translations {
       AppLocales.notification.empty: 'အသိပေးချက် မရှိသေးပါ',
       AppLocales.notification.loadMore: 'ထပ်မံကြည့်ရှုရန်',
       AppLocales.notification.deleted: 'အသိပေးချက် ဖျက်ပြီးပါပြီ',
+      AppLocales.notification.deleteTitle: 'အသိပေးချက် ဖျက်မလား?',
+      AppLocales.notification.deleteConfirm:
+          'ဤအသိပေးချက်ကို ဖျက်ရန် သေချာပါသလား? ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍မရပါ။',
       AppLocales.notification.failedToLoad: 'အသိပေးချက်များ ရယူ၍မရပါ',
       AppLocales.notification.webOnlyTitle: 'Rexone Web တွင် ရနိုင်သည်',
       AppLocales.notification.webOnlyMessage:

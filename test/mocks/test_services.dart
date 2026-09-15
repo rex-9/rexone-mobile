@@ -511,6 +511,7 @@ class FakeAiService extends AiService {
   PaginatedResponse<AiMessageModel>? historyResponse;
   ApiResponse<Map<String, dynamic>>? chatResponse;
   ApiResponse<AiRoomModel>? createRoomResponse;
+  ApiResponse<AiRoomModel>? renameRoomResponse;
   ApiResponse<dynamic>? deleteRoomResponse;
   ApiResponse<dynamic>? clearHistoryResponse;
 
@@ -559,6 +560,23 @@ class FakeAiService extends AiService {
           data: AiRoomModel(
             id: 'new_room_1',
             title: request.title,
+            messageCount: 0,
+            createdAt: DateTime.now().toIso8601String(),
+            updatedAt: DateTime.now().toIso8601String(),
+            processing: false,
+          ),
+        );
+  }
+
+  @override
+  Future<ApiResponse<AiRoomModel>> renameRoom(String roomId, String title) async {
+    return renameRoomResponse ??
+        ApiResponse.success(
+          message: 'Room renamed',
+          statusCode: 200,
+          data: AiRoomModel(
+            id: roomId,
+            title: title,
             messageCount: 0,
             createdAt: DateTime.now().toIso8601String(),
             updatedAt: DateTime.now().toIso8601String(),

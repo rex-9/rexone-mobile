@@ -14,6 +14,9 @@ class AssetModel {
   final String? assetableType;
   final String? assetableId;
   final String? createdById;
+  final String? status;
+  final String? parentAssetId;
+  final Map<String, dynamic>? children;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -30,6 +33,9 @@ class AssetModel {
     this.assetableType,
     this.assetableId,
     this.createdById,
+    this.status,
+    this.parentAssetId,
+    this.children,
     this.createdAt,
     this.updatedAt,
   });
@@ -48,6 +54,11 @@ class AssetModel {
       assetableType: json[AssetKeys.assetableType],
       assetableId: json[AssetKeys.assetableId],
       createdById: json[AssetKeys.createdById],
+      status: json[AssetKeys.status]?.toString(),
+      parentAssetId: json[AssetKeys.parentAssetId]?.toString(),
+      children: json[AssetKeys.children] is Map
+          ? Map<String, dynamic>.from(json[AssetKeys.children] as Map)
+          : null,
       createdAt: AppDateTime.fromUtc(json[AssetKeys.createdAt]),
       updatedAt: AppDateTime.fromUtc(json[AssetKeys.updatedAt]),
     );
@@ -67,6 +78,49 @@ class AssetModel {
       if (assetableType != null) AssetKeys.assetableType: assetableType,
       if (assetableId != null) AssetKeys.assetableId: assetableId,
       if (createdById != null) AssetKeys.createdById: createdById,
+      if (status != null) AssetKeys.status: status,
+      if (parentAssetId != null) AssetKeys.parentAssetId: parentAssetId,
+      if (children != null) AssetKeys.children: children,
     };
+  }
+
+  AssetModel copyWith({
+    String? id,
+    String? name,
+    String? url,
+    String? type,
+    String? format,
+    String? extension,
+    int? sizeBytes,
+    int? durationSecs,
+    String? source,
+    String? assetableType,
+    String? assetableId,
+    String? createdById,
+    String? status,
+    String? parentAssetId,
+    Map<String, dynamic>? children,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return AssetModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      url: url ?? this.url,
+      type: type ?? this.type,
+      format: format ?? this.format,
+      extension: extension ?? this.extension,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      durationSecs: durationSecs ?? this.durationSecs,
+      source: source ?? this.source,
+      assetableType: assetableType ?? this.assetableType,
+      assetableId: assetableId ?? this.assetableId,
+      createdById: createdById ?? this.createdById,
+      status: status ?? this.status,
+      parentAssetId: parentAssetId ?? this.parentAssetId,
+      children: children ?? this.children,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }

@@ -45,6 +45,7 @@ class ServerRoutes {
 
   // Media
   static String get uploadAsset => api('/assets/upload');
+  static String assetPlayback(String id) => api('/assets/$id/playback');
 
   // Accesses
   static String get accesses => api('/accesses');
@@ -63,16 +64,13 @@ class ServerRoutes {
       api('/payment/subscriptions/$id/resume');
   static String get paymentTransactions => api('/payment/transactions');
 
-  // AI
-  static String get aiChat => api('/ai/chat');
-  static String get aiHistory => api('/ai/history');
-  static String get aiClear => api('/ai/clear');
-  static String get aiRename => api('/ai/rename');
-  static String get aiRooms => api('/ai/rooms');
-  static String aiDeleteRoom(String id) => api('/ai/rooms/$id');
-  static String get aiSummarize => api('/ai/summarize');
-  static String get aiTranslate => api('/ai/translate');
-  static String get aiAnalyze => api('/ai/analyze');
+  // Chat
+  static String get aiChat => api('/chat/messages');
+  static String get aiHistory => api('/chat/messages');
+  static String get aiClear => api('/chat/messages/destroy_all');
+  static String aiRename(String id) => api('/chat/rooms/$id');
+  static String get aiRooms => api('/chat/rooms');
+  static String aiDeleteRoom(String id) => api('/chat/rooms/$id');
 
   // Speech service api
   static String get textToSpeech => api('/speech/tts');

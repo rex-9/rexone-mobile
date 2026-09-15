@@ -157,9 +157,45 @@ class AiController extends GetxController {
         AiChatRequest(message: clean, roomId: currentRoomId.value),
       );
       if (response.success && response.data != null) {
-        final rId = response.data![AiKeys.roomId]?.toString();
+        final data = response.data!;
+        final meta = response.meta ??
+            (data[ApiKeys.meta] is Map
+                ? Map<String, dynamic>.from(data[ApiKeys.meta] as Map)
+                : null);
+        final rawData = data[ApiKeys.data] is Map
+            ? Map<String, dynamic>.from(data[ApiKeys.data] as Map)
+            : null;
+        final attrs = rawData?[ApiKeys.attributes] is Map
+            ? Map<String, dynamic>.from(rawData![ApiKeys.attributes] as Map)
+            : null;
+
+        final rId =
+            response.meta?[AiKeys.roomId]?.toString() ??
+            data[AiKeys.roomId]?.toString() ??
+            meta?[AiKeys.roomId]?.toString() ??
+            attrs?[AiKeys.roomId]?.toString();
+
         if (rId != null && rId.isNotEmpty) {
           currentRoomId.value = rId;
+        }
+
+        final msgId =
+            rawData?[ApiKeys.id]?.toString() ??
+            (data[AiKeys.message] is Map
+                ? (data[AiKeys.message] as Map)[ApiKeys.id]?.toString()
+                : null);
+        if (msgId != null && msgId.isNotEmpty) {
+          final idx = messages.indexOf(optimisticMessage);
+          if (idx != -1) {
+            messages[idx] = AiMessageModel(
+              id: msgId,
+              role: optimisticMessage.role,
+              content: optimisticMessage.content,
+              roomId: rId ?? currentRoomId.value,
+              status: EAiMessageStatus.completed.name,
+              createdAt: optimisticMessage.createdAt,
+            );
+          }
         }
       } else {
         AppSnackbar.error(
@@ -208,6 +244,25 @@ class AiController extends GetxController {
       }
     } catch (e) {
       debugPrint('🤖 [AiController] Error creating room: $e');
+    }
+  }
+
+  Future<void> renameRoom(String roomId, String newTitle) async {
+    final clean = newTitle.trim();
+    if (clean.isEmpty) return;
+    try {
+      final response = await _ai.renameRoom(roomId, clean);
+      if (response.success) {
+        final index = rooms.indexWhere((r) => r.id == roomId);
+        if (index != -1) {
+          rooms[index] = rooms[index].copyWith(title: clean);
+        }
+        if (currentRoomId.value == roomId) {
+          currentRoomTitle.value = clean;
+        }
+      }
+    } catch (e) {
+      debugPrint('🤖 [AiController] Error renaming room: $e');
     }
   }
 

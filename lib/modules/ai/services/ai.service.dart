@@ -80,6 +80,20 @@ class AiService extends GetxService {
     });
   }
 
+  Future<ApiResponse<AiRoomModel>> renameRoom(String roomId, String title) async {
+    final response = await _api.put(
+      ServerRoutes.aiRename(roomId),
+      {'title': title},
+    );
+    return _api.parseResponse<AiRoomModel>(response, (data) {
+      final record = data is Map && data[AiKeys.room] is Map
+          ? data[AiKeys.room]
+          : data;
+      return ApiHelper.parseRecord<AiRoomModel>(record, AiRoomModel.fromJson) ??
+          AiRoomModel.fromJson(const {});
+    });
+  }
+
   Future<ApiResponse<dynamic>> deleteRoom(String roomId) async {
     final response = await _api.delete(ServerRoutes.aiDeleteRoom(roomId));
     return _api.parseResponse(response, (data) => data);

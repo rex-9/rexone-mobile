@@ -19,6 +19,9 @@ class AssetKeys {
   static const assetableId = 'assetable_id';
   static const createdById = 'created_by_id';
   static const bytes = 'bytes';
+  static const status = 'status';
+  static const parentAssetId = 'parent_asset_id';
+  static const children = 'children';
   static const createdAt = 'created_at';
   static const updatedAt = 'updated_at';
 
