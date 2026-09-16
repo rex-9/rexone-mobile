@@ -21,15 +21,15 @@ class AiService extends GetxService {
   // ============================================================
   // CHAT
   // ============================================================
-  Future<ApiResponse<Map<String, dynamic>>> chat(AiChatRequest request) async {
+  Future<ApiResponse<AiChatResponse>> chat(AiChatRequest request) async {
     final response = await _api.post(
       ServerRoutes.aiChat,
       request.toJson(),
       showLoading: false,
     );
-    return _api.parseResponse<Map<String, dynamic>>(
+    return _api.parseResponse<AiChatResponse>(
       response,
-      (data) => data is Map ? Map<String, dynamic>.from(data) : {},
+      (data) => AiChatResponse.fromJson(data),
     );
   }
 
@@ -71,6 +71,20 @@ class AiService extends GetxService {
 
   Future<ApiResponse<AiRoomModel>> createRoom(CreateRoomRequest request) async {
     final response = await _api.post(ServerRoutes.aiRooms, request.toJson());
+    return _api.parseResponse<AiRoomModel>(response, (data) {
+      final record = data is Map && data[AiKeys.room] is Map
+          ? data[AiKeys.room]
+          : data;
+      return ApiHelper.parseRecord<AiRoomModel>(record, AiRoomModel.fromJson) ??
+          AiRoomModel.fromJson(const {});
+    });
+  }
+
+  Future<ApiResponse<AiRoomModel>> renameRoom(String roomId, String title) async {
+    final response = await _api.put(
+      ServerRoutes.aiRename(roomId),
+      {'title': title},
+    );
     return _api.parseResponse<AiRoomModel>(response, (data) {
       final record = data is Map && data[AiKeys.room] is Map
           ? data[AiKeys.room]

@@ -2,6 +2,7 @@
 class AiKeys {
   const AiKeys._();
 
+  static const message = 'message';
   static const messages = 'messages';
   static const processing = 'processing';
   static const roomTitle = 'room_title';

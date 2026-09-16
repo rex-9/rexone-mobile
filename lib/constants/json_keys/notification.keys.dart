@@ -8,6 +8,7 @@ class NotificationKeys {
   static const String message = 'message';
   static const String link = 'link';
   static const String clients = 'clients';
+  static const String metadata = 'metadata';
   static const String data = 'data';
   static const String type = 'type';
   static const String read = 'read';

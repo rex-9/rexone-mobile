@@ -7,10 +7,10 @@ void main() {
     test('parses from flat JSON map correctly', () {
       final json = {
         'id': 'notif-123',
-        'title': 'Welcome to Rexone',
+        'title': 'Welcome to RexOne',
         'message': 'We are glad to have you here.',
         'link': '/dashboard',
-        'data': {'type': 'welcome'},
+        'metadata': {'type': 'welcome'},
         'read': false,
         'read_at': null,
         'template_id': 'tpl-welcome',
@@ -20,10 +20,10 @@ void main() {
       final model = NotificationModel.fromJson(json);
 
       expect(model.id, 'notif-123');
-      expect(model.title, 'Welcome to Rexone');
+      expect(model.title, 'Welcome to RexOne');
       expect(model.message, 'We are glad to have you here.');
       expect(model.link, '/dashboard');
-      expect(model.data['type'], 'welcome');
+      expect(model.metadata['type'], 'welcome');
       expect(model.read, false);
       expect(model.readAt, isNull);
       expect(model.notificationId, 'tpl-welcome');
@@ -58,7 +58,7 @@ void main() {
           'title': 'Payment Received',
           'message': 'Your invoice has been paid.',
           'link': '/payment',
-          'data': {'amount': 99.99},
+          'metadata': {'amount': 99.99},
           'read': true,
           'read_at': '2026-09-05T10:30:00.000Z',
           'notification_id': null,
@@ -72,7 +72,7 @@ void main() {
       expect(model.title, 'Payment Received');
       expect(model.message, 'Your invoice has been paid.');
       expect(model.link, '/payment');
-      expect(model.data['amount'], 99.99);
+      expect(model.metadata['amount'], 99.99);
       expect(model.read, true);
       expect(model.readAt, isNotNull);
       expect(model.notificationId, isNull);
@@ -85,7 +85,7 @@ void main() {
         title: 'System Update',
         message: 'Maintenance scheduled.',
         link: null,
-        data: {'scope': 'all'},
+        metadata: {'scope': 'all'},
         read: false,
         createdAt: DateTime.parse('2026-09-05T10:00:00.000Z'),
       );
@@ -96,7 +96,7 @@ void main() {
       expect(json['title'], 'System Update');
       expect(json['message'], 'Maintenance scheduled.');
       expect(json['read'], false);
-      expect(json['data'], {'scope': 'all'});
+      expect(json['metadata'], {'scope': 'all'});
 
       final reconstructed = NotificationModel.fromJson(json);
       expect(reconstructed.id, model.id);

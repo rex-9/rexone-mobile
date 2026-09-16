@@ -525,8 +525,9 @@ class FakePaymentService extends PaymentService {
 class FakeAiService extends AiService {
   PaginatedResponse<AiRoomModel>? roomsResponse;
   PaginatedResponse<AiMessageModel>? historyResponse;
-  ApiResponse<Map<String, dynamic>>? chatResponse;
+  ApiResponse<AiChatResponse>? chatResponse;
   ApiResponse<AiRoomModel>? createRoomResponse;
+  ApiResponse<AiRoomModel>? renameRoomResponse;
   ApiResponse<dynamic>? deleteRoomResponse;
   ApiResponse<dynamic>? clearHistoryResponse;
 
@@ -557,12 +558,12 @@ class FakeAiService extends AiService {
   }
 
   @override
-  Future<ApiResponse<Map<String, dynamic>>> chat(AiChatRequest request) async {
+  Future<ApiResponse<AiChatResponse>> chat(AiChatRequest request) async {
     return chatResponse ??
         ApiResponse.success(
           message: 'Chat response queued',
           statusCode: 200,
-          data: {AiKeys.roomId: request.roomId ?? 'default_room'},
+          data: AiChatResponse(roomId: request.roomId ?? 'default_room'),
         );
   }
 
@@ -575,6 +576,23 @@ class FakeAiService extends AiService {
           data: AiRoomModel(
             id: 'new_room_1',
             title: request.title,
+            messageCount: 0,
+            createdAt: DateTime.now().toIso8601String(),
+            updatedAt: DateTime.now().toIso8601String(),
+            processing: false,
+          ),
+        );
+  }
+
+  @override
+  Future<ApiResponse<AiRoomModel>> renameRoom(String roomId, String title) async {
+    return renameRoomResponse ??
+        ApiResponse.success(
+          message: 'Room renamed',
+          statusCode: 200,
+          data: AiRoomModel(
+            id: roomId,
+            title: title,
             messageCount: 0,
             createdAt: DateTime.now().toIso8601String(),
             updatedAt: DateTime.now().toIso8601String(),

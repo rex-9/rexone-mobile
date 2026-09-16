@@ -8,6 +8,9 @@ class AssetKeys {
   static const file = 'file';
   static const folder = 'folder';
   static const name = 'name';
+  static const displayName = 'display_name';
+  static const description = 'description';
+  static const metadata = 'metadata';
   static const url = 'url';
   static const type = 'type';
   static const format = 'format';
@@ -19,14 +22,14 @@ class AssetKeys {
   static const assetableId = 'assetable_id';
   static const createdById = 'created_by_id';
   static const bytes = 'bytes';
+  static const status = 'status';
+  static const parentAssetId = 'parent_asset_id';
+  static const children = 'children';
   static const createdAt = 'created_at';
   static const updatedAt = 'updated_at';
-  static const children = 'children';
   static const thumbnail = 'thumbnail';
   static const subtitle = 'subtitle';
   static const subtitles = 'subtitles';
-  static const status = 'status';
-  static const parentAssetId = 'parent_asset_id';
   static const statusReady = 'ready';
 
   // ===== Playback response keys =====

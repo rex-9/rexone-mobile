@@ -39,5 +39,11 @@ void main() {
       Get.delete<AudioPlayerController>();
       expect(fakePlayer.isFullPlayerOpen.value, isFalse);
     });
+
+    test('closeAndExit dismisses player session', () async {
+      fakePlayer.hasSession.value = true;
+      await controller.closeAndExit();
+      expect(fakePlayer.hasSession.value, isFalse);
+    });
   });
 }

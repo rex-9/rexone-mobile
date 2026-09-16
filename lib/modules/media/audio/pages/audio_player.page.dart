@@ -73,7 +73,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                           type: EButtonType.icon,
                           icon: Design.icons.close,
                           tooltip: AppLocales.audio.close.tr,
-                          onPressed: player.dismiss,
+                          onPressed: controller.closeAndExit,
                         ),
                       ],
                     ),

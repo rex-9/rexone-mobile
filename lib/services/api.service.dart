@@ -210,6 +210,9 @@ class ApiService extends GetConnect {
     final statusCode =
         status[ApiKeys.code] as int? ?? response.statusCode ?? 500;
     final data = body[ApiKeys.data];
+    final meta = body[ApiKeys.meta] is Map
+        ? Map<String, dynamic>.from(body[ApiKeys.meta] as Map)
+        : null;
 
     if (response.hasError || !(status[ApiKeys.success] as bool? ?? false)) {
       // Optional: Log API errors to analytics
@@ -232,6 +235,8 @@ class ApiService extends GetConnect {
             HttpStatusMap.getMessage(statusCode),
         statusCode: statusCode,
         data: data != null ? fromJson(data) : null,
+        error: status[ApiKeys.error] as String?,
+        meta: meta,
       );
     }
 
@@ -241,6 +246,7 @@ class ApiService extends GetConnect {
           HttpStatusMap.getMessage(statusCode),
       statusCode: statusCode,
       data: data != null ? fromJson(data) : null,
+      meta: meta,
     );
   }
 

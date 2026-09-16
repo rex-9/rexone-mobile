@@ -1,4 +1,5 @@
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class ChildAssetModel {
   final String id;
@@ -55,6 +56,8 @@ class ChildAssetModel {
 class AssetModel {
   final String id;
   final String name;
+  final String? displayName;
+  final String? description;
   final String url;
   final String type;
   final String? format;
@@ -67,6 +70,8 @@ class AssetModel {
   final String? assetableId;
   final String? parentAssetId;
   final String? createdById;
+  final Map<String, dynamic>? metadata;
+  final Map<String, dynamic>? children;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final ChildAssetModel? thumbnail;
@@ -75,6 +80,8 @@ class AssetModel {
   AssetModel({
     required this.id,
     required this.name,
+    this.displayName,
+    this.description,
     required this.url,
     required this.type,
     this.format,
@@ -87,6 +94,8 @@ class AssetModel {
     this.assetableId,
     this.parentAssetId,
     this.createdById,
+    this.metadata,
+    this.children,
     this.createdAt,
     this.updatedAt,
     this.thumbnail,
@@ -176,6 +185,8 @@ class AssetModel {
     return AssetModel(
       id: json[ApiKeys.id]?.toString() ?? '',
       name: json[AssetKeys.name]?.toString() ?? '',
+      displayName: json[AssetKeys.displayName]?.toString(),
+      description: json[AssetKeys.description]?.toString(),
       url: json[AssetKeys.url]?.toString() ?? '',
       type: json[AssetKeys.type]?.toString() ?? '',
       format: json[AssetKeys.format]?.toString(),
@@ -188,12 +199,14 @@ class AssetModel {
       assetableId: json[AssetKeys.assetableId]?.toString(),
       parentAssetId: json[AssetKeys.parentAssetId]?.toString(),
       createdById: json[AssetKeys.createdById]?.toString(),
-      createdAt: json[AssetKeys.createdAt] != null
-          ? DateTime.tryParse(json[AssetKeys.createdAt].toString())
+      metadata: json[AssetKeys.metadata] is Map
+          ? Map<String, dynamic>.from(json[AssetKeys.metadata] as Map)
           : null,
-      updatedAt: json[AssetKeys.updatedAt] != null
-          ? DateTime.tryParse(json[AssetKeys.updatedAt].toString())
+      children: json[AssetKeys.children] is Map
+          ? Map<String, dynamic>.from(json[AssetKeys.children] as Map)
           : null,
+      createdAt: AppDateTime.fromUtc(json[AssetKeys.createdAt]),
+      updatedAt: AppDateTime.fromUtc(json[AssetKeys.updatedAt]),
       thumbnail: childAssets.thumbnail,
       subtitles: childAssets.subtitles,
     );
@@ -203,6 +216,8 @@ class AssetModel {
     return {
       ApiKeys.id: id,
       AssetKeys.name: name,
+      if (displayName != null) AssetKeys.displayName: displayName,
+      if (description != null) AssetKeys.description: description,
       AssetKeys.url: url,
       AssetKeys.type: type,
       if (format != null) AssetKeys.format: format,
@@ -215,6 +230,58 @@ class AssetModel {
       if (assetableId != null) AssetKeys.assetableId: assetableId,
       if (parentAssetId != null) AssetKeys.parentAssetId: parentAssetId,
       if (createdById != null) AssetKeys.createdById: createdById,
+      if (metadata != null) AssetKeys.metadata: metadata,
+      if (children != null) AssetKeys.children: children,
     };
+  }
+
+  AssetModel copyWith({
+    String? id,
+    String? name,
+    String? displayName,
+    String? description,
+    String? url,
+    String? type,
+    String? format,
+    String? extension,
+    int? sizeBytes,
+    int? durationSecs,
+    String? source,
+    String? assetableType,
+    String? assetableId,
+    String? createdById,
+    String? status,
+    String? parentAssetId,
+    Map<String, dynamic>? metadata,
+    Map<String, dynamic>? children,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    ChildAssetModel? thumbnail,
+    List<ChildAssetModel>? subtitles,
+  }) {
+    return AssetModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      displayName: displayName ?? this.displayName,
+      description: description ?? this.description,
+      url: url ?? this.url,
+      type: type ?? this.type,
+      format: format ?? this.format,
+      extension: extension ?? this.extension,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      durationSecs: durationSecs ?? this.durationSecs,
+      source: source ?? this.source,
+      assetableType: assetableType ?? this.assetableType,
+      assetableId: assetableId ?? this.assetableId,
+      createdById: createdById ?? this.createdById,
+      status: status ?? this.status,
+      parentAssetId: parentAssetId ?? this.parentAssetId,
+      metadata: metadata ?? this.metadata,
+      children: children ?? this.children,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnail: thumbnail ?? this.thumbnail,
+      subtitles: subtitles ?? this.subtitles,
+    );
   }
 }

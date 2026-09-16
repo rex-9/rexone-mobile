@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Rexone Mobile — E2E Test Runner with Clean Summary Reporter
+# RexOne Mobile — E2E Test Runner with Clean Summary Reporter
 #
 # Usage:
 #   ./scripts/test.sh [flow|file] [-d device] [options]
@@ -33,7 +33,7 @@ EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help)
-      echo "Rexone Mobile — E2E Test Runner"
+      echo "RexOne Mobile — E2E Test Runner"
       echo ""
       echo "Usage: ./scripts/test.sh [flow|file] [-d device] [--flutter|--patrol]"
       echo ""
@@ -135,7 +135,7 @@ else
 fi
 
 echo "===================================================="
-echo " 🌕 Rexone Mobile E2E Test Runner"
+echo " 🌕 RexOne Mobile E2E Test Runner"
 echo " Suites: ${#TEST_FILES[@]} | Device: ${DEVICE:-default}"
 echo "===================================================="
 
@@ -160,7 +160,7 @@ for file in "${TEST_FILES[@]}"; do
   echo "----------------------------------------------------"
 
   START_TIME=$(date +%s)
-  
+
   # Pre-grant notification permissions to prevent system dialog interruption
   if [ -n "$DEVICE" ]; then
     adb -s "$DEVICE" shell pm grant com.rexone.mobile android.permission.POST_NOTIFICATIONS 2>/dev/null || true

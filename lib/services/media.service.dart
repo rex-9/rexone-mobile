@@ -26,7 +26,7 @@ class MediaService extends GetxService {
     _playbackCache.remove(assetId);
   }
 
-  /// Uploads a local file to `POST /v1/media/upload`.
+  /// Uploads a local file to `POST /v1/assets/upload`.
   Future<ApiResponse<AssetUploadResponse>> uploadImage({
     required String filePath,
     String? filename,

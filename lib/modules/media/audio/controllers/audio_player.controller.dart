@@ -26,6 +26,11 @@ class AudioPlayerController extends GetxController {
     }
   }
 
+  Future<void> closeAndExit() async {
+    await player.dismiss();
+    Get.back();
+  }
+
   @override
   void onInit() {
     super.onInit();

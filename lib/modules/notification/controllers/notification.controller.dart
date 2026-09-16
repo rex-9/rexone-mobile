@@ -199,7 +199,7 @@ class NotificationController extends GetxController {
           NotificationKeys.message: event.message,
           NotificationKeys.link: event.link,
           NotificationKeys.clients: event.clients,
-          NotificationKeys.data: event.data,
+          NotificationKeys.metadata: event.data,
           NotificationKeys.createdAt: event.createdAt,
         };
         final newNotification = NotificationModel.fromJson(notiMap);

@@ -661,6 +661,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<bool> _playQueueVideo(AssetModel asset) async {
+    final wasOnAudioPlayer = Get.currentRoute == AppRoutes.audioPlayer;
     if (hasSession.value) {
       await dismiss();
     }
@@ -670,13 +671,21 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     final videoIndex = video.assets.indexWhere((item) => item.id == asset.id);
     if (videoIndex < 0) return false;
 
+    void navigateToVideo() {
+      if (wasOnAudioPlayer) {
+        Get.offNamed(AppRoutes.videoPlayer);
+      } else {
+        AppRoutes.toVideoPlayer();
+      }
+    }
+
     if (video.hasSession.value && video.currentIndex.value == videoIndex) {
-      AppRoutes.toVideoPlayer();
+      navigateToVideo();
       return true;
     }
 
     final ok = await video.play(videoIndex);
-    if (ok) AppRoutes.toVideoPlayer();
+    if (ok) navigateToVideo();
     return ok;
   }
 }

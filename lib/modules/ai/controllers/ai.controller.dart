@@ -157,9 +157,18 @@ class AiController extends GetxController {
         AiChatRequest(message: clean, roomId: currentRoomId.value),
       );
       if (response.success && response.data != null) {
-        final rId = response.data![AiKeys.roomId]?.toString();
-        if (rId != null && rId.isNotEmpty) {
-          currentRoomId.value = rId;
+        final chat = response.data!;
+
+        if (chat.roomId.isNotEmpty) {
+          currentRoomId.value = chat.roomId;
+        }
+
+        if (chat.messages.isNotEmpty) {
+          final idx = messages.indexOf(optimisticMessage);
+          if (idx != -1) {
+            messages.removeAt(idx);
+            messages.insertAll(idx, chat.messages);
+          }
         }
       } else {
         AppSnackbar.error(
@@ -208,6 +217,25 @@ class AiController extends GetxController {
       }
     } catch (e) {
       debugPrint('🤖 [AiController] Error creating room: $e');
+    }
+  }
+
+  Future<void> renameRoom(String roomId, String newTitle) async {
+    final clean = newTitle.trim();
+    if (clean.isEmpty) return;
+    try {
+      final response = await _ai.renameRoom(roomId, clean);
+      if (response.success) {
+        final index = rooms.indexWhere((r) => r.id == roomId);
+        if (index != -1) {
+          rooms[index] = rooms[index].copyWith(title: clean);
+        }
+        if (currentRoomId.value == roomId) {
+          currentRoomTitle.value = clean;
+        }
+      }
+    } catch (e) {
+      debugPrint('🤖 [AiController] Error renaming room: $e');
     }
   }
 

@@ -140,6 +140,7 @@ class AppSnackbar {
     Get.closeAllSnackbars();
 
     Get.rawSnackbar(
+      snackPosition: SnackPosition.TOP,
       titleText: Row(
         children: [
           Icon(icon, color: foreground, size: 20),
@@ -185,7 +186,7 @@ class AppSnackbar {
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: background,
       colorText: foreground,
       margin: EdgeInsets.all(Design.spacing.lg),

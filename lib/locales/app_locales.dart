@@ -298,6 +298,8 @@ class _NotificationLocales {
   final empty = 'notification.empty';
   final loadMore = 'notification.load_more';
   final deleted = 'notification.deleted';
+  final deleteTitle = 'notification.delete_title';
+  final deleteConfirm = 'notification.delete_confirm';
   final failedToLoad = 'notification.failed_to_load';
   final webOnlyTitle = 'notification.web_only_title';
   final webOnlyMessage = 'notification.web_only_message';
