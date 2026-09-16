@@ -26,6 +26,7 @@ class GuardRoutes extends GetMiddleware {
       AppRoutes.notifications,
       AppRoutes.mediaPlaylist,
       AppRoutes.audioPlayer,
+      AppRoutes.videoPlayer,
     ];
 
     const authFlowRoutes = [
