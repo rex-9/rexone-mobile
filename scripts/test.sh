@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Rexone Mobile — Full Test Suite Runner (Unit + E2E)
+# RexOne Mobile — Full Test Suite Runner (Unit + E2E)
 #
 # Usage:
 #   ./scripts/test.sh [flow|file] [-d device] [options]
@@ -25,7 +25,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 echo "===================================================="
-echo " 📱 Rexone Mobile — Running Full Test Suite"
+echo " 📱 RexOne Mobile — Running Full Test Suite"
 echo " (Unit + E2E)"
 echo "===================================================="
 

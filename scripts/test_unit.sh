@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Rexone Mobile — Unit Test Runner (Flutter Test)
+# RexOne Mobile — Unit Test Runner (Flutter Test)
 #
 # Usage:
 #   ./scripts/test_unit.sh [file|filter] [options]
@@ -23,7 +23,7 @@ cd "$PROJECT_ROOT"
 export PATH="$PATH:$HOME/.pub-cache/bin:${PUB_CACHE:-$HOME/.pub-cache}/bin"
 
 echo "===================================================="
-echo " ⚡ Rexone Mobile — Unit Tests (Flutter Test)"
+echo " ⚡ RexOne Mobile — Unit Tests (Flutter Test)"
 echo "===================================================="
 
 flutter test "$@"

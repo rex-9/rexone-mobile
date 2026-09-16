@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ -z "$APP_NAME" ]; then
-  echo "📱 Rexone Mobile Rebrand Script"
+  echo "📱 RexOne Mobile Rebrand Script"
   echo "----------------------------------------"
   echo "💡 TIP: For full cross-platform sync (Web, Mobile, Core), run:"
   echo "   cd ../rexone-core && ./scripts/rebrand.sh"
