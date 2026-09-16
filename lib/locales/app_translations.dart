@@ -244,19 +244,6 @@ class AppTranslations extends Translations {
       AppLocales.user.accountInfo: 'Account Information',
       AppLocales.user.roles: 'Roles',
       AppLocales.user.permissions: 'Permissions',
-      AppLocales.ai.micPermissionTitle: 'Se requiere acceso al micrófono',
-      AppLocales.ai.micPermissionMessage:
-          'La entrada de voz necesita acceso al micrófono. Abre Ajustes para habilitarlo en esta app.',
-      AppLocales.ai.openSettings: 'Abrir ajustes',
-      AppLocales.ai.aiSendMessageFailed: 'No se pudo enviar el mensaje',
-      AppLocales.ai.aiResponseFailed:
-          'No se pudo obtener la respuesta de la IA',
-      AppLocales.ai.aiHistoryCleared: 'Historial de chat borrado',
-      AppLocales.ai.aiClearHistoryFailed: 'No se pudo borrar el historial',
-      AppLocales.ai.aiStartRecordingFailed: 'No se pudo iniciar la grabación',
-      AppLocales.ai.aiTranscriptionFailed: 'No se pudo transcribir el audio',
-      AppLocales.ai.aiTtsFailed: 'No se pudo reproducir el audio',
-      AppLocales.ai.aiTtsEmpty: 'Nada que reproducir',
 
       // Notification
       AppLocales.notification.title: 'Notifications',
