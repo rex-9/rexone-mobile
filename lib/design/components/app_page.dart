@@ -40,12 +40,19 @@ class AppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final page =
+        isIOS ? _buildCupertinoPage(context) : _buildMaterialPage(context);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, dynamic result) async {
         if (!didPop) _handleBackPressed(context);
       },
-      child: isIOS ? _buildCupertinoPage(context) : _buildMaterialPage(context),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: page,
+      ),
     );
   }
 

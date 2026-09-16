@@ -8,14 +8,17 @@ import 'package:rexone_mobile/design/design.dart';
 class AppInputField extends StatelessWidget {
   const AppInputField({
     super.key,
-    required this.label,
+    this.label,
     required this.hint,
-    required this.onChanged,
+    this.onChanged,
     this.error,
     this.helper,
     this.controller,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.textInputAction,
+    this.textAlignVertical,
+    this.readOnly = false,
     this.prefixIcon,
     this.suffixIcon,
     this.focusNode,
@@ -28,20 +31,23 @@ class AppInputField extends StatelessWidget {
     this.onCtrlEnter,
   });
 
-  final String label;
+  final String? label;
   final String hint;
-  final Function(String) onChanged;
+  final Function(String)? onChanged;
   final String? error;
   final String? helper;
   final TextEditingController? controller;
   final bool obscureText;
   final TextInputType keyboardType;
+  final TextInputAction? textInputAction;
+  final TextAlignVertical? textAlignVertical;
+  final bool readOnly;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final FocusNode? focusNode;
   final bool autoFocus;
   final int maxLines;
-  final int minLines;
+  final int? minLines;
   final bool enabled;
   final TextCapitalization textCapitalization;
   final VoidCallback? onSubmitted;
@@ -61,6 +67,40 @@ class AppInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final inputWidget = osTextField(
+      controller: controller,
+      focusNode: focusNode,
+      autofocus: autoFocus,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      textAlignVertical: textAlignVertical,
+      readOnly: readOnly,
+      onChanged: onChanged,
+      maxLines: maxLines,
+      minLines: minLines,
+      enabled: enabled,
+      textCapitalization: textCapitalization,
+      hint: hint,
+      error: error,
+      helper: helper,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      onSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
+    );
+
+    final content = (label != null && label!.isNotEmpty)
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label!, style: context.typo.labelMedium),
+              SizedBox(height: Design.spacing.xs),
+              inputWidget,
+            ],
+          )
+        : inputWidget;
+
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () =>
@@ -68,31 +108,7 @@ class AppInputField extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): () =>
             _handleCtrlEnter(context),
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: context.typo.labelMedium),
-          SizedBox(height: Design.spacing.xs),
-          osTextField(
-            controller: controller,
-            focusNode: focusNode,
-            autofocus: autoFocus,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            maxLines: maxLines,
-            minLines: minLines,
-            enabled: enabled,
-            textCapitalization: textCapitalization,
-            hint: hint,
-            error: error,
-            helper: helper,
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
-            onSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 
@@ -102,6 +118,9 @@ class AppInputField extends StatelessWidget {
     bool autofocus = false,
     bool obscureText = false,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    TextAlignVertical? textAlignVertical,
+    bool readOnly = false,
     ValueChanged<String>? onChanged,
     int maxLines = 1,
     int? minLines,
@@ -116,56 +135,67 @@ class AppInputField extends StatelessWidget {
   }) {
     final theme = Get.theme;
     if (isIOS) {
+      final cupertinoField = CupertinoTextField(
+        controller: controller,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        textAlignVertical: textAlignVertical,
+        readOnly: readOnly,
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        maxLines: maxLines,
+        minLines: minLines,
+        enabled: enabled,
+        placeholder: hint,
+        placeholderStyle: Design.typo.helper.copyWith(
+          color:
+              theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        ),
+        style: Design.typo.bodyMedium.copyWith(
+          color: theme.colorScheme.onSurface,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: Design.spacing.lg,
+          vertical: Design.spacing.md + 2,
+        ),
+        prefix: prefixIcon != null
+            ? Padding(
+                padding: EdgeInsets.only(left: Design.spacing.md),
+                child: prefixIcon,
+              )
+            : null,
+        suffix: suffixIcon != null
+            ? Padding(
+                padding: EdgeInsets.only(right: Design.spacing.md),
+                child: suffixIcon,
+              )
+            : null,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius:
+              BorderRadius.circular(Design.spacing.radiusMedium),
+          border: Border.all(
+            color: error != null
+                ? theme.colorScheme.error
+                : theme.colorScheme.outline,
+            width: error != null ? 1.5 : 1.0,
+          ),
+        ),
+      );
+
+      if (error == null && helper == null) {
+        return cupertinoField;
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CupertinoTextField(
-            controller: controller,
-            focusNode: focusNode,
-            autofocus: autofocus,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
-            maxLines: maxLines,
-            minLines: minLines,
-            enabled: enabled,
-            placeholder: hint,
-            placeholderStyle: Design.typo.helper.copyWith(
-              color:
-                  theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-            ),
-            style: Design.typo.bodyMedium.copyWith(
-              color: theme.colorScheme.onSurface,
-            ),
-            padding: EdgeInsets.symmetric(
-              horizontal: Design.spacing.lg,
-              vertical: Design.spacing.md + 2,
-            ),
-            prefix: prefixIcon != null
-                ? Padding(
-                    padding: EdgeInsets.only(left: Design.spacing.md),
-                    child: prefixIcon,
-                  )
-                : null,
-            suffix: suffixIcon != null
-                ? Padding(
-                    padding: EdgeInsets.only(right: Design.spacing.md),
-                    child: suffixIcon,
-                  )
-                : null,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius:
-                  BorderRadius.circular(Design.spacing.radiusMedium),
-              border: Border.all(
-                color: error != null
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.outline,
-                width: error != null ? 1.5 : 1.0,
-              ),
-            ),
-          ),
+          cupertinoField,
           if (error != null) ...[
             SizedBox(height: Design.spacing.xs),
             Padding(
@@ -197,9 +227,13 @@ class AppInputField extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       obscureText: obscureText,
+      readOnly: readOnly,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      textAlignVertical: textAlignVertical,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       maxLines: maxLines,
       minLines: minLines,
       enabled: enabled,

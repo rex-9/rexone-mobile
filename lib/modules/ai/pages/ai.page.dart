@@ -43,6 +43,8 @@ class AiPage extends GetView<AiController> {
               child: Obx(
                 () => ListView.builder(
                   controller: controller.scrollController,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.all(Design.spacing.lg),
                   itemCount:
                       controller.messages.length +
@@ -346,7 +348,7 @@ class AiPage extends GetView<AiController> {
             tooltip: AppLocales.ai.cancelListening.tr,
           ),
         Expanded(
-          child: TextField(
+          child: AppInputField(
             controller: controller.textController,
             enabled: !controller.isProcessing.value,
             readOnly: isListening,
@@ -355,22 +357,20 @@ class AiPage extends GetView<AiController> {
             keyboardType: TextInputType.multiline,
             textInputAction: TextInputAction.newline,
             textAlignVertical: TextAlignVertical.top,
-            onSubmitted: (_) => controller.handleSend(),
-            decoration: Design.styles.input(
-              hint: AppLocales.ai.typeMessage.tr,
-              suffixIcon: IconButton(
-                onPressed: controller.isProcessing.value
-                    ? null
-                    : controller.toggleListening,
-                icon: Icon(
-                  isListening ? Design.icons.stop : Design.icons.mic,
-                  color: controller.isProcessing.value
-                      ? mutedColor
-                      : isListening
-                      ? context.colors.error
-                      : activeColor,
-                  size: Design.spacing.iconMedium,
-                ),
+            hint: AppLocales.ai.typeMessage.tr,
+            onSubmitted: controller.handleSend,
+            suffixIcon: IconButton(
+              onPressed: controller.isProcessing.value
+                  ? null
+                  : controller.toggleListening,
+              icon: Icon(
+                isListening ? Design.icons.stop : Design.icons.mic,
+                color: controller.isProcessing.value
+                    ? mutedColor
+                    : isListening
+                    ? context.colors.error
+                    : activeColor,
+                size: Design.spacing.iconMedium,
               ),
             ),
           ),
