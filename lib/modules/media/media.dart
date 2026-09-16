@@ -3,6 +3,7 @@
 // Shared
 export 'components/track_artwork.dart';
 export 'components/media_asset_tile.dart';
+export 'components/media_download_button.dart';
 export 'components/media_playlist_header.dart';
 export 'components/media_playlist_empty.dart';
 export 'components/media_playlist_load_more.dart';

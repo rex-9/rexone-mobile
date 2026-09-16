@@ -24,7 +24,7 @@ class InitialBinding extends Bindings {
     // Analytics Service (Firebase Analytics)
     Get.put(AnalyticsService(), permanent: true);
 
-    // Push Notification Service (OneSignal)
+    // Notifications: OneSignal + local notifications + Live Activities
     Get.put(PushNotiService(), permanent: true);
 
     // API Service (interface + implementation)
@@ -38,6 +38,12 @@ class InitialBinding extends Bindings {
 
     // Media upload (depends on ApiService)
     Get.put(MediaService(), permanent: true);
+
+    // Offline media download notifications (no dependencies)
+    Get.put(MediaDownloadNotificationService(), permanent: true);
+
+    // Offline media downloads (depends on StorageService + MediaService)
+    Get.put(MediaDownloadService(), permanent: true);
 
     // WebSocket / Action Cable Socket Service
     Get.put(SocketService(), permanent: true);

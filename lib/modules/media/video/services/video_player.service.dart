@@ -6,9 +6,10 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
+import 'package:rexone_mobile/services/speech.service.dart';
 
 import '../../audio/services/audio_player.service.dart';
-import 'package:rexone_mobile/services/speech.service.dart';
 
 class VideoPlayerService extends GetxService {
   Player? _player;
@@ -30,8 +31,13 @@ class VideoPlayerService extends GetxService {
   StreamSubscription<bool>? _bufferingSub;
 
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
+  final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
 
   MediaService get _media => Get.find<MediaService>();
+  MediaDownloadService? get _downloads =>
+      Get.isRegistered<MediaDownloadService>()
+          ? Get.find<MediaDownloadService>()
+          : null;
 
   VideoController? get videoController => _videoController;
 
@@ -79,6 +85,7 @@ class VideoPlayerService extends GetxService {
         return false;
       }
 
+      debugPrint('🔍 [VideoPlayerService] Opening media: $url');
       await _player!.open(Media(url), play: true);
       await _applySubtitleForCurrentAsset();
       return true;
@@ -274,12 +281,29 @@ class VideoPlayerService extends GetxService {
   }
 
   Future<String?> _playbackUrl(AssetModel asset) async {
+    final downloads = _downloads;
+    if (downloads != null && downloads.isDownloaded(asset.id)) {
+
+      final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
+      debugPrint('🔍 [VideoPlayerService] Local path: $localPath');
+      if (localPath != null && localPath.isNotEmpty) {
+        _offlineSubtitlesByAssetId[asset.id] =
+            await downloads.resolveOfflineSubtitleTracks(asset);
+      debugPrint('🔍 [VideoPlayerService] Offline subtitles: ${_offlineSubtitlesByAssetId[asset.id]}');
+        return Uri.file(localPath).toString();
+      }
+    }
+
     final playback = await _resolvePlayback(asset);
     final url = playback?.delivery.url ?? '';
     return url.isEmpty ? null : url;
   }
 
   List<ChildAssetModel> _effectiveSubtitles(AssetModel asset) {
+    final offline = _offlineSubtitlesByAssetId[asset.id];
+    if (offline != null && offline.isNotEmpty) {
+      return offline;
+    }
     final fromPlayback = _playbackByAssetId[asset.id]?.media.playableSubtitles;
     if (fromPlayback != null && fromPlayback.isNotEmpty) {
       return fromPlayback;
@@ -289,6 +313,7 @@ class VideoPlayerService extends GetxService {
 
   void _prunePlaybackCache(Set<String> activeIds) {
     _playbackByAssetId.removeWhere((id, _) => !activeIds.contains(id));
+    _offlineSubtitlesByAssetId.removeWhere((id, _) => !activeIds.contains(id));
     for (final id in List<String>.from(_playbackByAssetId.keys)) {
       if (!activeIds.contains(id)) {
         _media.clearPlaybackCache(assetId: id);

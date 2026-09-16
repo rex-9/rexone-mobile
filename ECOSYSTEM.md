@@ -253,6 +253,7 @@ RexOne Mobile has a strictly governed design system accessible via `lib/design/d
 - **AI Assistant**: Persistent multi-room conversational interface with dual-fallback JSON:API envelope parsing (`data.attributes`, root keys, and `ApiResponse.meta`), optimistic message reconciliation with server-assigned message IDs, top-level and meta `room_id` routing, room renaming (`renameRoom`), background processing indicators, real-time completion toasts via WebSocket, and chat history management.
 - **Real-Time WebSockets**: Action Cable client (`SocketService`) paired with `SocketController` for global notification dispatching and deduplication.
 - **Media Playback**: Unified `lib/modules/media/` module — one mixed paginated playlist from `GET /v1/assets`, signed stream URLs from `GET /v1/assets/:id/playback` at play time, background audio with mini player, inline video via `media_kit`, mixed next/previous across audio and video, and **`children.subtitles[]`** / playback `media.subtitles[]` (SRT) with per-track selection for closed captions and synced lyrics.
+- **Offline Media Downloads**: Per-item encrypted sandbox downloads (`MediaDownloadService` + `MEDIA_OFFLINE_ENCRYPTION_KEY`). App-only playback; logout cancels transfers and wipes the offline library. Not DRM — obfuscation for casual protection. Android progress via `background_downloader` notification; iOS complete/fail local notification (Live Activity Widget Extension optional follow-up).
 - **Client Telemetry**: Automatic global capture of Flutter errors and platform dispatcher errors dispatched to Core's `POST /v1/client/logs`.
 - **Localization**: 100% translated in English (`en_US`), Spanish (`es_ES`), and Burmese (`my_MM`). Synchronizes `X-Locale` and `Accept-Language` headers on every HTTP request.
 
@@ -291,6 +292,7 @@ All three pillars of the RexOne platform are fully aligned at **100% feature par
 | **Media: Multi-Select Batch Actions & Empty Recycle Bin**                 |      ✅       |          ✅          |           N/A            |
 | **Media: Audio/Video Playlist Playback & Subtitle (SRT) Child Assets**   |      ✅       |         N/A          |            ✅            |
 | **Media: Signed Playback URL Resolution (`GET /v1/assets/:id/playback`)**|      ✅       |         N/A          |            ✅            |
+| **Media: Offline Encrypted Downloads (App Sandbox)**                      |      N/A      |         N/A          |            ✅            |
 | **Push Notifications (OneSignal)**                                        |      ✅       |         N/A          |            ✅            |
 | **Product Analytics (Firebase)**                                          |   Constants   |          ✅          |            ✅            |
 | **Client Admin Panel: User, IAM, Product, Chat, AI, Asset, Notification** |      ✅       |          ✅          |           N/A            |

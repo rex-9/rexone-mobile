@@ -125,9 +125,31 @@ class MediaService extends GetxService {
     );
 
     if (parsed.success && parsed.data != null) {
-      _playbackCache[assetId] = parsed.data!;
+      final data = _withTestPlaybackUrl(parsed.data!);
+      _playbackCache[assetId] = data;
+      return ApiResponse.success(
+        data: data,
+        message: parsed.message,
+        statusCode: parsed.statusCode,
+      );
     }
 
     return parsed;
+  }
+
+  /// Dev-only: swap delivery URL for a fixed public sample when configured.
+  AssetPlaybackResponse _withTestPlaybackUrl(AssetPlaybackResponse playback) {
+    const testUrl = MediaPlaybackConstants.testPlaybackUrl;
+    if (testUrl.isEmpty) return playback;
+
+    return AssetPlaybackResponse(
+      assetId: playback.assetId,
+      delivery: AssetPlaybackDelivery(
+        type: playback.delivery.type,
+        url: testUrl,
+        expiresAt: playback.delivery.expiresAt,
+      ),
+      media: playback.media,
+    );
   }
 }

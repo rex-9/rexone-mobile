@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/widgets.dart';
@@ -11,6 +12,7 @@ import 'package:rexone_mobile/helpers/srt.helper.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/speech.service.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
@@ -46,9 +48,14 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   int _lyricsLoadEpoch = 0;
   final Map<String, List<SubtitleCue>> _lyricsCache = {};
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
+  final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
   final GetConnect _subtitleClient = GetConnect();
 
   MediaService get _media => Get.find<MediaService>();
+  MediaDownloadService? get _downloads =>
+      Get.isRegistered<MediaDownloadService>()
+          ? Get.find<MediaDownloadService>()
+          : null;
 
   AssetModel? get currentAsset {
     final index = currentIndex.value;
@@ -461,15 +468,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     lyrics.assignAll([]);
 
     try {
-      final response = await _subtitleClient.get(track.url);
+      final body = await _loadSubtitleBody(track.url);
       if (epoch != _lyricsLoadEpoch) return;
 
-      if (!response.isOk) {
-        lyricsError.value = MediaPlaybackConstants.lyricsErrorFetchFailed;
-        return;
-      }
-
-      final body = response.bodyString;
       if (body == null || body.trim().isEmpty) {
         lyricsError.value = MediaPlaybackConstants.lyricsErrorFetchFailed;
         return;
@@ -494,6 +495,19 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
         lyricsLoading.value = false;
       }
     }
+  }
+
+  Future<String?> _loadSubtitleBody(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null && uri.scheme == 'file') {
+      final file = File(uri.toFilePath());
+      if (!await file.exists()) return null;
+      return file.readAsString();
+    }
+
+    final response = await _subtitleClient.get(url);
+    if (!response.isOk) return null;
+    return response.bodyString;
   }
 
   Future<void> _releaseNativePlayer() async {
@@ -582,12 +596,26 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<String?> _playbackUrl(AssetModel asset) async {
+    final downloads = _downloads;
+    if (downloads != null && downloads.isDownloaded(asset.id)) {
+      final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
+      if (localPath != null && localPath.isNotEmpty) {
+        _offlineSubtitlesByAssetId[asset.id] =
+            await downloads.resolveOfflineSubtitleTracks(asset);
+        return Uri.file(localPath).toString();
+      }
+    }
+
     final playback = await _resolvePlayback(asset);
     final url = playback?.delivery.url ?? '';
     return url.isEmpty ? null : url;
   }
 
   List<ChildAssetModel> _effectiveSubtitles(AssetModel asset) {
+    final offline = _offlineSubtitlesByAssetId[asset.id];
+    if (offline != null && offline.isNotEmpty) {
+      return offline;
+    }
     final fromPlayback = _playbackByAssetId[asset.id]?.media.playableSubtitles;
     if (fromPlayback != null && fromPlayback.isNotEmpty) {
       return fromPlayback;
@@ -605,6 +633,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
   void _prunePlaybackCache(Set<String> activeIds) {
     _playbackByAssetId.removeWhere((id, _) => !activeIds.contains(id));
+    _offlineSubtitlesByAssetId.removeWhere((id, _) => !activeIds.contains(id));
     for (final id in List<String>.from(_playbackByAssetId.keys)) {
       if (!activeIds.contains(id)) {
         _media.clearPlaybackCache(assetId: id);
@@ -614,16 +643,18 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
   AudioSource _audioSourceFor(AssetModel asset, {required String url}) {
     final thumb = _effectiveThumbnail(asset);
-    return AudioSource.uri(
-      Uri.parse(url),
-      tag: MediaItem(
-        id: asset.id,
-        title: asset.displayTitle,
-        artist: asset.displayDuration,
-        album: AppLocales.audio.playlistSubtitle.tr,
-        artUri: Uri.tryParse(thumb?.url ?? asset.displayThumbnailUrl),
-      ),
+    final tag = MediaItem(
+      id: asset.id,
+      title: asset.displayTitle,
+      artist: asset.displayDuration,
+      album: AppLocales.audio.playlistSubtitle.tr,
+      artUri: Uri.tryParse(thumb?.url ?? asset.displayThumbnailUrl),
     );
+    final uri = Uri.parse(url);
+    if (uri.scheme == 'file') {
+      return AudioSource.file(uri.toFilePath(), tag: tag);
+    }
+    return AudioSource.uri(uri, tag: tag);
   }
 
   Future<void> _stopSpeech() async {

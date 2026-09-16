@@ -50,6 +50,9 @@ void main() async {
     androidNotificationOngoing: true,
   );
   InitialBinding().dependencies();
+  await Get.find<PushNotiService>().initializePlatform();
+  await Get.find<MediaDownloadNotificationService>().initialize();
+  await Get.find<MediaDownloadService>().initializeDownloader();
 
   runApp(const MyApp());
 }

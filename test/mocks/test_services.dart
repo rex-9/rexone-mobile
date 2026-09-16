@@ -2,6 +2,7 @@
 // ignore_for_file: must_call_super
 import 'dart:async';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
@@ -15,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:rexone_mobile/modules/profile/profile.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/network.service.dart';
 import 'package:rexone_mobile/services/permission.service.dart';
 import 'package:rexone_mobile/services/push_noti.service.dart';
@@ -110,6 +112,23 @@ class FakeStorageService extends StorageService {
   void clearAudioSession() => memory.remove(StorageKeys.audioSession);
 
   @override
+  Map<String, dynamic>? getMediaDownloadsIndex() {
+    final data = memory[StorageKeys.mediaDownloads];
+    if (data is! Map) return null;
+    return Map<String, dynamic>.from(
+      data.map((key, value) => MapEntry(key.toString(), value)),
+    );
+  }
+
+  @override
+  void saveMediaDownloadsIndex(Map<String, dynamic> index) {
+    memory[StorageKeys.mediaDownloads] = Map<String, dynamic>.from(index);
+  }
+
+  @override
+  void clearMediaDownloadsIndex() => memory.remove(StorageKeys.mediaDownloads);
+
+  @override
   void clearAll() => memory.clear();
 }
 
@@ -184,9 +203,45 @@ class FakePushNotiService extends GetxService implements PushNotiService {
   bool permissionRequested = false;
   UserModel? syncedUser;
   bool userCleared = false;
+  bool platformInitialized = false;
+
+  @override
+  bool get isLocalNotificationsReady => true;
 
   @override
   void onInit() {}
+
+  @override
+  Future<void> initializePlatform() async {
+    platformInitialized = true;
+  }
+
+  @override
+  Future<void> createAndroidChannel(AndroidNotificationChannel channel) async {}
+
+  @override
+  Future<void> showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+    required NotificationDetails details,
+    String? payload,
+  }) async {}
+
+  @override
+  Future<void> createLiveActivity(
+    String activityId,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> updateLiveActivity(
+    String activityId,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> endLiveActivity(String activityId) async {}
 
   @override
   Future<void> requestPermission() async {
@@ -944,6 +999,50 @@ class FakeMediaService extends MediaService {
             ),
           ),
         );
+  }
+}
+
+/// Lightweight offline download double for controller unit tests.
+class FakeMediaDownloadService extends MediaDownloadService {
+  bool clearedAll = false;
+
+  @override
+  void onInit() {}
+
+  @override
+  Future<void> initializeDownloader() async {}
+
+  @override
+  Future<void> downloadAsset(AssetModel asset) async {
+    entries[asset.id] = MediaDownloadEntry(
+      assetId: asset.id,
+      state: EMediaDownloadState.ready,
+      progress: 1,
+      title: asset.displayTitle,
+      mediaFormat: asset.format,
+      mediaPath: '${asset.id}.enc',
+      downloadedAt: DateTime.now(),
+    );
+    entries.refresh();
+  }
+
+  @override
+  Future<void> cancelDownload(String assetId) async {
+    entries.remove(assetId);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> deleteDownload(String assetId) async {
+    entries.remove(assetId);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> clearAllDownloads() async {
+    entries.clear();
+    entries.refresh();
+    clearedAll = true;
   }
 }
 

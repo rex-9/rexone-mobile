@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/models/models.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 
 import '../../components/media_asset_tile.dart';
+import '../../controllers/playlist.controller.dart';
 
 /// Scrollable asset list shown below the inline video player.
 class VideoPlaylistPanel extends StatelessWidget {
@@ -48,25 +50,45 @@ class VideoPlaylistPanel extends StatelessWidget {
                     ),
                   ),
                 )
-              : ListView.separated(
-                  itemCount: assets.length,
-                  separatorBuilder: (_, _) =>
-                      SizedBox(height: Design.spacing.sm),
-                  itemBuilder: (context, index) {
-                    final item = assets[index];
-                    final isCurrent =
-                        currentIndex == index && hasSession;
+              : Obx(() {
+                  final downloads = Get.find<MediaDownloadService>();
+                  downloads.entries.length;
 
-                    return MediaAssetTile(
-                      asset: item,
-                      isCurrent: isCurrent,
-                      isPlaying: isPlaying,
-                      isLoading: isLoading,
-                      showLoadingTrailing: false,
-                      onTap: () => onPlayAt(index),
-                    );
-                  },
-                ),
+                  final playlist = Get.isRegistered<MediaPlaylistController>()
+                      ? Get.find<MediaPlaylistController>()
+                      : null;
+
+                  return ListView.separated(
+                    itemCount: assets.length,
+                    separatorBuilder: (_, _) =>
+                        SizedBox(height: Design.spacing.sm),
+                    itemBuilder: (context, index) {
+                      final item = assets[index];
+                      final isCurrent =
+                          currentIndex == index && hasSession;
+                      final downloadState = playlist != null
+                          ? playlist.downloadStateFor(item)
+                          : downloads.stateFor(item.id);
+                      final downloadProgress = playlist != null
+                          ? playlist.downloadProgressFor(item)
+                          : downloads.progressFor(item.id);
+
+                      return MediaAssetTile(
+                        asset: item,
+                        isCurrent: isCurrent,
+                        isPlaying: isPlaying,
+                        isLoading: isLoading,
+                        showLoadingTrailing: false,
+                        downloadState: downloadState,
+                        downloadProgress: downloadProgress,
+                        onDownloadTap: playlist == null
+                            ? () {}
+                            : () => playlist.onDownloadTap(item),
+                        onTap: () => onPlayAt(index),
+                      );
+                    },
+                  );
+                }),
         ),
       ],
     );

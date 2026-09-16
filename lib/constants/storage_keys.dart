@@ -18,4 +18,5 @@ class StorageKeys {
   static const hasFailureHistory = 'hasFailureHistory';
   static const skipPremium = 'skip_premium';
   static const audioSession = 'audio_session';
+  static const mediaDownloads = 'media_downloads';
 }

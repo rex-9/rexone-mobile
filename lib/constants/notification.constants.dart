@@ -27,4 +27,7 @@ class NotificationConstants {
   static const String iamUpdated = 'iam_updated';
 
   static const String externalLinkScheme = 'https';
+
+  /// App Group shared with iOS Live Activity widget extension.
+  static const String iosAppGroupId = 'group.com.rexone.mobile';
 }

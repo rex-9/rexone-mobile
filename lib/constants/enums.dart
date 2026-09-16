@@ -74,3 +74,22 @@ enum ESpeechEventType {
     );
   }
 }
+
+enum EMediaDownloadState {
+  none,
+  queued,
+  downloading,
+  processing,
+  ready,
+  failed;
+
+  String get storageValue => name;
+
+  static EMediaDownloadState fromStorage(String? value) {
+    if (value == null || value.isEmpty) return EMediaDownloadState.none;
+    return EMediaDownloadState.values.firstWhere(
+      (state) => state.name == value,
+      orElse: () => EMediaDownloadState.none,
+    );
+  }
+}

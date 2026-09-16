@@ -1,5 +1,6 @@
 export 'user.model.dart';
 export 'asset.model.dart';
+export 'media_download_entry.model.dart';
 export 'log.model.dart';
 export 'version.model.dart';
 export 'user_version.model.dart';

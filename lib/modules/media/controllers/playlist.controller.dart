@@ -7,12 +7,14 @@ import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 
 import '../media.dart';
 
 /// Paginated mixed audio/video playlist from `GET /v1/assets` (no type filter).
 class MediaPlaylistController extends GetxController {
   late final MediaService _media;
+  late final MediaDownloadService _downloads;
 
   final RxList<AssetModel> assets = <AssetModel>[].obs;
   final RxBool isLoading = false.obs;
@@ -50,7 +52,59 @@ class MediaPlaylistController extends GetxController {
   void onInit() {
     super.onInit();
     _media = Get.find<MediaService>();
+    _downloads = Get.find<MediaDownloadService>();
     fetchAssets(refresh: true);
+  }
+
+  EMediaDownloadState downloadStateFor(AssetModel asset) =>
+      _downloads.stateFor(asset.id);
+
+  double downloadProgressFor(AssetModel asset) =>
+      _downloads.progressFor(asset.id);
+
+  Future<void> onDownloadTap(AssetModel asset) async {
+    final state = downloadStateFor(asset);
+    switch (state) {
+      case EMediaDownloadState.none:
+      case EMediaDownloadState.failed:
+        await _startDownload(asset);
+      case EMediaDownloadState.ready:
+        await _removeDownload(asset);
+      case EMediaDownloadState.queued:
+      case EMediaDownloadState.downloading:
+      case EMediaDownloadState.processing:
+        await _cancelDownload(asset);
+    }
+  }
+
+  Future<void> _startDownload(AssetModel asset) async {
+    try {
+      await _downloads.downloadAsset(asset);
+    } catch (error) {
+      final message = error.toString();
+      if (message.contains('Too many active downloads')) {
+        AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
+      } else {
+        AppSnackbar.error(AppLocales.media.downloadFailed.tr);
+      }
+    }
+  }
+
+  Future<void> _removeDownload(AssetModel asset) async {
+    try {
+      await _downloads.deleteDownload(asset.id);
+    } catch (error) {
+      debugPrint('❌ [MediaPlaylistController] Remove download error: $error');
+      AppSnackbar.error(AppLocales.media.downloadFailed.tr);
+    }
+  }
+
+  Future<void> _cancelDownload(AssetModel asset) async {
+    try {
+      await _downloads.cancelDownload(asset.id);
+    } catch (error) {
+      debugPrint('❌ [MediaPlaylistController] Cancel download error: $error');
+    }
   }
 
   bool isCurrentAsset(AssetModel asset) {

@@ -16,4 +16,8 @@ class MediaPlaybackConstants {
 
   static const String lyricsErrorFetchFailed = 'fetch_failed';
   static const String lyricsErrorEmpty = 'empty';
+
+  /// Temporary override for download/playback testing. Set empty to use API URL.
+  static const String testPlaybackUrl =
+      'https://testfileorg.netwet.net/Sample%20Video%202/sample_1280x720.mp4';
 }

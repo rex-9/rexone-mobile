@@ -229,8 +229,12 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 - **Mixed queue**: Next/previous follow the full playlist order via `AudioPlayerService.playQueueAt()` — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
 - **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
 - **Video**: Inline 16:9 player via `media_kit`, YouTube-style settings sheet (speed/volume), and closed captions from the same subtitle tracks with per-track selection in the subtitle sheet.
-- **Shared helpers**: `SrtHelper` (parse + active cue), `VideoLayoutHelper` (inline viewport sizing), `MediaLayoutConstants`, and `MediaPlaybackConstants`.
+- **Offline downloads**: Per-item download from the playlist stores AES-GCM encrypted media (and subtitle sidecars) under the app sandbox (`ApplicationSupport/media_offline/`). Playback prefers the local decrypted cache when available; files are not exported to system Downloads and are cleared on logout. Requires `MEDIA_OFFLINE_ENCRYPTION_KEY` in `.env.*`. Background transfer uses `background_downloader` (Android foreground notification; iOS complete/fail local notification; Live Activity UI needs a native Widget Extension).
+- **Shared helpers**: `SrtHelper` (parse + active cue), `VideoLayoutHelper` (inline viewport sizing), `MediaLayoutConstants`, `MediaPlaybackConstants`, and `MediaEncryptionHelper`.
 - Services return `Future<bool>` for playback failures; controllers and pages surface errors via `AppSnackbar` (LAW §3.3 — services never show UI).
+
+> [!IMPORTANT]
+> Offline encryption is practical sandbox protection, not DRM. The env key is bundled with the app; a determined attacker on a rooted/jailbroken device can still extract offline media.
 
 ### Client observability & telemetry
 
@@ -387,6 +391,7 @@ GOOGLE_SERVER_CLIENT_ID=your_google_server_client_id.apps.googleusercontent.com
 ONE_SIGNAL_APP_ID=your_onesignal_app_id
 ANDROID_APP_ID=com.rexone.mobile
 IOS_APP_ID=com.rexone.mobile
+MEDIA_OFFLINE_ENCRYPTION_KEY=your-long-random-secret-here
 ```
 
 4. Configure Firebase & Google Services:

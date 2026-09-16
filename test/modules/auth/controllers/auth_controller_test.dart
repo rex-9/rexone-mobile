@@ -5,6 +5,7 @@ import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
@@ -18,6 +19,7 @@ void main() {
   late FakeAnalyticsService fakeAnalytics;
   late FakePushNotiService fakePush;
   late FakeSocketService fakeSocket;
+  late FakeMediaDownloadService fakeDownloads;
   late AuthController authController;
 
   setUp(() {
@@ -27,12 +29,14 @@ void main() {
     fakeAnalytics = FakeAnalyticsService();
     fakePush = FakePushNotiService();
     fakeSocket = FakeSocketService();
+    fakeDownloads = FakeMediaDownloadService();
 
     Get.put<AuthService>(fakeAuth);
     Get.put<StorageService>(fakeStorage);
     Get.put<AnalyticsService>(fakeAnalytics);
     Get.put<PushNotiService>(fakePush);
     Get.put<SocketService>(fakeSocket);
+    Get.put<MediaDownloadService>(fakeDownloads);
 
     authController = Get.put(AuthController());
   });
@@ -84,6 +88,7 @@ void main() {
       expect(fakeStorage.getUserData(), isNull);
       expect(fakeStorage.getRouteStack(), isEmpty);
       expect(fakePush.userCleared, isTrue);
+      expect(fakeDownloads.clearedAll, isTrue);
       expect(fakeSocket.wasDisconnected, isTrue);
       expect(fakeAnalytics.loggedEvents, contains(AnalyticsConstants.eventSignOut));
     });

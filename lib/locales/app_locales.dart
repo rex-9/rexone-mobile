@@ -316,6 +316,15 @@ class _MediaLocales {
   final playlistSubtitle = 'media.playlist_subtitle';
   final playlistEmpty = 'media.playlist_empty';
   final playAll = 'media.play_all';
+  final download = 'media.download';
+  final downloading = 'media.downloading';
+  final downloadProgress = 'media.download_progress';
+  final downloadQueued = 'media.download_queued';
+  final processing = 'media.processing';
+  final downloaded = 'media.downloaded';
+  final downloadFailed = 'media.download_failed';
+  final removeDownload = 'media.remove_download';
+  final downloadTooMany = 'media.download_too_many';
 }
 
 class _AudioLocales {

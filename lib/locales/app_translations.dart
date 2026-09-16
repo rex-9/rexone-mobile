@@ -280,6 +280,15 @@ class AppTranslations extends Translations {
       AppLocales.media.playlistSubtitle: 'Audio & video',
       AppLocales.media.playlistEmpty: 'No media yet',
       AppLocales.media.playAll: 'Play All',
+      AppLocales.media.download: 'Download',
+      AppLocales.media.downloading: 'Downloading…',
+      AppLocales.media.downloadProgress: 'Downloading… @percent%',
+      AppLocales.media.downloadQueued: 'Queued',
+      AppLocales.media.processing: 'Processing…',
+      AppLocales.media.downloaded: 'Downloaded',
+      AppLocales.media.downloadFailed: 'Download failed',
+      AppLocales.media.removeDownload: 'Remove download',
+      AppLocales.media.downloadTooMany: 'Too many downloads in progress',
 
       // Audio
       AppLocales.audio.title: 'Audio Playlist',
@@ -592,6 +601,15 @@ class AppTranslations extends Translations {
       AppLocales.media.playlistSubtitle: 'အသံနှင့် ဗီဒီယို',
       AppLocales.media.playlistEmpty: 'မီဒီယာ မရှိသေးပါ',
       AppLocales.media.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.media.download: 'ဒေါင်းလုဒ်',
+      AppLocales.media.downloading: 'ဒေါင်းလုဒ်လုပ်နေသည်…',
+      AppLocales.media.downloadProgress: 'ဒေါင်းလုဒ်လုပ်နေသည်… @percent%',
+      AppLocales.media.downloadQueued: 'စောင့်ဆိုင်းနေသည်',
+      AppLocales.media.processing: 'ပြင်ဆင်နေသည်…',
+      AppLocales.media.downloaded: 'ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.downloadFailed: 'ဒေါင်းလုဒ်မအောင်မြင်ပါ',
+      AppLocales.media.removeDownload: 'ဒေါင်းလုဒ်ဖယ်ရှားမည်',
+      AppLocales.media.downloadTooMany: 'ဒေါင်းလုဒ်များလွန်းနေသည်',
 
       // Audio
       AppLocales.audio.title: 'အသံစာရင်း',

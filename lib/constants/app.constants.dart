@@ -14,6 +14,7 @@ class AppConstants {
   static String get oneSignalAppIdKey => 'ONE_SIGNAL_APP_ID';
   static String get androidAppIdKey => 'ANDROID_APP_ID';
   static String get iosAppIdKey => 'IOS_APP_ID';
+  static String get mediaOfflineEncryptionKey => 'MEDIA_OFFLINE_ENCRYPTION_KEY';
 
   // ===== VERSIONS from pubspec.yaml (Runtime) =====
   Future<String> getVersion() async {

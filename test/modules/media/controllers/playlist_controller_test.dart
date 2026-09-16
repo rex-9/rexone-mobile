@@ -5,6 +5,7 @@ import 'package:rexone_mobile/locales/app_translations.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/media/media.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 
 import '../../../mocks/test_services.dart';
 
@@ -58,6 +59,7 @@ void main() {
     fakeAudioPlayer = FakeAudioPlayerService();
     fakeVideoPlayer = FakeVideoPlayerService();
     Get.put<MediaService>(fakeMedia);
+    Get.put<MediaDownloadService>(FakeMediaDownloadService());
     Get.put<AudioPlayerService>(fakeAudioPlayer);
     Get.put<VideoPlayerService>(fakeVideoPlayer);
     fakeMedia.assetsResponse = const PaginatedResponse<AssetModel>(

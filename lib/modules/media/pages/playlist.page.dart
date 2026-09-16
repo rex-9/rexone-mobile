@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/services/services.dart';
 
 import '../media.dart';
 
@@ -48,8 +49,9 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
       child: Obx(() {
         final audio = Get.find<AudioPlayerService>();
         final video = Get.find<VideoPlayerService>();
+        final downloads = Get.find<MediaDownloadService>();
 
-        // Playlist + both players drive tile/current-row state.
+        // Playlist + players + download index drive tile state.
         _controller.assets.length;
         _controller.isLoading.value;
         _controller.isLoadingMore.value;
@@ -62,6 +64,7 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
         video.isPlaying.value;
         video.isLoading.value;
         video.hasSession.value;
+        downloads.entries.length;
 
         return _buildBody(context);
       }),
@@ -124,6 +127,8 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
               final isCurrent = _controller.isCurrentAsset(asset);
               final isPlaying = _controller.isPlayingAsset(asset);
               final isLoading = _controller.isLoadingAsset(asset);
+              final downloadState = _controller.downloadStateFor(asset);
+              final downloadProgress = _controller.downloadProgressFor(asset);
 
               return Padding(
                 padding: Design.spacing.paddingOnly(b: Design.spacing.sm),
@@ -133,6 +138,9 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
                   isPlaying: isPlaying,
                   isLoading: isLoading,
                   showLoadingTrailing: asset.isAudioMedia,
+                  downloadState: downloadState,
+                  downloadProgress: downloadProgress,
+                  onDownloadTap: () => _controller.onDownloadTap(asset),
                   onTap: () => _controller.playAt(index),
                 ),
               );
