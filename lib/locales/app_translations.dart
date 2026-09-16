@@ -12,7 +12,7 @@ class AppTranslations extends Translations {
     'en_US': {
       // Common
       AppLocales.common.home: 'Home',
-      AppLocales.common.welcomeHome: 'Welcome to Rexone!',
+      AppLocales.common.welcomeHome: 'Welcome to RexOne!',
       AppLocales.common.loading: 'Loading...',
       AppLocales.common.signOut: 'Sign Out',
       AppLocales.common.goBack: 'Go Back',
@@ -44,7 +44,7 @@ class AppTranslations extends Translations {
           'Your session was replaced by a newer sign in on this platform.',
 
       // Auth Initial
-      AppLocales.auth.initial.title: '✨ Welcome to Rexone ✨',
+      AppLocales.auth.initial.title: '✨ Welcome to RexOne ✨',
       AppLocales.auth.initial.subtitle:
           'Support dreams or make yours come true',
       AppLocales.auth.initial.continueWithGoogle: 'Continue with Google',
@@ -197,7 +197,7 @@ class AppTranslations extends Translations {
       // Feedback
       AppLocales.feedback.title: 'Share Your Feedback',
       AppLocales.feedback.description:
-          'We value your thoughts and ideas to help improve Rexone.',
+          'We value your thoughts and ideas to help improve RexOne.',
       AppLocales.feedback.rateExperience: 'Rate your experience (1 - 10)',
       AppLocales.feedback.tellUsMore: "What's on your mind?",
       AppLocales.feedback.placeholder:
@@ -272,13 +272,13 @@ class AppTranslations extends Translations {
       AppLocales.notification.deleteConfirm:
           'Are you sure you want to delete this notification? This action cannot be undone.',
       AppLocales.notification.failedToLoad: 'Failed to load notifications',
-      AppLocales.notification.webOnlyTitle: 'Available on Rexone Web',
+      AppLocales.notification.webOnlyTitle: 'Available on RexOne Web',
       AppLocales.notification.webOnlyMessage:
-          'This change is managed in the Rexone Web admin portal. View it there for full details.',
+          'This change is managed in the RexOne Web admin portal. View it there for full details.',
       AppLocales.notification.webOnlyConfirm: 'Understood',
       AppLocales.notification.externalTitle: 'Open external website?',
       AppLocales.notification.externalMessage:
-          'This link will leave Rexone and open in your browser.',
+          'This link will leave RexOne and open in your browser.',
       AppLocales.notification.externalConfirm: 'Open website',
 
       // Update
@@ -336,7 +336,7 @@ class AppTranslations extends Translations {
     'my_MM': {
       // Common
       AppLocales.common.home: 'ပင်မ',
-      AppLocales.common.welcomeHome: 'Rexone မှ ကြိုဆိုပါတယ်!',
+      AppLocales.common.welcomeHome: 'RexOne မှ ကြိုဆိုပါတယ်!',
       AppLocales.common.loading: 'လုပ်ဆောင်နေဆဲ...',
       AppLocales.common.signOut: 'ထွက်မည်',
       AppLocales.common.goBack: 'နောက်သို့',
@@ -370,7 +370,7 @@ class AppTranslations extends Translations {
           'ဤစက်ပေါ်တွင် အသစ်ဝင်ရောက်မှုကြောင့် session အစားထိုးခံရပါသည်။',
 
       // Auth Initial
-      AppLocales.auth.initial.title: '✨ Rexone မှ ကြိုဆိုပါသည် ✨',
+      AppLocales.auth.initial.title: '✨ RexOne မှ ကြိုဆိုပါသည် ✨',
       AppLocales.auth.initial.subtitle: 'အိပ်မက်များကို အကောင်အထည်ဖော်လိုက်ပါ',
       AppLocales.auth.initial.continueWithGoogle: 'Google ဖြင့် ဆက်ရန်',
       AppLocales.auth.initial.or: 'သို့မဟုတ်',
@@ -522,7 +522,7 @@ class AppTranslations extends Translations {
       // Feedback
       AppLocales.feedback.title: 'အကြံပြုချက်',
       AppLocales.feedback.description:
-          'Rexone ပိုမိုကောင်းမွန်စေရန် သင့်အကြံပြုချက်ကို ကြိုဆိုပါသည်။',
+          'RexOne ပိုမိုကောင်းမွန်စေရန် သင့်အကြံပြုချက်ကို ကြိုဆိုပါသည်။',
       AppLocales.feedback.rateExperience: 'အဆင့်သတ်မှတ်ပါ (၁ - ၁၀)',
       AppLocales.feedback.tellUsMore: 'သင့်အကြံပြုချက် ရေးပါ',
       AppLocales.feedback.placeholder:
@@ -584,13 +584,13 @@ class AppTranslations extends Translations {
       AppLocales.notification.deleteConfirm:
           'ဤအသိပေးချက်ကို ဖျက်ရန် သေချာပါသလား? ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍မရပါ။',
       AppLocales.notification.failedToLoad: 'အသိပေးချက်များ ရယူ၍မရပါ',
-      AppLocales.notification.webOnlyTitle: 'Rexone Web တွင် ရနိုင်သည်',
+      AppLocales.notification.webOnlyTitle: 'RexOne Web တွင် ရနိုင်သည်',
       AppLocales.notification.webOnlyMessage:
-          'ဤအပြောင်းအလဲကို Rexone Web admin portal တွင် စီမံထားသည်။ အသေးစိတ်ကို ထိုနေရာတွင် ကြည့်ပါ။',
+          'ဤအပြောင်းအလဲကို RexOne Web admin portal တွင် စီမံထားသည်။ အသေးစိတ်ကို ထိုနေရာတွင် ကြည့်ပါ။',
       AppLocales.notification.webOnlyConfirm: 'နားလည်ပါပြီ',
       AppLocales.notification.externalTitle: 'ပြင်ပ ဝဘ်ဆိုက်ကို ဖွင့်မလား?',
       AppLocales.notification.externalMessage:
-          'ဤလင့်ခ်သည် Rexone မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
+          'ဤလင့်ခ်သည် RexOne မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
       AppLocales.notification.externalConfirm: 'ဝဘ်ဆိုက် ဖွင့်မည်',
 
       // Update
@@ -615,14 +615,12 @@ class AppTranslations extends Translations {
       AppLocales.audio.next: 'ရှေ့သို့',
       AppLocales.audio.previous: 'နောက်သို့',
       AppLocales.audio.playlistSubtitle: 'နမူနာ သီချင်းများ',
-      AppLocales.audio.playbackFailed:
-          'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
+      AppLocales.audio.playbackFailed: 'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
       AppLocales.audio.close: 'ပိတ်မည်',
       AppLocales.audio.empty: 'အသံဖိုင်များ မရှိသေးပါ',
       AppLocales.audio.lyrics: 'သီချင်းစာသား',
       AppLocales.audio.lyricsLoading: 'သီချင်းစာသား ဖွင့်နေသည်…',
-      AppLocales.audio.lyricsUnavailable:
-          'ဤသီချင်းအတွက် သီချင်းစာသား မရှိပါ',
+      AppLocales.audio.lyricsUnavailable: 'ဤသီချင်းအတွက် သီချင်းစာသား မရှိပါ',
       AppLocales.audio.lyricsLoadFailed:
           'သီချင်းစာသား ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
       AppLocales.audio.lyricsTrack: 'သီချင်းစာသား ခေါင်းစဉ်',
@@ -644,8 +642,7 @@ class AppTranslations extends Translations {
       AppLocales.video.volume: 'အသံအတိုး',
       AppLocales.video.subtitles: 'စာတန်းထိုး',
       AppLocales.video.subtitlesOff: 'ပိတ်မည်',
-      AppLocales.video.subtitlesUnavailable:
-          'ဤဗီဒီယိုအတွက် စာတန်းထိုး မရှိပါ',
+      AppLocales.video.subtitlesUnavailable: 'ဤဗီဒီယိုအတွက် စာတန်းထိုး မရှိပါ',
       AppLocales.video.captions: 'စာတန်းထိုး',
     },
   };
