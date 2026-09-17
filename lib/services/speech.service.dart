@@ -224,7 +224,9 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
           if (await _recorder.isRecording()) {
             await _recorder.stop();
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('🎤 [SpeechService] Recorder stop error: $e');
+        }
         return ESpeechListenResult.failed;
       }
 
@@ -287,7 +289,9 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
         if (await _recorder.isRecording()) {
           await _recorder.stop();
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('🎤 [SpeechService] Teardown recorder stop error: $e');
+      }
 
       if (_speechSubscribed) {
         _socket.perform(SpeechKeys.channel, SpeechKeys.stop);

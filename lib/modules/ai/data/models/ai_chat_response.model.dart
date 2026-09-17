@@ -64,11 +64,12 @@ class AiChatResponse {
       roomId: roomId,
       status: responseMeta?[AiKeys.status]?.toString() ??
           json[AiKeys.status]?.toString(),
-      operationId: responseMeta?['operation_id']?.toString() ??
-          json['operation_id']?.toString(),
-      operationType: responseMeta?['operation_type']?.toString() ??
-          json['operation_type']?.toString(),
-      link: responseMeta?['link']?.toString() ?? json['link']?.toString(),
+      operationId: responseMeta?[AiKeys.operationId]?.toString() ??
+          json[AiKeys.operationId]?.toString(),
+      operationType: responseMeta?[AiKeys.operationType]?.toString() ??
+          json[AiKeys.operationType]?.toString(),
+      link: responseMeta?[AiKeys.link]?.toString() ??
+          json[AiKeys.link]?.toString(),
       jobId: responseMeta?[AiKeys.jobId]?.toString() ??
           json[AiKeys.jobId]?.toString(),
     );
