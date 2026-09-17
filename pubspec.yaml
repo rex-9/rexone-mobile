@@ -71,6 +71,7 @@ dev_dependencies:
   # Test-only: lets tests point path_provider (used by get_storage) at a
   # temp directory, since platform channels are unavailable in flutter test.
   path_provider_platform_interface: ^2.1.2
+  plugin_platform_interface: ^2.1.8
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -8,11 +8,11 @@ import 'package:get/get.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:rexone_mobile/constants/constants.dart';
-import 'package:rexone_mobile/models/media_download_entry.model.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/media_download_notification.service.dart';
+import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
 import '../mocks/test_services.dart';
@@ -39,9 +39,6 @@ class _FakePathProvider extends Fake
 
 class _FakeMediaDownloadNotificationService
     extends MediaDownloadNotificationService {
-  @override
-  void onInit() {}
-
   @override
   Future<void> initialize() async {}
 
@@ -78,6 +75,7 @@ void main() {
     fakeStorage = FakeStorageService();
     Get.put<StorageService>(fakeStorage);
     Get.put<MediaService>(FakeMediaService());
+    Get.put<PushNotiService>(FakePushNotiService());
     Get.put<MediaDownloadNotificationService>(
       _FakeMediaDownloadNotificationService(),
     );
