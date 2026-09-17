@@ -4,7 +4,7 @@ import 'package:rexone_mobile/helpers/helpers.dart';
 class AssetModel {
   final String id;
   final String name;
-  final String? displayName;
+  final String? title;
   final String? description;
   final String url;
   final String type;
@@ -26,7 +26,7 @@ class AssetModel {
   AssetModel({
     required this.id,
     required this.name,
-    this.displayName,
+    this.title,
     this.description,
     required this.url,
     required this.type,
@@ -50,7 +50,7 @@ class AssetModel {
     return AssetModel(
       id: json[ApiKeys.id]?.toString() ?? '',
       name: json[AssetKeys.name] ?? '',
-      displayName: json[AssetKeys.displayName]?.toString(),
+      title: json[AssetKeys.title]?.toString(),
       description: json[AssetKeys.description]?.toString(),
       url: json[AssetKeys.url] ?? '',
       type: json[AssetKeys.type] ?? '',
@@ -79,7 +79,7 @@ class AssetModel {
     return {
       ApiKeys.id: id,
       AssetKeys.name: name,
-      if (displayName != null) AssetKeys.displayName: displayName,
+      if (title != null) AssetKeys.title: title,
       if (description != null) AssetKeys.description: description,
       AssetKeys.url: url,
       AssetKeys.type: type,
@@ -101,7 +101,7 @@ class AssetModel {
   AssetModel copyWith({
     String? id,
     String? name,
-    String? displayName,
+    String? title,
     String? description,
     String? url,
     String? type,
@@ -123,7 +123,7 @@ class AssetModel {
     return AssetModel(
       id: id ?? this.id,
       name: name ?? this.name,
-      displayName: displayName ?? this.displayName,
+      title: title ?? this.title,
       description: description ?? this.description,
       url: url ?? this.url,
       type: type ?? this.type,
