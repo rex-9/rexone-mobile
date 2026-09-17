@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:live_activities/live_activities.dart';
+import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -22,6 +23,13 @@ class PushNotiService extends GetxService {
   bool _localNotificationsReady = false;
 
   bool get isLocalNotificationsReady => _localNotificationsReady;
+
+  /// Live Activity deep-link stream (Pause/Resume). Null when unavailable.
+  Stream<UrlSchemeData>? liveActivityUrlSchemeStream() {
+    final plugin = _liveActivities;
+    if (plugin == null) return null;
+    return plugin.urlSchemeStream();
+  }
 
   @override
   void onInit() {
@@ -94,6 +102,7 @@ class PushNotiService extends GetxService {
       _liveActivities = LiveActivities();
       await _liveActivities!.init(
         appGroupId: NotificationConstants.iosAppGroupId,
+        urlScheme: NotificationConstants.iosLiveActivityUrlScheme,
       );
       debugPrint('✅ Live Activities initialized');
     } catch (error) {

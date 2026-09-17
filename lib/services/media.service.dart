@@ -119,37 +119,19 @@ class MediaService extends GetxService {
 
     final parsed = _api.parseResponse<AssetPlaybackResponse>(
       response,
-      (data) =>
-          ApiHelper.parseRecord(data, AssetPlaybackResponse.fromJson) ??
-          AssetPlaybackResponse.fromJson(const {}),
+      (data) => ApiHelper.parseRecord(data, AssetPlaybackResponse.fromJson),
     );
 
-    if (parsed.success && parsed.data != null) {
-      final data = _withTestPlaybackUrl(parsed.data!);
-      _playbackCache[assetId] = data;
-      return ApiResponse.success(
-        data: data,
-        message: parsed.message,
-        statusCode: parsed.statusCode,
-      );
+    final playback = parsed.data;
+    if (parsed.success &&
+        playback != null &&
+        playback.delivery.url.isNotEmpty) {
+      _playbackCache[assetId] = playback;
+    } else if (cached != null && cached.isNearExpiry) {
+      // Refetch failed or returned unusable data — drop the stale entry.
+      _playbackCache.remove(assetId);
     }
 
     return parsed;
-  }
-
-  /// Dev-only: swap delivery URL for a fixed public sample when configured.
-  AssetPlaybackResponse _withTestPlaybackUrl(AssetPlaybackResponse playback) {
-    const testUrl = MediaPlaybackConstants.testPlaybackUrl;
-    if (testUrl.isEmpty) return playback;
-
-    return AssetPlaybackResponse(
-      assetId: playback.assetId,
-      delivery: AssetPlaybackDelivery(
-        type: playback.delivery.type,
-        url: testUrl,
-        expiresAt: playback.delivery.expiresAt,
-      ),
-      media: playback.media,
-    );
   }
 }

@@ -320,11 +320,24 @@ class _MediaLocales {
   final downloading = 'media.downloading';
   final downloadProgress = 'media.download_progress';
   final downloadQueued = 'media.download_queued';
+  final downloadPaused = 'media.download_paused';
+  final pauseDownload = 'media.pause_download';
+  final resumeDownload = 'media.resume_download';
   final processing = 'media.processing';
   final downloaded = 'media.downloaded';
   final downloadFailed = 'media.download_failed';
   final removeDownload = 'media.remove_download';
+  final removeDownloadTitle = 'media.remove_download_title';
+  final removeDownloadConfirm = 'media.remove_download_confirm';
+  final cancelDownload = 'media.cancel_download';
+  final cancelDownloadTitle = 'media.cancel_download_title';
+  final cancelDownloadConfirm = 'media.cancel_download_confirm';
   final downloadTooMany = 'media.download_too_many';
+  final downloadComplete = 'media.download_complete';
+  final downloadCompleteNamed = 'media.download_complete_named';
+  final notificationChannelName = 'media.notification_channel_name';
+  final notificationChannelDescription =
+      'media.notification_channel_description';
 }
 
 class _AudioLocales {

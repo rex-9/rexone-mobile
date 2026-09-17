@@ -70,10 +70,35 @@ class MediaPlaylistController extends GetxController {
         await _startDownload(asset);
       case EMediaDownloadState.ready:
         await _removeDownload(asset);
-      case EMediaDownloadState.queued:
-      case EMediaDownloadState.downloading:
+      case EMediaDownloadState.paused:
+        await _resumeDownload(asset);
       case EMediaDownloadState.processing:
         await _cancelDownload(asset);
+      case EMediaDownloadState.queued:
+      case EMediaDownloadState.downloading:
+        break;
+    }
+  }
+
+  Future<void> onDownloadPauseTap(AssetModel asset) async {
+    final state = downloadStateFor(asset);
+    if (state != EMediaDownloadState.queued &&
+        state != EMediaDownloadState.downloading) {
+      return;
+    }
+    try {
+      await _downloads.pauseDownload(asset.id);
+    } catch (error) {
+      debugPrint('❌ [MediaPlaylistController] Pause download error: $error');
+    }
+  }
+
+  Future<void> onDownloadLongPress(AssetModel asset) async {
+    final state = downloadStateFor(asset);
+    if (state == EMediaDownloadState.queued ||
+        state == EMediaDownloadState.downloading ||
+        state == EMediaDownloadState.paused) {
+      await _cancelDownload(asset);
     }
   }
 
@@ -90,7 +115,32 @@ class MediaPlaylistController extends GetxController {
     }
   }
 
+  Future<void> _resumeDownload(AssetModel asset) async {
+    try {
+      await _downloads.resumeDownload(asset.id);
+    } catch (error) {
+      final message = error.toString();
+      if (message.contains('Too many active downloads')) {
+        AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
+      } else {
+        debugPrint('❌ [MediaPlaylistController] Resume download error: $error');
+        AppSnackbar.error(AppLocales.media.downloadFailed.tr);
+      }
+    }
+  }
+
   Future<void> _removeDownload(AssetModel asset) async {
+    final context = Get.context;
+    if (context == null) return;
+
+    final confirmed = await AppDialog.confirm(
+      context: context,
+      title: AppLocales.media.removeDownloadTitle.tr,
+      message: AppLocales.media.removeDownloadConfirm.tr,
+      confirmLabel: AppLocales.media.removeDownload.tr,
+    );
+    if (!confirmed) return;
+
     try {
       await _downloads.deleteDownload(asset.id);
     } catch (error) {
@@ -100,6 +150,17 @@ class MediaPlaylistController extends GetxController {
   }
 
   Future<void> _cancelDownload(AssetModel asset) async {
+    final context = Get.context;
+    if (context == null) return;
+
+    final confirmed = await AppDialog.confirm(
+      context: context,
+      title: AppLocales.media.cancelDownloadTitle.tr,
+      message: AppLocales.media.cancelDownloadConfirm.tr,
+      confirmLabel: AppLocales.media.cancelDownload.tr,
+    );
+    if (!confirmed) return;
+
     try {
       await _downloads.cancelDownload(asset.id);
     } catch (error) {

@@ -50,6 +50,13 @@ class _FakeMediaDownloadNotificationService
 
   @override
   Future<void> endLiveActivityFor(String assetId) async {}
+
+  @override
+  Future<void> onDownloadPaused({
+    required String assetId,
+    required String title,
+    required double progress,
+  }) async {}
 }
 
 void main() {
@@ -108,6 +115,23 @@ void main() {
       expect(restored.title, 'Track One');
       expect(restored.mediaFormat, AssetKeys.formatAudio);
       expect(restored.isReady, isTrue);
+    });
+
+    test('fromStorage round-trips paused state', () {
+      expect(
+        EMediaDownloadState.fromStorage('paused'),
+        EMediaDownloadState.paused,
+      );
+
+      final entry = MediaDownloadEntry(
+        assetId: 'ast_paused',
+        state: EMediaDownloadState.paused,
+        progress: 0.42,
+        title: 'Halfway',
+      );
+      final restored = MediaDownloadEntry.fromJson(entry.toJson());
+      expect(restored.state, EMediaDownloadState.paused);
+      expect(restored.progress, 0.42);
     });
   });
 

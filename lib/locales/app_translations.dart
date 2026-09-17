@@ -284,11 +284,26 @@ class AppTranslations extends Translations {
       AppLocales.media.downloading: 'Downloading…',
       AppLocales.media.downloadProgress: 'Downloading… @percent%',
       AppLocales.media.downloadQueued: 'Queued',
+      AppLocales.media.downloadPaused: 'Paused · @percent%',
+      AppLocales.media.pauseDownload: 'Pause download',
+      AppLocales.media.resumeDownload: 'Resume download',
       AppLocales.media.processing: 'Processing…',
       AppLocales.media.downloaded: 'Downloaded',
       AppLocales.media.downloadFailed: 'Download failed',
       AppLocales.media.removeDownload: 'Remove download',
+      AppLocales.media.removeDownloadTitle: 'Remove download?',
+      AppLocales.media.removeDownloadConfirm:
+          'This removes the offline copy from this device. You can download it again later.',
+      AppLocales.media.cancelDownload: 'Cancel download',
+      AppLocales.media.cancelDownloadTitle: 'Cancel download?',
+      AppLocales.media.cancelDownloadConfirm:
+          'Progress for this download will be discarded.',
       AppLocales.media.downloadTooMany: 'Too many downloads in progress',
+      AppLocales.media.downloadComplete: 'Download complete',
+      AppLocales.media.downloadCompleteNamed: '@title downloaded',
+      AppLocales.media.notificationChannelName: 'Media downloads',
+      AppLocales.media.notificationChannelDescription:
+          'Offline media download status',
 
       // Audio
       AppLocales.audio.title: 'Audio Playlist',
@@ -605,11 +620,26 @@ class AppTranslations extends Translations {
       AppLocales.media.downloading: 'ဒေါင်းလုဒ်လုပ်နေသည်…',
       AppLocales.media.downloadProgress: 'ဒေါင်းလုဒ်လုပ်နေသည်… @percent%',
       AppLocales.media.downloadQueued: 'စောင့်ဆိုင်းနေသည်',
+      AppLocales.media.downloadPaused: 'ရပ်ထားသည် · @percent%',
+      AppLocales.media.pauseDownload: 'ဒေါင်းလုဒ် ခေတ္တရပ်မည်',
+      AppLocales.media.resumeDownload: 'ဒေါင်းလုဒ် ပြန်စမည်',
       AppLocales.media.processing: 'ပြင်ဆင်နေသည်…',
       AppLocales.media.downloaded: 'ဒေါင်းလုဒ်ပြီးပါပြီ',
       AppLocales.media.downloadFailed: 'ဒေါင်းလုဒ်မအောင်မြင်ပါ',
       AppLocales.media.removeDownload: 'ဒေါင်းလုဒ်ဖယ်ရှားမည်',
+      AppLocales.media.removeDownloadTitle: 'ဒေါင်းလုဒ်ဖယ်ရှားမည်?',
+      AppLocales.media.removeDownloadConfirm:
+          'ဤစက်မှ offline မိတ္တူကို ဖယ်ရှားပါမည်။ နောက်မှ ပြန်ဒေါင်းလုဒ်လုပ်နိုင်ပါသည်။',
+      AppLocales.media.cancelDownload: 'ဒေါင်းလုဒ်ပယ်ဖျက်မည်',
+      AppLocales.media.cancelDownloadTitle: 'ဒေါင်းလုဒ်ပယ်ဖျက်မည်?',
+      AppLocales.media.cancelDownloadConfirm:
+          'ဤဒေါင်းလုဒ်၏ တိုးတက်မှုကို ပယ်ဖျက်ပါမည်။',
       AppLocales.media.downloadTooMany: 'ဒေါင်းလုဒ်များလွန်းနေသည်',
+      AppLocales.media.downloadComplete: 'ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.downloadCompleteNamed: '@title ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.notificationChannelName: 'မီဒီယာ ဒေါင်းလုဒ်များ',
+      AppLocales.media.notificationChannelDescription:
+          'Offline မီဒီယာ ဒေါင်းလုဒ်အခြေအနေ',
 
       // Audio
       AppLocales.audio.title: 'အသံစာရင်း',

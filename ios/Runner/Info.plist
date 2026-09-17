@@ -92,6 +92,16 @@
 				<string>com.googleusercontent.apps.690728597235-gn4u93uln936upb7ohrpq2q35v92eg3e</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.rexone.mobile.download</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>rexonemobile</string>
+			</array>
+		</dict>
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>

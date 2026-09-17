@@ -73,6 +73,7 @@ class AppIcons {
   IconData get download => Icons.download_rounded;
   IconData get downloadDone => Icons.download_done_rounded;
   IconData get downloadCancel => Icons.cancel_outlined;
+  IconData get downloadResume => Icons.play_arrow_rounded;
 
   // ── Payment / Subscription ────────────────────────────────────
   IconData get activeSubscription => Icons.check_circle_outline;

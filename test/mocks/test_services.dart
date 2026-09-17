@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/ai/ai.dart';
@@ -207,6 +208,9 @@ class FakePushNotiService extends GetxService implements PushNotiService {
 
   @override
   bool get isLocalNotificationsReady => true;
+
+  @override
+  Stream<UrlSchemeData>? liveActivityUrlSchemeStream() => null;
 
   @override
   void onInit() {}
@@ -1029,6 +1033,22 @@ class FakeMediaDownloadService extends MediaDownloadService {
   @override
   Future<void> cancelDownload(String assetId) async {
     entries.remove(assetId);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> pauseDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null) return;
+    entries[assetId] = entry.copyWith(state: EMediaDownloadState.paused);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> resumeDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null) return;
+    entries[assetId] = entry.copyWith(state: EMediaDownloadState.downloading);
     entries.refresh();
   }
 

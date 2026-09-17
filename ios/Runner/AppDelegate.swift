@@ -4,6 +4,8 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  private var mediaDownloadLiveActivityChannel: FlutterMethodChannel?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -14,11 +16,12 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    let channel = FlutterMethodChannel(
+
+    let nowPlayingChannel = FlutterMethodChannel(
       name: "rexone/now_playing",
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
-    channel.setMethodCallHandler { call, result in
+    nowPlayingChannel.setMethodCallHandler { call, result in
       let center = MPNowPlayingInfoCenter.default()
       switch call.method {
       case "setPlaybackState":
@@ -40,6 +43,31 @@ import UIKit
       default:
         result(FlutterMethodNotImplemented)
       }
+    }
+
+    let mediaChannel = FlutterMethodChannel(
+      name: "rexone/media_download_live_activity",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    mediaDownloadLiveActivityChannel = mediaChannel
+    mediaChannel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "takePending":
+        result(MediaDownloadLiveActivityActionStore.takePending())
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+
+    NotificationCenter.default.addObserver(
+      forName: MediaDownloadLiveActivityActionStore.didEnqueueNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] notification in
+      self?.mediaDownloadLiveActivityChannel?.invokeMethod(
+        "action",
+        arguments: notification.userInfo
+      )
     }
   }
 }

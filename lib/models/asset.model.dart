@@ -7,6 +7,8 @@ class ChildAssetModel {
   final String status;
   final int? sizeBytes;
   final String name;
+  final String? title;
+  final String? description;
   final String? extension;
   final String? format;
   final String? type;
@@ -17,12 +19,17 @@ class ChildAssetModel {
     required this.status,
     this.sizeBytes,
     this.name = '',
+    this.title,
+    this.description,
     this.extension,
     this.format,
     this.type,
   });
 
   String get displayLabel {
+    final labeled = title?.trim();
+    if (labeled != null && labeled.isNotEmpty) return labeled;
+
     if (name.isEmpty) return id;
     final segments = name.split('/');
     final base = segments.isNotEmpty ? segments.last : name;
@@ -46,6 +53,8 @@ class ChildAssetModel {
       status: json[AssetKeys.status]?.toString() ?? '',
       sizeBytes: (json[AssetKeys.sizeBytes] as num?)?.toInt(),
       name: json[AssetKeys.name]?.toString() ?? '',
+      title: json[AssetKeys.title]?.toString(),
+      description: json[AssetKeys.description]?.toString(),
       extension: json[AssetKeys.extension]?.toString(),
       format: json[AssetKeys.format]?.toString(),
       type: json[AssetKeys.type]?.toString(),
@@ -56,7 +65,7 @@ class ChildAssetModel {
 class AssetModel {
   final String id;
   final String name;
-  final String? displayName;
+  final String? title;
   final String? description;
   final String url;
   final String type;
@@ -80,7 +89,7 @@ class AssetModel {
   AssetModel({
     required this.id,
     required this.name,
-    this.displayName,
+    this.title,
     this.description,
     required this.url,
     required this.type,
@@ -103,6 +112,9 @@ class AssetModel {
   });
 
   String get displayTitle {
+    final labeled = title?.trim();
+    if (labeled != null && labeled.isNotEmpty) return labeled;
+
     if (name.isEmpty) return '';
     final segments = name.split('/');
     final base = segments.isNotEmpty ? segments.last : name;
@@ -185,7 +197,7 @@ class AssetModel {
     return AssetModel(
       id: json[ApiKeys.id]?.toString() ?? '',
       name: json[AssetKeys.name]?.toString() ?? '',
-      displayName: json[AssetKeys.displayName]?.toString(),
+      title: json[AssetKeys.title]?.toString(),
       description: json[AssetKeys.description]?.toString(),
       url: json[AssetKeys.url]?.toString() ?? '',
       type: json[AssetKeys.type]?.toString() ?? '',
@@ -216,7 +228,7 @@ class AssetModel {
     return {
       ApiKeys.id: id,
       AssetKeys.name: name,
-      if (displayName != null) AssetKeys.displayName: displayName,
+      if (title != null) AssetKeys.title: title,
       if (description != null) AssetKeys.description: description,
       AssetKeys.url: url,
       AssetKeys.type: type,
@@ -238,7 +250,7 @@ class AssetModel {
   AssetModel copyWith({
     String? id,
     String? name,
-    String? displayName,
+    String? title,
     String? description,
     String? url,
     String? type,
@@ -262,7 +274,7 @@ class AssetModel {
     return AssetModel(
       id: id ?? this.id,
       name: name ?? this.name,
-      displayName: displayName ?? this.displayName,
+      title: title ?? this.title,
       description: description ?? this.description,
       url: url ?? this.url,
       type: type ?? this.type,

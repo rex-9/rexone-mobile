@@ -19,6 +19,8 @@ class MediaAssetTile extends StatelessWidget {
     required this.downloadState,
     required this.downloadProgress,
     required this.onDownloadTap,
+    this.onDownloadPauseTap,
+    this.onDownloadLongPress,
     this.showLoadingTrailing = true,
   });
 
@@ -30,6 +32,8 @@ class MediaAssetTile extends StatelessWidget {
   final EMediaDownloadState downloadState;
   final double downloadProgress;
   final VoidCallback onDownloadTap;
+  final VoidCallback? onDownloadPauseTap;
+  final VoidCallback? onDownloadLongPress;
 
   /// When true, the current row shows a spinner while [isLoading].
   /// When false, shows pause icon if [isPlaying] or [isLoading] (video player).
@@ -61,6 +65,8 @@ class MediaAssetTile extends StatelessWidget {
             state: downloadState,
             progress: downloadProgress,
             onPressed: onDownloadTap,
+            onPausePressed: onDownloadPauseTap,
+            onLongPress: onDownloadLongPress,
           ),
           if (isCurrent) _playbackTrailing(context),
         ],
@@ -94,6 +100,11 @@ class MediaAssetTile extends StatelessWidget {
       case EMediaDownloadState.downloading:
         final percent = (downloadProgress.clamp(0, 1) * 100).round();
         return AppLocales.media.downloadProgress.trParams({
+          'percent': '$percent',
+        });
+      case EMediaDownloadState.paused:
+        final percent = (downloadProgress.clamp(0, 1) * 100).round();
+        return AppLocales.media.downloadPaused.trParams({
           'percent': '$percent',
         });
       case EMediaDownloadState.processing:

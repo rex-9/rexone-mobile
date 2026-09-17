@@ -2,33 +2,11 @@
 //  MediaDownloadWidgetLiveActivity.swift
 //  MediaDownloadWidget
 //
-//  Live Activity UI for offline media downloads (live_activities plugin).
-//  Attribute type name must stay exactly: LiveActivitiesAppAttributes
-//
 
 import ActivityKit
+import AppIntents
 import SwiftUI
 import WidgetKit
-
-/// Must match the shape used by `live_activities` 2.6.x in the Runner process.
-struct LiveActivitiesAppAttributes: ActivityAttributes, Identifiable {
-  public typealias LiveDeliveryData = ContentState
-
-  public struct ContentState: Codable, Hashable {
-    var appGroupId: String?
-    var updateId: Double?
-  }
-
-  var id = UUID()
-}
-
-extension LiveActivitiesAppAttributes {
-  func prefixedKey(_ key: String) -> String {
-    "\(id)_\(key)"
-  }
-}
-
-private let sharedDefault = UserDefaults(suiteName: "group.com.rexone.mobile")!
 
 @available(iOSApplicationExtension 16.1, *)
 struct MediaDownloadWidgetLiveActivity: Widget {
@@ -36,6 +14,8 @@ struct MediaDownloadWidgetLiveActivity: Widget {
     ActivityConfiguration(for: LiveActivitiesAppAttributes.self) { context in
       let title = Self.title(from: context.attributes)
       let progress = Self.progress(from: context.attributes)
+      let paused = Self.paused(from: context.attributes)
+      let assetId = Self.assetId(from: context.attributes)
 
       VStack(alignment: .leading, spacing: 8) {
         Text(title)
@@ -45,9 +25,17 @@ struct MediaDownloadWidgetLiveActivity: Widget {
         ProgressView(value: Double(progress), total: 100)
           .tint(.accentColor)
 
-        Text("\(progress)%")
-          .font(.caption)
-          .foregroundStyle(.secondary)
+        HStack {
+          Text(paused ? "Paused · \(progress)%" : "\(progress)%")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+          Spacer()
+
+          if !assetId.isEmpty {
+            Self.controlButton(paused: paused, assetId: assetId)
+          }
+        }
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
@@ -55,10 +43,12 @@ struct MediaDownloadWidgetLiveActivity: Widget {
     } dynamicIsland: { context in
       let title = Self.title(from: context.attributes)
       let progress = Self.progress(from: context.attributes)
+      let paused = Self.paused(from: context.attributes)
+      let assetId = Self.assetId(from: context.attributes)
 
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          Image(systemName: "arrow.down.circle.fill")
+          Image(systemName: paused ? "pause.circle.fill" : "arrow.down.circle.fill")
             .foregroundStyle(.tint)
         }
         DynamicIslandExpandedRegion(.trailing) {
@@ -71,29 +61,66 @@ struct MediaDownloadWidgetLiveActivity: Widget {
               .font(.subheadline)
               .lineLimit(2)
             ProgressView(value: Double(progress), total: 100)
+            if !assetId.isEmpty {
+              Self.controlButton(paused: paused, assetId: assetId)
+            }
           }
         }
       } compactLeading: {
-        Image(systemName: "arrow.down.circle.fill")
+        Image(systemName: paused ? "pause.circle.fill" : "arrow.down.circle.fill")
       } compactTrailing: {
         Text("\(progress)%")
           .font(.caption2.monospacedDigit())
       } minimal: {
-        Image(systemName: "arrow.down.circle.fill")
+        Image(systemName: paused ? "pause.circle.fill" : "arrow.down.circle.fill")
       }
       .keylineTint(.accentColor)
     }
   }
 
+  @ViewBuilder
+  private static func controlButton(paused: Bool, assetId: String) -> some View {
+    if #available(iOSApplicationExtension 17.0, *) {
+      Button(
+        intent: MediaDownloadControlIntent(
+          assetId: assetId,
+          action: paused ? "resume" : "pause"
+        )
+      ) {
+        Text(paused ? "Resume" : "Pause")
+          .font(.caption.weight(.semibold))
+      }
+      .buttonStyle(.plain)
+    }
+  }
+
+  private static var sharedDefaults: UserDefaults? {
+    UserDefaults(suiteName: MediaDownloadLiveActivityActionStore.appGroupId)
+  }
+
   private static func title(from attributes: LiveActivitiesAppAttributes) -> String {
-    sharedDefault.string(forKey: attributes.prefixedKey("title")) ?? "Downloading"
+    sharedDefaults?.string(forKey: attributes.prefixedKey("title")) ?? "Downloading"
+  }
+
+  private static func assetId(from attributes: LiveActivitiesAppAttributes) -> String {
+    sharedDefaults?.string(forKey: attributes.prefixedKey("assetId")) ?? ""
+  }
+
+  private static func paused(from attributes: LiveActivitiesAppAttributes) -> Bool {
+    guard let sharedDefaults else { return false }
+    let key = attributes.prefixedKey("paused")
+    if let number = sharedDefaults.object(forKey: key) as? NSNumber {
+      return number.boolValue
+    }
+    return sharedDefaults.bool(forKey: key)
   }
 
   private static func progress(from attributes: LiveActivitiesAppAttributes) -> Int {
+    guard let sharedDefaults else { return 0 }
     let key = attributes.prefixedKey("progress")
-    if let number = sharedDefault.object(forKey: key) as? NSNumber {
+    if let number = sharedDefaults.object(forKey: key) as? NSNumber {
       return min(100, max(0, number.intValue))
     }
-    return min(100, max(0, sharedDefault.integer(forKey: key)))
+    return min(100, max(0, sharedDefaults.integer(forKey: key)))
   }
 }

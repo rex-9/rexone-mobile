@@ -238,6 +238,26 @@ void main() {
       expect(fakeVideoPlayer.lastPlayedIndex, 1);
     });
 
+    test('download pause and resume update entry state', () async {
+      final downloads = Get.find<MediaDownloadService>() as FakeMediaDownloadService;
+      final controller = Get.put(MediaPlaylistController());
+      final asset = _asset(id: 'a1', format: AssetKeys.formatAudio);
+
+      downloads.entries[asset.id] = MediaDownloadEntry(
+        assetId: asset.id,
+        state: EMediaDownloadState.downloading,
+        progress: 0.3,
+        title: asset.displayTitle,
+      );
+      downloads.entries.refresh();
+
+      await controller.onDownloadPauseTap(asset);
+      expect(downloads.stateFor(asset.id), EMediaDownloadState.paused);
+
+      await controller.onDownloadTap(asset);
+      expect(downloads.stateFor(asset.id), EMediaDownloadState.downloading);
+    });
+
     test('next from audio continues to video in mixed queue order', () async {
       Get.put(MediaPlaylistController());
       final mixed = [

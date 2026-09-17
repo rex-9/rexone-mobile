@@ -93,6 +93,87 @@ class MediaDownloadService extends GetxService {
         state == EMediaDownloadState.processing;
   }
 
+  bool isPaused(String assetId) =>
+      stateFor(assetId) == EMediaDownloadState.paused;
+
+  Future<void> pauseDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null) return;
+    if (entry.state != EMediaDownloadState.downloading &&
+        entry.state != EMediaDownloadState.queued) {
+      return;
+    }
+    if (!_downloaderStarted) return;
+
+    var attempted = false;
+    for (final taskId in _taskIdsForAsset(assetId)) {
+      final task = await FileDownloader().taskForId(taskId);
+      if (task is! DownloadTask) continue;
+      attempted = true;
+      await FileDownloader().pause(task);
+    }
+
+    if (!attempted && entry.state == EMediaDownloadState.queued) {
+      // Queued with no running task yet — mark paused locally.
+    }
+
+    _activeAssetIds.remove(assetId);
+    _setEntry(
+      entry.copyWith(state: EMediaDownloadState.paused),
+    );
+    await _notifications.onDownloadPaused(
+      assetId: assetId,
+      title: entry.title ?? assetId,
+      progress: entry.progress,
+    );
+  }
+
+  Future<void> resumeDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null || entry.state != EMediaDownloadState.paused) return;
+    if (!_downloaderStarted) {
+      throw StateError('Downloader not started');
+    }
+    if (_activeAssetIds.length >=
+        MediaDownloadConstants.maxConcurrentDownloads) {
+      throw StateError('Too many active downloads');
+    }
+
+    var resumed = false;
+    for (final taskId in _taskIdsForAsset(assetId)) {
+      final task = await FileDownloader().taskForId(taskId);
+      if (task is! DownloadTask) continue;
+      final ok = await FileDownloader().resume(task);
+      resumed = resumed || ok;
+    }
+
+    if (!resumed) {
+      // Fall back to record lookup when taskForId is empty after pause.
+      for (final taskId in _taskIdsForAsset(assetId)) {
+        final record = await FileDownloader().database.recordForId(taskId);
+        final task = record?.task;
+        if (task is! DownloadTask) continue;
+        final ok = await FileDownloader().resume(task);
+        resumed = resumed || ok;
+      }
+    }
+
+    if (!resumed) {
+      throw StateError('Unable to resume download');
+    }
+
+    _activeAssetIds.add(assetId);
+    _setEntry(
+      entry.copyWith(state: EMediaDownloadState.downloading),
+    );
+    await _notifications.onDownloadProgress(
+      assetId: assetId,
+      title: entry.title ?? assetId,
+      progress: entry.progress,
+      paused: false,
+    );
+  }
+
   Future<void> downloadAsset(AssetModel asset) async {
     if (asset.id.isEmpty) {
       throw StateError('Invalid asset id');
@@ -100,7 +181,9 @@ class MediaDownloadService extends GetxService {
     if (AppConfig.offlineEncryptionKey.isEmpty) {
       throw StateError('MEDIA_OFFLINE_ENCRYPTION_KEY is not configured');
     }
-    if (isDownloaded(asset.id) || isBusy(asset.id)) return;
+    if (isDownloaded(asset.id) || isBusy(asset.id) || isPaused(asset.id)) {
+      return;
+    }
     if (_activeAssetIds.length >=
         MediaDownloadConstants.maxConcurrentDownloads) {
       throw StateError('Too many active downloads');
@@ -374,6 +457,8 @@ class MediaDownloadService extends GetxService {
           url: Uri.file(path).toString(),
           status: AssetKeys.statusReady,
           name: subtitle.name,
+          title: subtitle.title,
+          description: subtitle.description,
           extension: subtitle.extension ?? 'srt',
           format: subtitle.format,
           type: subtitle.type,
@@ -441,7 +526,8 @@ class MediaDownloadService extends GetxService {
   Future<void> _reconcileInterruptedDownloads() async {
     for (final entry in entries.values.toList()) {
       if (entry.state != EMediaDownloadState.downloading &&
-          entry.state != EMediaDownloadState.queued) {
+          entry.state != EMediaDownloadState.queued &&
+          entry.state != EMediaDownloadState.paused) {
         continue;
       }
 
@@ -454,6 +540,14 @@ class MediaDownloadService extends GetxService {
             errorMessage: 'Download interrupted',
           ),
         );
+        continue;
+      }
+
+      if (entry.state == EMediaDownloadState.paused) {
+        _activeAssetIds.remove(entry.assetId);
+      } else if (entry.state == EMediaDownloadState.downloading ||
+          entry.state == EMediaDownloadState.queued) {
+        _activeAssetIds.add(entry.assetId);
       }
     }
   }
@@ -484,6 +578,10 @@ class MediaDownloadService extends GetxService {
     final assetId = meta[MediaDownloadConstants.metaAssetId]?.toString() ?? '';
     if (assetId.isEmpty) return;
 
+    final entry = entries[assetId];
+    if (entry == null) return;
+    if (entry.state == EMediaDownloadState.paused) return;
+
     final phase = meta[MediaDownloadConstants.metaPhase]?.toString() ??
         MediaDownloadConstants.phaseMedia;
     final combined = _combinedProgress(
@@ -491,9 +589,6 @@ class MediaDownloadService extends GetxService {
       phase: phase,
       phaseProgress: progress,
     );
-
-    final entry = entries[assetId];
-    if (entry == null) return;
 
     _setEntry(
       entry.copyWith(
@@ -517,16 +612,30 @@ class MediaDownloadService extends GetxService {
 
     switch (status) {
       case TaskStatus.enqueued:
+        if (stateFor(assetId) == EMediaDownloadState.paused) return;
         _setEntry(
           (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
             state: EMediaDownloadState.queued,
           ),
         );
       case TaskStatus.running:
+        if (stateFor(assetId) == EMediaDownloadState.paused) return;
         _setEntry(
           (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
             state: EMediaDownloadState.downloading,
           ),
+        );
+      case TaskStatus.paused:
+        final entry = entries[assetId];
+        if (entry == null) return;
+        _activeAssetIds.remove(assetId);
+        _setEntry(
+          entry.copyWith(state: EMediaDownloadState.paused),
+        );
+        await _notifications.onDownloadPaused(
+          assetId: assetId,
+          title: entry.title ?? assetId,
+          progress: entry.progress,
         );
       case TaskStatus.complete:
         await _handleTaskComplete(task, meta);

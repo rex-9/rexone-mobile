@@ -19,14 +19,28 @@ class MediaDownloadConstants {
 
   static const notificationChannelId = 'media_download';
 
+  /// MethodChannel for Live Activity Pause/Resume (must match AppDelegate).
+  static const liveActivityMethodChannel = 'rexone/media_download_live_activity';
+  static const liveActivityMethodAction = 'action';
+  static const liveActivityMethodTakePending = 'takePending';
+
   static const metaAssetId = 'assetId';
   static const metaPhase = 'phase';
   static const metaTitle = 'title';
   static const metaMediaFormat = 'mediaFormat';
   static const metaSubtitleId = 'subtitleId';
+  static const metaPaused = 'paused';
+  static const metaProgress = 'progress';
 
   static const phaseMedia = 'media';
   static const phaseSubtitle = 'subtitle';
+
+  /// Live Activity action host/query keys (scheme lives in [NotificationConstants]).
+  static const iosLiveActivityHost = 'download';
+  static const iosActionPause = 'pause';
+  static const iosActionResume = 'resume';
+  static const iosQueryAction = 'action';
+  static const iosQueryAssetId = 'assetId';
 
   static const jsonAssetId = 'assetId';
   static const jsonState = 'state';

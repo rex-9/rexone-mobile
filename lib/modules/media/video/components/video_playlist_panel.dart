@@ -84,6 +84,12 @@ class VideoPlaylistPanel extends StatelessWidget {
                         onDownloadTap: playlist == null
                             ? () {}
                             : () => playlist.onDownloadTap(item),
+                        onDownloadPauseTap: playlist == null
+                            ? null
+                            : () => playlist.onDownloadPauseTap(item),
+                        onDownloadLongPress: playlist == null
+                            ? null
+                            : () => playlist.onDownloadLongPress(item),
                         onTap: () => onPlayAt(index),
                       );
                     },

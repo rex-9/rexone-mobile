@@ -141,6 +141,10 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
                   downloadState: downloadState,
                   downloadProgress: downloadProgress,
                   onDownloadTap: () => _controller.onDownloadTap(asset),
+                  onDownloadPauseTap: () =>
+                      _controller.onDownloadPauseTap(asset),
+                  onDownloadLongPress: () =>
+                      _controller.onDownloadLongPress(asset),
                   onTap: () => _controller.playAt(index),
                 ),
               );

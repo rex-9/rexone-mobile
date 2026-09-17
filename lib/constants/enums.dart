@@ -79,6 +79,7 @@ enum EMediaDownloadState {
   none,
   queued,
   downloading,
+  paused,
   processing,
   ready,
   failed;
