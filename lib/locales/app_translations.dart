@@ -222,6 +222,18 @@ class AppTranslations extends Translations {
       AppLocales.payment.cancelTitle: 'Payment Canceled',
       AppLocales.payment.cancelDesc:
           'Your payment was canceled. No charges were made.',
+      AppLocales.payment.promoCode: 'Promo Code',
+      AppLocales.payment.promoCodeHint: 'e.g. SAVE20',
+      AppLocales.payment.apply: 'Apply',
+      AppLocales.payment.remove: 'Remove',
+      AppLocales.payment.couponApplied: 'Coupon applied',
+      AppLocales.payment.discount: 'Discount',
+      AppLocales.payment.totalDue: 'Total Due',
+      AppLocales.payment.claimFreeAccess: 'Claim Free Access 🎉',
+      AppLocales.payment.proceedToCheckout: 'Proceed to Checkout',
+      AppLocales.payment.free: 'FREE',
+      AppLocales.payment.orderSummary: 'Order Summary',
+      AppLocales.payment.discountApplied: '@discount discount applied',
 
       // User
       AppLocales.user.profile: 'User Profile',
@@ -502,6 +514,18 @@ class AppTranslations extends Translations {
       AppLocales.payment.cancelTitle: 'ငွေပေးချေမှု ပယ်ဖျက်ပြီး',
       AppLocales.payment.cancelDesc:
           'ငွေပေးချေမှု ပယ်ဖျက်လိုက်ပြီး မည်သည့်ငွေမှ မဖြတ်တောက်ပါ။',
+      AppLocales.payment.promoCode: 'ပရိုမိုကုဒ်',
+      AppLocales.payment.promoCodeHint: 'ဥပမာ - SAVE20',
+      AppLocales.payment.apply: 'အသုံးပြုမည်',
+      AppLocales.payment.remove: 'ဖယ်ရှားမည်',
+      AppLocales.payment.couponApplied: 'ကူပွန် ထည့်သွင်းပြီးပါပြီ',
+      AppLocales.payment.discount: 'လျှော့စျေး',
+      AppLocales.payment.totalDue: 'ကျသင့်ငွေ',
+      AppLocales.payment.claimFreeAccess: 'အခမဲ့ ရယူမည် 🎉',
+      AppLocales.payment.proceedToCheckout: 'ငွေပေးချေမှုသို့ ဆက်သွားမည်',
+      AppLocales.payment.free: 'အခမဲ့',
+      AppLocales.payment.orderSummary: 'အော်ဒါ အကျဉ်းချုပ်',
+      AppLocales.payment.discountApplied: '@discount လျှော့စျေး ထည့်သွင်းပြီးပါပြီ',
 
       // User
       AppLocales.user.profile: 'ပရိုဖိုင်',

@@ -58,6 +58,8 @@ class AppIcons {
   IconData get activeSubscription => Icons.check_circle_outline;
   IconData get scheduledCancel => Icons.access_time;
   IconData get canceledSubscription => Icons.cancel_outlined;
+  IconData get coupon => Icons.local_offer_outlined;
+  IconData get discount => Icons.percent_rounded;
 
   // ── Network / Connectivity ─────────────────────────────────────
   IconData get wifi => Icons.wifi_rounded;

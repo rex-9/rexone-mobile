@@ -204,7 +204,9 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Payments & entitlements
 
 - Product catalogue with one-time and recurring pricing and pagination support.
-- In-app Stripe Checkout handoff via WebView (`webview_flutter`).
+- Promo & referral coupon validation (`POST /v1/payment/coupons/validate`) directly in `CheckoutBottomSheet` with real-time discount calculation and localized pricing.
+- In-app Stripe Checkout handoff via WebView (`webview_flutter`) with attached coupon codes.
+- 100% discount free access bypass: zero-amount checkouts bypass Stripe, provision immediate product access via Core `AccessService`, and close the bottom sheet with instant entitlement feedback.
 - Subscription state management (Active, Scheduled for Cancellation, Expired).
 - Safe end-of-period cancellation and resumption guarded by destructive confirmation dialogs.
 

@@ -48,4 +48,33 @@ class PaymentKeys {
   // ===== Transaction =====
   static const paid = 'paid';
   static const createdAt = 'created_at';
+
+  // ===== Coupon =====
+  static const couponCode = 'coupon_code';
+  static const code = 'code';
+  static const title = 'title';
+  static const couponType = 'coupon_type';
+  static const amount = 'amount';
+  static const maxUsage = 'max_usage';
+  static const maxUsagePerUser = 'max_usage_per_user';
+  static const usedCount = 'used_count';
+  static const referrerId = 'referrer_id';
+  static const targetRoleIds = 'target_role_ids';
+  static const targetUserIds = 'target_user_ids';
+  static const targetProductIds = 'target_product_ids';
+  static const exhausted = 'exhausted';
+  static const expired = 'expired';
+  static const valid = 'valid';
+  static const discountAmount = 'discount_amount';
+  static const finalAmount = 'final_amount';
+  static const coupon = 'coupon';
+  static const couponId = 'coupon_id';
+  static const userId = 'user_id';
+  static const couponTitle = 'coupon_title';
+  static const userEmail = 'user_email';
+  static const purchaseId = 'purchase_id';
+  static const purchaseType = 'purchase_type';
+  static const originalAmount = 'original_amount';
+  static const remainingAttempts = 'remaining_attempts';
+  static const cooldownRemaining = 'cooldown_remaining';
 }

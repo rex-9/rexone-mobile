@@ -1,4 +1,4 @@
-// lib/modules/payment/controllers/payment.controller.dart
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -18,6 +18,14 @@ class PaymentController extends GetxController {
   final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
   final RxList<AccessModel> accesses = <AccessModel>[].obs;
 
+  // Coupon state
+  final Rx<CouponValidationModel?> appliedCoupon =
+      Rx<CouponValidationModel?>(null);
+  final RxBool isValidatingCoupon = false.obs;
+  final RxString couponError = ''.obs;
+  final RxInt couponCooldownSecondsLeft = 0.obs;
+  Timer? _couponCooldownTimer;
+
   @override
   void onInit() {
     super.onInit();
@@ -31,6 +39,12 @@ class PaymentController extends GetxController {
   void onReady() {
     super.onReady();
     fetchData();
+  }
+
+  @override
+  void onClose() {
+    _couponCooldownTimer?.cancel();
+    super.onClose();
   }
 
   // ============================================================
@@ -127,17 +141,22 @@ class PaymentController extends GetxController {
   // ACTIONS
   // ============================================================
 
-  Future<void> startCheckout(String productId) async {
+  Future<void> startCheckout(String productId, {String? couponCode}) async {
     try {
+      final effectiveCode = couponCode ?? appliedCoupon.value?.coupon?.code;
       final response = await _payment.createCheckout(
-        CreateCheckoutRequest(productId: productId),
+        CreateCheckoutRequest(
+          productId: productId,
+          couponCode: effectiveCode,
+        ),
       );
       if (response.success && response.data != null) {
         final isFreeAccessGranted =
             response.data![PaymentKeys.freeAccessGranted] == true;
 
         if (isFreeAccessGranted) {
-          AppSnackbar.success('Free access claimed successfully! 🎉');
+          removeCoupon();
+          AppSnackbar.success('Access granted successfully! 🎉');
           await fetchData();
           return;
         }
@@ -145,6 +164,7 @@ class PaymentController extends GetxController {
         final checkoutUrl = response.data![PaymentKeys.checkoutUrl]?.toString();
 
         if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
+          removeCoupon();
           // Navigate to the in-app WebView — Flutter stays in foreground so
           // the WebSocket connection is preserved throughout checkout.
           AppRoutes.toCheckout(url: checkoutUrl);
@@ -157,6 +177,71 @@ class PaymentController extends GetxController {
     } catch (e) {
       AppSnackbar.error('Checkout failed: $e');
     }
+  }
+
+  Future<bool> applyCoupon(String code, String productId) async {
+    if (couponCooldownSecondsLeft.value > 0) return false;
+
+    final cleanCode = code.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    if (cleanCode.isEmpty) {
+      couponError.value = 'Please enter a coupon code';
+      return false;
+    }
+    if (cleanCode.length < 6) {
+      couponError.value = 'Coupon code must be at least 6 alphanumeric characters';
+      return false;
+    }
+
+    isValidatingCoupon.value = true;
+    couponError.value = '';
+
+    try {
+      final res = await _payment.validateCoupon(cleanCode, productId);
+      isValidatingCoupon.value = false;
+
+      if (res.success && res.data != null && res.data!.valid) {
+        appliedCoupon.value = res.data;
+        couponError.value = '';
+        _stopCouponCooldown();
+        return true;
+      } else {
+        appliedCoupon.value = null;
+        couponError.value = res.error ?? res.message;
+        final cooldown = res.data?.cooldownRemaining ?? 0;
+        if (cooldown > 0) {
+          _startCouponCooldown(cooldown);
+        }
+        return false;
+      }
+    } catch (e) {
+      isValidatingCoupon.value = false;
+      appliedCoupon.value = null;
+      couponError.value = 'Failed to validate coupon: $e';
+      return false;
+    }
+  }
+
+  void _startCouponCooldown(int seconds) {
+    _couponCooldownTimer?.cancel();
+    couponCooldownSecondsLeft.value = seconds;
+    _couponCooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (couponCooldownSecondsLeft.value <= 1) {
+        _stopCouponCooldown();
+      } else {
+        couponCooldownSecondsLeft.value--;
+      }
+    });
+  }
+
+  void _stopCouponCooldown() {
+    _couponCooldownTimer?.cancel();
+    _couponCooldownTimer = null;
+    couponCooldownSecondsLeft.value = 0;
+  }
+
+  void removeCoupon() {
+    appliedCoupon.value = null;
+    couponError.value = '';
   }
 
   Future<void> cancelSubscription(String subscriptionId) async {

@@ -258,7 +258,7 @@ class PaymentPage extends GetView<PaymentController> {
     if (fullyCanceledSub != null) {
       return AppButton(
         text: 'Subscribe Again',
-        onPressed: () => controller.startCheckout(product.id),
+        onPressed: () => CheckoutBottomSheet.show(context, product),
       );
     }
 
@@ -269,7 +269,7 @@ class PaymentPage extends GetView<PaymentController> {
         children: [
           AppButton(
             text: 'Buy Again',
-            onPressed: () => controller.startCheckout(product.id),
+            onPressed: () => CheckoutBottomSheet.show(context, product),
           ),
           if (purchaseCount > 0) ...[
             SizedBox(height: Design.spacing.xs),
@@ -290,7 +290,7 @@ class PaymentPage extends GetView<PaymentController> {
         children: [
           AppButton(
             text: 'Buy Again',
-            onPressed: () => controller.startCheckout(product.id),
+            onPressed: () => CheckoutBottomSheet.show(context, product),
           ),
           SizedBox(height: Design.spacing.xs),
           Text(
@@ -305,7 +305,7 @@ class PaymentPage extends GetView<PaymentController> {
     // 7. Default Subscribe / Buy button
     return AppButton(
       text: product.recurring ? 'Subscribe Now' : 'Buy Now',
-      onPressed: () => controller.startCheckout(product.id),
+      onPressed: () => CheckoutBottomSheet.show(context, product),
     );
   }
 
