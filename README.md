@@ -355,10 +355,11 @@ git clone git@github.com:rex-9/rexone-mobile.git
 cd rexone-mobile
 ```
 
-2. Install dependencies:
+2. Install dependencies & pre-commit hooks:
 
 ```sh
 flutter pub get
+./scripts/install_pre_commit.sh
 ```
 
 Run the same centralized checks used by GitHub Actions:
@@ -447,19 +448,48 @@ Run on-device integration tests:
 
 ## Building for production
 
-### Android APK:
+### Automated CI/CD (GitHub Actions)
+
+RexOne Mobile includes an automated Android build and release pipeline ([`.github/workflows/build_android.yaml`](.github/workflows/build_android.yaml)):
+
+- **UAT Builds (Pushed or Merged to `uat` branch)**:
+  - Automatically injects the `ENV_UAT` GitHub Secret into `.env.uat`.
+  - Builds the release APK with `--dart-define=APP_ENV=.env.uat`.
+  - Uploads `rexone-uat-v${VERSION}-b${BUILD}.apk` as a workflow artifact.
+  - Automatically creates a GitHub Pre-Release tagged `v${VERSION}-uat+${BUILD}` with the APK attached.
+- **Production Builds (Pushed or Merged to `main` branch)**:
+  - Automatically injects the `ENV_PROD` GitHub Secret into `.env.prod`.
+  - Builds the release APK with `--dart-define=APP_ENV=.env.prod`.
+  - Uploads `rexone-prod-v${VERSION}-b${BUILD}.apk` as a workflow artifact.
+  - Automatically creates a production GitHub Release tagged `v${VERSION}+${BUILD}` with the APK attached.
+  - *Integration Tip*: The GitHub Release download link can be linked directly into the RexOne Admin App Versions portal (`/v1/admin/client/versions`) to distribute in-app updates!
+
+#### Required GitHub Repository Secrets:
+Configure in repository **Settings > Secrets and variables > Actions**:
+1. `ENV_UAT`: The raw file content of `.env.uat`.
+2. `ENV_PROD`: The raw file content of `.env.prod`.
+
+---
+
+### Manual Local Builds
+
+#### Android APK:
 
 ```sh
+# UAT:
+flutter build apk --release --dart-define=APP_ENV=.env.uat
+
+# Production:
 flutter build apk --release --dart-define=APP_ENV=.env.prod
 ```
 
-### Android App Bundle (AAB):
+#### Android App Bundle (AAB for Google Play):
 
 ```sh
 flutter build appbundle --release --dart-define=APP_ENV=.env.prod
 ```
 
-### iOS Release:
+#### iOS Release:
 
 ```sh
 flutter build ios --release --dart-define=APP_ENV=.env.prod
@@ -497,6 +527,8 @@ rexone_mobile/
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
+│   ├── check_secrets.sh       # Pre-commit secret scanner (blocks uncommitted .env files and live API keys)
+│   ├── install_pre_commit.sh  # Master pre-commit hook installer (secrets + locales)
 │   ├── check_locales.sh       # Validate translations & audit unused keys
 │   ├── rebrand.sh             # Unified mobile rebranding (Name + Package + Icon)
 │   ├── update_app_name.sh     # App display name updater (Android, iOS, .env)
