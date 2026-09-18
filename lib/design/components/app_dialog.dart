@@ -335,7 +335,10 @@ class AppDialog {
               return CupertinoDialogAction(
                 onPressed: action.onPressed,
                 isDestructiveAction:
-                    action.style?.foregroundColor?.resolve({}) == Colors.red,
+                    action.style?.foregroundColor?.resolve({}) ==
+                        Design.colors.error ||
+                    action.style?.foregroundColor?.resolve({}) ==
+                        Colors.red,
                 child: action.child ?? const Text(''),
               );
             }

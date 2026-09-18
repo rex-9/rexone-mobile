@@ -57,7 +57,10 @@ class PaymentPage extends GetView<PaymentController> {
                 // Transactions History
                 if (controller.transactions.isNotEmpty) ...[
                   SizedBox(height: Design.spacing.xxxl),
-                  Text('Order History', style: context.typo.headline3),
+                  Text(
+                    AppLocales.payment.transactions.tr,
+                    style: context.typo.headline3,
+                  ),
                   SizedBox(height: Design.spacing.md),
                   ...controller.transactions.map(
                     (tx) => _buildTransactionTile(context, tx),

@@ -424,6 +424,9 @@ Validate locale parity, interpolation placeholders, and `AppLocales` usage:
 
 ```sh
 ./scripts/check_locales.sh
+
+# Audit unreferenced/unused translation keys:
+./scripts/check_locales.sh --unused
 ```
 
 Run unit and widget tests:
@@ -494,6 +497,7 @@ rexone_mobile/
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
+│   ├── check_locales.sh       # Validate translations & audit unused keys
 │   ├── rebrand.sh             # Unified mobile rebranding (Name + Package + Icon)
 │   ├── update_app_name.sh     # App display name updater (Android, iOS, .env)
 │   ├── update_package_name.sh # Package identifier / Bundle ID updater
@@ -501,7 +505,7 @@ rexone_mobile/
 │   ├── update_app_version.sh  # Version and build number incrementer
 │   ├── test.sh                # Full test suite runner (Unit + E2E)
 │   ├── test_unit.sh           # Flutter unit test runner
-│   └── test_e2e.sh            # E2E integration test CLI runner
+│   └── test_e2e.sh            # E2E integration test CLI runner (auto DB lifecycle & device detection)
 ├── test/                      # Unit, controller, and localization tests (88 tests)
 │   ├── controllers/           # Socket controller tests
 │   ├── mocks/                 # In-memory test service doubles
@@ -540,6 +544,12 @@ For standalone mobile development or isolated updates, you can use the local scr
 
 # 5. Bump Version and Build Number
 ./scripts/update_app_version.sh 1.1.0
+
+# 6. Validate Translations and Check Unreferenced Keys
+./scripts/check_locales.sh [--unused]
+
+# 7. Run On-Device E2E Tests (with automated device detection & DB lifecycle)
+./scripts/test_e2e.sh [-d <device-id>]
 ```
 
 ---
