@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
+import 'package:rexone_mobile/services/services.dart';
 import '../services/feedback.service.dart';
 
 class FeedbackController extends GetxController {
@@ -52,7 +53,9 @@ class FeedbackController extends GetxController {
       try {
         final info = await PackageInfo.fromPlatform();
         appVersion = info.version;
-      } catch (_) {}
+      } catch (e, stack) {
+        LogService.reportPlatformError(e, stack);
+      }
 
       String os = 'unknown';
       if (!kIsWeb) {

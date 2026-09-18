@@ -57,7 +57,10 @@ class PaymentPage extends GetView<PaymentController> {
                 // Transactions History
                 if (controller.transactions.isNotEmpty) ...[
                   SizedBox(height: Design.spacing.xxxl),
-                  Text('Order History', style: context.typo.headline3),
+                  Text(
+                    AppLocales.payment.transactions.tr,
+                    style: context.typo.headline3,
+                  ),
                   SizedBox(height: Design.spacing.md),
                   ...controller.transactions.map(
                     (tx) => _buildTransactionTile(context, tx),
@@ -258,7 +261,7 @@ class PaymentPage extends GetView<PaymentController> {
     if (fullyCanceledSub != null) {
       return AppButton(
         text: 'Subscribe Again',
-        onPressed: () => controller.startCheckout(product.id),
+        onPressed: () => CheckoutBottomSheet.show(context, product),
       );
     }
 
@@ -269,7 +272,7 @@ class PaymentPage extends GetView<PaymentController> {
         children: [
           AppButton(
             text: 'Buy Again',
-            onPressed: () => controller.startCheckout(product.id),
+            onPressed: () => CheckoutBottomSheet.show(context, product),
           ),
           if (purchaseCount > 0) ...[
             SizedBox(height: Design.spacing.xs),
@@ -290,7 +293,7 @@ class PaymentPage extends GetView<PaymentController> {
         children: [
           AppButton(
             text: 'Buy Again',
-            onPressed: () => controller.startCheckout(product.id),
+            onPressed: () => CheckoutBottomSheet.show(context, product),
           ),
           SizedBox(height: Design.spacing.xs),
           Text(
@@ -305,7 +308,7 @@ class PaymentPage extends GetView<PaymentController> {
     // 7. Default Subscribe / Buy button
     return AppButton(
       text: product.recurring ? 'Subscribe Now' : 'Buy Now',
-      onPressed: () => controller.startCheckout(product.id),
+      onPressed: () => CheckoutBottomSheet.show(context, product),
     );
   }
 

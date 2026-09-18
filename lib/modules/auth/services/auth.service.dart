@@ -106,14 +106,14 @@ class AuthService extends GetxService {
   }
 
   // 8. Forgot password - send reset instructions
-  Future<ApiResponse<void>> forgotPassword(
+  Future<ApiResponse<dynamic>> forgotPassword(
     ForgotPasswordRequest request,
   ) async {
     final response = await _api.post(
       ServerRoutes.forgotPassword,
       request.toJson(),
     );
-    return _api.parseResponse<void>(response, (data) {});
+    return _api.parseResponse<dynamic>(response, (data) => data);
   }
 
   // 9. Get current user

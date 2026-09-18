@@ -3,6 +3,7 @@
 class FeedbackKeys {
   const FeedbackKeys._();
 
+  static const String id = 'id';
   static const String feedback = 'feedback';
   static const String content = 'content';
   static const String rating = 'rating';

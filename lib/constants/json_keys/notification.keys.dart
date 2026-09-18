@@ -16,6 +16,7 @@ class NotificationKeys {
   static const String notificationId = 'notification_id';
   static const String templateId = 'template_id';
   static const String createdAt = 'created_at';
+  static const String updatedAt = 'updated_at';
   static const String unreadCount = 'unread_count';
   static const String filter = 'filter';
   static const String updatedCount = 'updated_count';

@@ -531,7 +531,9 @@ class AuthController extends GetxController {
       if (response.success && response.data != null) {
         _cacheUser(response.data!);
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      LogService.reportPlatformError(e, stack);
+    }
   }
 
   void _cacheUser(UserModel user) {
@@ -550,6 +552,14 @@ class AuthController extends GetxController {
         _startResendCountdown(60);
         AppSnackbar.success(response.message);
       } else {
+        if (response.statusCode == 429) {
+          final data = response.data;
+          final remaining = data is Map ? data['cooldown_remaining'] : null;
+          final seconds = remaining is int
+              ? remaining
+              : (int.tryParse(remaining?.toString() ?? '') ?? 60);
+          _startResendCountdown(seconds);
+        }
         AppSnackbar.error(response.error ?? response.message);
       }
     } catch (e, stk) {
@@ -615,12 +625,16 @@ class AuthController extends GetxController {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
-    } catch (_) {}
+    } catch (e, stack) {
+      LogService.reportPlatformError(e, stack);
+    }
 
     if (currentUser.value?.provider == EAuthProvider.google.name) {
       try {
         await GoogleSignIn.instance.signOut();
-      } catch (_) {}
+      } catch (e, stack) {
+        LogService.reportPlatformError(e, stack);
+      }
     }
 
     await _clearLocalSession();

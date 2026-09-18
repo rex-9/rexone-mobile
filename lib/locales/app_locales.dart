@@ -252,6 +252,18 @@ class _PaymentLocales {
   final successDesc = 'payment.success_desc';
   final cancelTitle = 'payment.cancel_title';
   final cancelDesc = 'payment.cancel_desc';
+  final promoCode = 'payment.promo_code';
+  final promoCodeHint = 'payment.promo_code_hint';
+  final apply = 'payment.apply';
+  final remove = 'payment.remove';
+  final couponApplied = 'payment.coupon_applied';
+  final discount = 'payment.discount';
+  final totalDue = 'payment.total_due';
+  final claimFreeAccess = 'payment.claim_free_access';
+  final proceedToCheckout = 'payment.proceed_to_checkout';
+  final free = 'payment.free';
+  final orderSummary = 'payment.order_summary';
+  final discountApplied = 'payment.discount_applied';
 }
 
 class _UserLocales {
