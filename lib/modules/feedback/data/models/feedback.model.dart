@@ -47,7 +47,7 @@ class FeedbackModel {
 
   factory FeedbackModel.fromJson(Map<String, dynamic> json) {
     return FeedbackModel(
-      id: json['id'] as String? ?? '',
+      id: json[FeedbackKeys.id] as String? ?? '',
       content: json[FeedbackKeys.content] as String? ?? '',
       rating: json[FeedbackKeys.rating] as int?,
       category: json[FeedbackKeys.category] as String? ?? 'general',

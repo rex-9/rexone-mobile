@@ -82,12 +82,8 @@ class SplashController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 10));
 
     if (_auth.isLoggedIn.value) {
-      final stack = _storage.getRouteStack();
-      if (stack.isNotEmpty) {
-        Get.offAllNamed(stack.last);
-      } else {
-        AppRoutes.toHome();
-      }
+      _storage.saveRouteStack([AppRoutes.home]);
+      AppRoutes.toHome();
     } else {
       _storage.clearRouteStack();
       AppRoutes.toAuth();

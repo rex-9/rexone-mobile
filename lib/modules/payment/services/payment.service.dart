@@ -154,4 +154,28 @@ class PaymentService extends GetxService {
       (data) => data is Map ? Map<String, dynamic>.from(data) : {},
     );
   }
+
+  // ============================================================
+  // COUPONS
+  // ============================================================
+  Future<ApiResponse<CouponValidationModel>> validateCoupon(
+    String code,
+    String productId,
+  ) async {
+    final response = await _api.post(
+      ServerRoutes.paymentCouponsValidate,
+      {
+        PaymentKeys.code: code,
+        PaymentKeys.productId: productId,
+      },
+    );
+    return _api.parseResponse<CouponValidationModel>(
+      response,
+      (data) => data is Map<String, dynamic>
+          ? CouponValidationModel.fromJson(data)
+          : CouponValidationModel.fromJson(
+              Map<String, dynamic>.from(data as Map),
+            ),
+    );
+  }
 }

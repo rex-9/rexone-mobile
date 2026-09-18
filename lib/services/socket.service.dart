@@ -183,7 +183,9 @@ class SocketService extends GetxService with WidgetsBindingObserver {
     if (_ws != null) {
       try {
         _ws!.close();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('🔌 [SocketService] Error closing socket: $e');
+      }
       _ws = null;
     }
 
@@ -212,7 +214,9 @@ class SocketService extends GetxService with WidgetsBindingObserver {
       if (decoded is Map) {
         return decoded[SocketKeys.channel]?.toString();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('🔌 [SocketService] Error decoding channel identifier: $e');
+    }
     return null;
   }
 

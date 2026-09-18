@@ -63,6 +63,7 @@ class ServerRoutes {
   static String paymentSubscriptionResume(String id) =>
       api('/payment/subscriptions/$id/resume');
   static String get paymentTransactions => api('/payment/transactions');
+  static String get paymentCouponsValidate => api('/payment/coupons/validate');
 
   // Chat
   static String get aiChat => api('/chat/messages');

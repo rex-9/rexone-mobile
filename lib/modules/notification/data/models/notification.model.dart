@@ -70,7 +70,7 @@ class NotificationModel {
       createdAt:
           AppDateTime.fromUtc(attributes[NotificationKeys.createdAt]) ??
           DateTime.now(),
-      updatedAt: AppDateTime.fromUtc(attributes['updated_at']),
+      updatedAt: AppDateTime.fromUtc(attributes[NotificationKeys.updatedAt]),
     );
   }
 
@@ -87,7 +87,7 @@ class NotificationModel {
       NotificationKeys.notificationId: notificationId,
       NotificationKeys.templateId: notificationId,
       NotificationKeys.createdAt: AppDateTime.toUtcIso(createdAt),
-      'updated_at': AppDateTime.toUtcIso(updatedAt),
+      NotificationKeys.updatedAt: AppDateTime.toUtcIso(updatedAt),
     };
   }
 

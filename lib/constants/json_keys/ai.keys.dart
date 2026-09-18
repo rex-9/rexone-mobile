@@ -32,4 +32,7 @@ class AiKeys {
   static const assetableType = 'assetable_type';
   static const assetableId = 'assetable_id';
   static const jobId = 'job_id';
+  static const operationId = 'operation_id';
+  static const operationType = 'operation_type';
+  static const link = 'link';
 }

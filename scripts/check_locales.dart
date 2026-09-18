@@ -24,7 +24,7 @@ Map<String, Set<String>> readLocaleEntries(String source, String locale) {
   };
 }
 
-void main() {
+void main(List<String> args) {
   final root = Directory.current;
   final constantsSource = File(
     '${root.path}/lib/locales/app_locales.dart',
@@ -48,9 +48,15 @@ void main() {
       locale: readLocaleEntries(translationsSource, locale),
   };
   final reference = locales[referenceLocale] ?? const <String, Set<String>>{};
-  final declaredKeys = RegExp(
-    r'''['"]([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)['"]''',
-  ).allMatches(constantsSource).map((match) => match.group(1)!).toList();
+  final propPattern = RegExp(
+    r'''\bfinal\s+([a-zA-Z0-9_]+)\s*=\s*['"]([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)['"];''',
+  );
+  final declaredProps = propPattern
+      .allMatches(constantsSource)
+      .map((m) => (prop: m.group(1)!, key: m.group(2)!))
+      .toList();
+
+  final declaredKeys = declaredProps.map((p) => p.key).toList();
 
   if (supportedLocales.isEmpty) errors.add('supportedLocales is empty');
   if (reference.isEmpty) {
@@ -86,29 +92,64 @@ void main() {
   final rawTranslation = RegExp(
     r'''["'][a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+["']\s*\.tr(?:Params)?\b''',
   );
+  final looseFallback = RegExp(
+    r'''\.tr(?:Params\([^)]*\))?\s*(?:\?\?|\|\|)\s*['"][^'"]+['"]''',
+  );
+
   final dartFiles = Directory('${root.path}/lib')
       .listSync(recursive: true)
       .whereType<File>()
       .where(
         (file) =>
             file.path.endsWith('.dart') && !file.path.contains('/lib/locales/'),
-      );
+      )
+      .toList();
+
+  final allCode = StringBuffer();
   for (final file in dartFiles) {
     final relative = file.path.replaceFirst('${root.path}/', '');
     final lines = file.readAsLinesSync();
+    allCode.writeln(lines.join('\n'));
     for (var index = 0; index < lines.length; index++) {
-      if (rawTranslation.hasMatch(lines[index])) {
+      final line = lines[index];
+      if (rawTranslation.hasMatch(line)) {
         errors.add(
           '$relative:${index + 1}: raw translation key; use AppLocales',
+        );
+      }
+      if (looseFallback.hasMatch(line)) {
+        errors.add(
+          '$relative:${index + 1}: loose translation fallback detected; use centralized localization keys',
         );
       }
     }
   }
 
+  final fullCodeString = allCode.toString();
+  final unusedKeys = <String>[];
+  for (final item in declaredProps) {
+    final usagePattern = RegExp('\\b${item.prop}\\b');
+    if (!usagePattern.hasMatch(fullCodeString)) {
+      unusedKeys.add('${item.prop} ("${item.key}")');
+    }
+  }
+
+  final showUnused = args.contains('--unused') ||
+      Platform.environment['SHOW_UNUSED'] == 'true';
+
   stdout.writeln(
     'Mobile locale report: ${supportedLocales.length} locales, '
-    '${reference.length} translated keys.',
+    '${reference.length} translated keys (${unusedKeys.length} unused).',
   );
+
+  if (showUnused && unusedKeys.isNotEmpty) {
+    stdout.writeln('\nUnused AppLocales keys (${unusedKeys.length}):');
+    for (final u in unusedKeys) {
+      stdout.writeln('  - $u');
+    }
+    stdout.writeln('');
+  }
+
   if (errors.isNotEmpty) {
     stderr.writeln('Mobile locale checks failed (${errors.length}):');
     for (final error in errors) {

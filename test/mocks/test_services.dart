@@ -198,7 +198,7 @@ class FakeAuthService extends GetxService implements AuthService {
   ApiResponse<GoogleResponse>? googleSignInResponse;
   ApiResponse<AuthResponse>? googleSignInCompleteResponse;
   ApiResponse<UserModel>? currentUserResponse;
-  ApiResponse<void>? forgotPasswordResponse;
+  ApiResponse<dynamic>? forgotPasswordResponse;
   ApiResponse<void>? signOutResponse;
 
   @override
@@ -308,7 +308,7 @@ class FakeAuthService extends GetxService implements AuthService {
   }
 
   @override
-  Future<ApiResponse<void>> forgotPassword(
+  Future<ApiResponse<dynamic>> forgotPassword(
       ForgotPasswordRequest request) async {
     return forgotPasswordResponse ??
         ApiResponse.success(message: 'Reset sent', statusCode: 200);
