@@ -49,7 +49,7 @@ class ChildAssetModel {
   factory ChildAssetModel.fromJson(Map<String, dynamic> json) {
     return ChildAssetModel(
       id: json[ApiKeys.id]?.toString() ?? '',
-      url: json[AssetKeys.url]?.toString() ?? '',
+      url: UrlHelper.normalize(json[AssetKeys.url]?.toString() ?? ''),
       status: json[AssetKeys.status]?.toString() ?? '',
       sizeBytes: (json[AssetKeys.sizeBytes] as num?)?.toInt(),
       name: json[AssetKeys.name]?.toString() ?? '',
@@ -129,10 +129,12 @@ class AssetModel {
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
+  String get displaySize => FileSizeHelper.formatBytes(sizeBytes);
+
   String get displayThumbnailUrl {
     final thumb = thumbnail;
     if (thumb == null || thumb.url.isEmpty) return '';
-    return thumb.url;
+    return UrlHelper.normalize(thumb.url);
   }
 
   List<ChildAssetModel> get playableSubtitles =>
@@ -199,7 +201,7 @@ class AssetModel {
       name: json[AssetKeys.name]?.toString() ?? '',
       title: json[AssetKeys.title]?.toString(),
       description: json[AssetKeys.description]?.toString(),
-      url: json[AssetKeys.url]?.toString() ?? '',
+      url: UrlHelper.normalize(json[AssetKeys.url]?.toString() ?? ''),
       type: json[AssetKeys.type]?.toString() ?? '',
       format: json[AssetKeys.format]?.toString(),
       extension: json[AssetKeys.extension]?.toString(),

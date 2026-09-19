@@ -13,12 +13,14 @@ class MediaDownloadButton extends StatelessWidget {
     required this.state,
     required this.progress,
     required this.onPressed,
+    this.sizeText,
     this.onPausePressed,
     this.onLongPress,
   });
 
   final EMediaDownloadState state;
   final double progress;
+  final String? sizeText;
   final VoidCallback onPressed;
   final VoidCallback? onPausePressed;
   final VoidCallback? onLongPress;
@@ -33,6 +35,10 @@ class MediaDownloadButton extends StatelessWidget {
     final colors = context.colors;
     final size = Design.spacing.iconLarge;
     final innerIconSize = Design.spacing.iconSmall;
+    final buttonConstraints = BoxConstraints.tightFor(
+      width: size + Design.spacing.md,
+      height: size + Design.spacing.md,
+    );
 
     if (_showsProgressRing) {
       final isPaused = state == EMediaDownloadState.paused;
@@ -43,7 +49,7 @@ class MediaDownloadButton extends StatelessWidget {
           onLongPress: onLongPress,
           visualDensity: VisualDensity.compact,
           padding: Design.spacing.padding(Design.spacing.xs),
-          constraints: BoxConstraints.tightFor(width: size + Design.spacing.md),
+          constraints: buttonConstraints,
           icon: SizedBox(
             width: size,
             height: size,
@@ -77,8 +83,8 @@ class MediaDownloadButton extends StatelessWidget {
         onLongPress: onLongPress,
         visualDensity: VisualDensity.compact,
         padding: Design.spacing.padding(Design.spacing.xs),
-        constraints: BoxConstraints.tightFor(width: size + Design.spacing.md),
-        icon: _icon(context, size, colors.primary, colors.error),
+        constraints: buttonConstraints,
+        icon: _icon(context, size, colors.primary, colors.textSecondary, colors.error),
       ),
     );
   }
@@ -86,6 +92,9 @@ class MediaDownloadButton extends StatelessWidget {
   String get _tooltip {
     switch (state) {
       case EMediaDownloadState.none:
+        if (sizeText != null && sizeText!.isNotEmpty) {
+          return AppLocales.media.downloadWithSize.trParams({'size': sizeText!});
+        }
         return AppLocales.media.download.tr;
       case EMediaDownloadState.queued:
         return AppLocales.media.pauseDownload.tr;
@@ -109,6 +118,7 @@ class MediaDownloadButton extends StatelessWidget {
     BuildContext context,
     double size,
     Color primary,
+    Color secondary,
     Color error,
   ) {
     switch (state) {
@@ -125,9 +135,9 @@ class MediaDownloadButton extends StatelessWidget {
           child: AppLoading(size: LoadingSize.small, color: primary),
         );
       case EMediaDownloadState.ready:
-        return Icon(Design.icons.downloadDone, color: primary, size: size);
+        return Icon(Design.icons.close, color: secondary, size: size);
       case EMediaDownloadState.failed:
-        return Icon(Design.icons.error, color: error, size: size);
+        return Icon(Design.icons.refresh, color: error, size: size);
     }
   }
 }

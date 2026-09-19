@@ -8,7 +8,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:rexone_mobile/helpers/srt.helper.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 import 'package:rexone_mobile/services/media.service.dart';
@@ -505,7 +505,12 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       return file.readAsString();
     }
 
-    final response = await _subtitleClient.get(url);
+    final normalizedUrl = UrlHelper.normalize(url);
+    final headers = UrlHelper.headersFor(normalizedUrl);
+    final response = await _subtitleClient.get(
+      normalizedUrl,
+      headers: headers.isEmpty ? null : headers,
+    );
     if (!response.isOk) return null;
     return response.bodyString;
   }
@@ -608,7 +613,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
     final playback = await _resolvePlayback(asset);
     final url = playback?.delivery.url ?? '';
-    return url.isEmpty ? null : url;
+    return url.isEmpty ? null : UrlHelper.normalize(url);
   }
 
   List<ChildAssetModel> _effectiveSubtitles(AssetModel asset) {
@@ -654,7 +659,12 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     if (uri.scheme == 'file') {
       return AudioSource.file(uri.toFilePath(), tag: tag);
     }
-    return AudioSource.uri(uri, tag: tag);
+    final headers = UrlHelper.headersFor(url);
+    return AudioSource.uri(
+      uri,
+      headers: headers.isEmpty ? null : headers,
+      tag: tag,
+    );
   }
 
   Future<void> _stopSpeech() async {

@@ -11,6 +11,10 @@ class MediaDownloadEntry {
   final String? errorMessage;
   final String? title;
   final String? mediaFormat;
+  final bool isEncrypted;
+  final int? sizeBytes;
+  final int? downloadedBytes;
+  final int? diskSizeBytes;
 
   const MediaDownloadEntry({
     required this.assetId,
@@ -22,9 +26,24 @@ class MediaDownloadEntry {
     this.errorMessage,
     this.title,
     this.mediaFormat,
+    this.isEncrypted = false,
+    this.sizeBytes,
+    this.downloadedBytes,
+    this.diskSizeBytes,
   });
 
   bool get isReady => state == EMediaDownloadState.ready && mediaPath.isNotEmpty;
+
+  /// Human-readable representation of the asset file size (e.g. `4.2 MB`).
+  String get formattedSize =>
+      FileSizeHelper.formatBytes(diskSizeBytes ?? sizeBytes);
+
+  /// Human-readable progress string during active download (e.g. `1.2 MB / 4.2 MB (28%)`).
+  String get formattedProgressSize => FileSizeHelper.formatProgress(
+        downloadedBytes: downloadedBytes,
+        totalBytes: sizeBytes,
+        fallbackProgress: progress,
+      );
 
   MediaDownloadEntry copyWith({
     EMediaDownloadState? state,
@@ -35,6 +54,10 @@ class MediaDownloadEntry {
     String? errorMessage,
     String? title,
     String? mediaFormat,
+    bool? isEncrypted,
+    int? sizeBytes,
+    int? downloadedBytes,
+    int? diskSizeBytes,
     bool clearErrorMessage = false,
   }) {
     return MediaDownloadEntry(
@@ -44,9 +67,14 @@ class MediaDownloadEntry {
       mediaPath: mediaPath ?? this.mediaPath,
       subtitlePaths: subtitlePaths ?? this.subtitlePaths,
       downloadedAt: downloadedAt ?? this.downloadedAt,
-      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      errorMessage:
+          clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
       title: title ?? this.title,
       mediaFormat: mediaFormat ?? this.mediaFormat,
+      isEncrypted: isEncrypted ?? this.isEncrypted,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      downloadedBytes: downloadedBytes ?? this.downloadedBytes,
+      diskSizeBytes: diskSizeBytes ?? this.diskSizeBytes,
     );
   }
 
@@ -57,6 +85,10 @@ class MediaDownloadEntry {
       MediaDownloadConstants.jsonProgress: progress,
       MediaDownloadConstants.jsonMediaPath: mediaPath,
       MediaDownloadConstants.jsonSubtitlePaths: subtitlePaths,
+      if (isEncrypted) 'isEncrypted': true,
+      if (sizeBytes != null) 'sizeBytes': sizeBytes,
+      if (downloadedBytes != null) 'downloadedBytes': downloadedBytes,
+      if (diskSizeBytes != null) 'diskSizeBytes': diskSizeBytes,
       if (downloadedAt != null)
         MediaDownloadConstants.jsonDownloadedAt:
             AppDateTime.toUtcIso(downloadedAt),
@@ -92,6 +124,10 @@ class MediaDownloadEntry {
       errorMessage: json[MediaDownloadConstants.jsonErrorMessage]?.toString(),
       title: json[MediaDownloadConstants.jsonTitle]?.toString(),
       mediaFormat: json[MediaDownloadConstants.jsonMediaFormat]?.toString(),
+      isEncrypted: json['isEncrypted'] == true,
+      sizeBytes: (json['sizeBytes'] as num?)?.toInt(),
+      downloadedBytes: (json['downloadedBytes'] as num?)?.toInt(),
+      diskSizeBytes: (json['diskSizeBytes'] as num?)?.toInt(),
     );
   }
 }

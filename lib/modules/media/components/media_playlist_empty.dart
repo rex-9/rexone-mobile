@@ -8,10 +8,12 @@ class MediaPlaylistEmpty extends StatelessWidget {
     super.key,
     required this.icon,
     required this.message,
+    this.title,
   });
 
   final IconData icon;
   final String message;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -27,23 +29,37 @@ class MediaPlaylistEmpty extends StatelessWidget {
               MediaLayoutConstants.playlistEmptyTopFraction,
         ),
         Center(
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: Design.spacing.xxxl * 2,
-                color: colors.textSecondary.withValues(alpha: 0.3),
-              ),
-              SizedBox(height: Design.spacing.md),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: typo.bodyLarge.copyWith(
-                  color: colors.textSecondary,
-                  fontWeight: FontWeight.w600,
+          child: Padding(
+            padding: Design.spacing.paddingSymmetric(h: Design.spacing.lg),
+            child: Column(
+              children: [
+                Icon(
+                  icon,
+                  size: Design.spacing.xxxl * 2,
+                  color: colors.textSecondary.withValues(alpha: 0.3),
                 ),
-              ),
-            ],
+                SizedBox(height: Design.spacing.md),
+                if (title != null && title!.isNotEmpty) ...[
+                  Text(
+                    title!,
+                    textAlign: TextAlign.center,
+                    style: typo.headline4.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: Design.spacing.xs),
+                ],
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: (title != null ? typo.bodyMedium : typo.bodyLarge).copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: title != null ? FontWeight.normal : FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],

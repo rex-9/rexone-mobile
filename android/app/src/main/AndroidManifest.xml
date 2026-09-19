@@ -13,10 +13,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS"/>
     <!-- $APP_NAME -->
+    <!-- Allows cleartext HTTP traffic for local development (e.g. Garage S3 at http://10.0.2.2:3100 and backend API at http://10.0.2.2:3000).
+         Required by media_kit (video/audio playback) and background_downloader to stream and download media assets over unencrypted HTTP. -->
     <application
         android:label="rexone_mobile"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

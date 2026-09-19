@@ -6,6 +6,7 @@ import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/media/media.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
+import 'package:rexone_mobile/services/network.service.dart';
 
 import '../../../mocks/test_services.dart';
 
@@ -280,6 +281,36 @@ void main() {
 
       expect(fakeAudioPlayer.lastQueueIndex, 1);
       expect(fakeVideoPlayer.lastPlayedIndex, 0);
+    });
+
+    test('downloadEntryFor returns reactive entry from MediaDownloadService', () {
+      final downloads = Get.find<MediaDownloadService>() as FakeMediaDownloadService;
+      final controller = Get.put(MediaPlaylistController());
+      final asset = _asset(id: 'a1', format: AssetKeys.formatAudio);
+
+      final entry = MediaDownloadEntry(
+        assetId: asset.id,
+        state: EMediaDownloadState.ready,
+        sizeBytes: 4194304,
+      );
+      downloads.entries[asset.id] = entry;
+
+      expect(controller.downloadEntryFor(asset)?.formattedSize, '4 MB');
+    });
+
+    test('isOffline transitions correctly and avoids remote fetch when offline', () async {
+      final network = Get.put<NetworkService>(FakeNetworkService());
+      final controller = Get.put(MediaPlaylistController());
+
+      expect(controller.isOffline, isFalse);
+
+      network.isOnline.value = false;
+      expect(controller.isOffline, isTrue);
+
+      fakeMedia.lastAssetsPage = null;
+      await controller.fetchAssets(refresh: true);
+      // When offline, fetchAssets does not hit remote API
+      expect(fakeMedia.lastAssetsPage, isNull);
     });
   });
 }

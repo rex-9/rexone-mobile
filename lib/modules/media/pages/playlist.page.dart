@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:rexone_mobile/services/services.dart';
 
 import '../media.dart';
 
@@ -46,28 +45,7 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
       title: AppLocales.media.playlistTitle.tr,
       showBackButton: true,
       padding: Design.spacing.zero,
-      child: Obx(() {
-        final audio = Get.find<AudioPlayerService>();
-        final video = Get.find<VideoPlayerService>();
-        final downloads = Get.find<MediaDownloadService>();
-
-        // Playlist + players + download index drive tile state.
-        _controller.assets.length;
-        _controller.isLoading.value;
-        _controller.isLoadingMore.value;
-        _controller.hasMore.value;
-        audio.currentIndex.value;
-        audio.isPlaying.value;
-        audio.isLoading.value;
-        audio.hasSession.value;
-        video.currentIndex.value;
-        video.isPlaying.value;
-        video.isLoading.value;
-        video.hasSession.value;
-        downloads.entries.length;
-
-        return _buildBody(context);
-      }),
+      child: Obx(() => _buildBody(context)),
     );
   }
 
@@ -87,12 +65,16 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
     }
 
     if (assets.isEmpty) {
+      final isOffline = _controller.isOffline;
       return RefreshIndicator(
         onRefresh: () => _controller.fetchAssets(refresh: true),
         color: colors.primary,
         child: MediaPlaylistEmpty(
-          icon: Design.icons.playlist,
-          message: AppLocales.media.playlistEmpty.tr,
+          icon: isOffline ? Design.icons.wifiOff : Design.icons.playlist,
+          title: isOffline ? AppLocales.media.offlineEmptyTitle.tr : null,
+          message: isOffline
+              ? AppLocales.media.offlineEmptyMessage.tr
+              : AppLocales.media.playlistEmpty.tr,
         ),
       );
     }
@@ -129,6 +111,7 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
               final isLoading = _controller.isLoadingAsset(asset);
               final downloadState = _controller.downloadStateFor(asset);
               final downloadProgress = _controller.downloadProgressFor(asset);
+              final downloadEntry = _controller.downloadEntryFor(asset);
 
               return Padding(
                 padding: Design.spacing.paddingOnly(b: Design.spacing.sm),
@@ -137,9 +120,9 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
                   isCurrent: isCurrent,
                   isPlaying: isPlaying,
                   isLoading: isLoading,
-                  showLoadingTrailing: asset.isAudioMedia,
                   downloadState: downloadState,
                   downloadProgress: downloadProgress,
+                  downloadEntry: downloadEntry,
                   onDownloadTap: () => _controller.onDownloadTap(asset),
                   onDownloadPauseTap: () =>
                       _controller.onDownloadPauseTap(asset),

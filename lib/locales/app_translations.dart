@@ -316,6 +316,15 @@ class AppTranslations extends Translations {
       AppLocales.media.notificationChannelName: 'Media downloads',
       AppLocales.media.notificationChannelDescription:
           'Offline media download status',
+      AppLocales.media.offlineEmptyTitle: 'No downloaded videos',
+      AppLocales.media.offlineEmptyMessage:
+          'No downloaded videos to view in offline mode. Connect to the internet to stream or download videos to enjoy offline.',
+      AppLocales.media.removeDownloadStorageConfirm:
+          'Remove "@title" from downloaded videos? This will free up @size of device storage.',
+      AppLocales.media.removeDownloadWithSize: 'Remove (@size)',
+      AppLocales.media.freedStorage: 'Removed "@title" and freed @size.',
+      AppLocales.media.downloadWithSize: 'Download (@size)',
+      AppLocales.media.downloadedWithSize: 'Downloaded · @size',
 
       // Audio
       AppLocales.audio.title: 'Audio Playlist',
@@ -664,6 +673,15 @@ class AppTranslations extends Translations {
       AppLocales.media.notificationChannelName: 'မီဒီယာ ဒေါင်းလုဒ်များ',
       AppLocales.media.notificationChannelDescription:
           'Offline မီဒီယာ ဒေါင်းလုဒ်အခြေအနေ',
+      AppLocales.media.offlineEmptyTitle: 'ဒေါင်းလုဒ်လုပ်ထားသော ဗီဒီယို မရှိပါ',
+      AppLocales.media.offlineEmptyMessage:
+          'အင်တာနက်မရှိချိန်တွင် ကြည့်ရှုရန် ဒေါင်းလုဒ်လုပ်ထားသော ဗီဒီယို မရှိသေးပါ။ အင်တာနက်ဖွင့်၍ တိုက်ရိုက်ကြည့်ရှုပါ သို့မဟုတ် အော့ဖ်လိုင်းကြည့်ရှုရန် ဒေါင်းလုဒ်လုပ်ပါ။',
+      AppLocales.media.removeDownloadStorageConfirm:
+          '"@title" ကို ဒေါင်းလုဒ်စာရင်းမှ ဖယ်ရှားမည်လား? စက်တွင်းနေရာ @size လွတ်သွားပါမည်။',
+      AppLocales.media.removeDownloadWithSize: 'ဖယ်ရှားမည် (@size)',
+      AppLocales.media.freedStorage: '"@title" ကို ဖယ်ရှားပြီး @size နေရာလွတ်ရရှိခဲ့သည်။',
+      AppLocales.media.downloadWithSize: 'ဒေါင်းလုဒ် (@size)',
+      AppLocales.media.downloadedWithSize: 'ဒေါင်းလုဒ်ပြီးပါပြီ · @size',
 
       // Audio
       AppLocales.audio.title: 'အသံစာရင်း',

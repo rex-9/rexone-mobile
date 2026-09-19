@@ -36,7 +36,7 @@ class AssetPlaybackDelivery {
   factory AssetPlaybackDelivery.fromJson(Map<String, dynamic> json) {
     return AssetPlaybackDelivery(
       type: json[AssetKeys.type]?.toString() ?? '',
-      url: json[AssetKeys.url]?.toString() ?? '',
+      url: UrlHelper.normalize(json[AssetKeys.url]?.toString() ?? ''),
       expiresAt: AppDateTime.fromUtc(json[AssetKeys.expiresAt]),
     );
   }

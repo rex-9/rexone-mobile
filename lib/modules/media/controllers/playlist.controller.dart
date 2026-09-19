@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/data/local/local.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
+import 'package:rexone_mobile/services/network.service.dart';
 
 import '../media.dart';
 
@@ -16,6 +18,13 @@ class MediaPlaylistController extends GetxController {
   late final MediaService _media;
   late final MediaDownloadService _downloads;
 
+  NetworkService? get _network =>
+      Get.isRegistered<NetworkService>() ? Get.find<NetworkService>() : null;
+
+  bool get isOffline => _network != null && !_network!.isOnline.value;
+
+  Worker? _networkWorker;
+
   final RxList<AssetModel> assets = <AssetModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
@@ -23,7 +32,6 @@ class MediaPlaylistController extends GetxController {
   final Rxn<PaginationMeta> pagination = Rxn<PaginationMeta>();
 
   static const int _pageLimit = MediaLayoutConstants.playlistPageLimit;
-  static const int _maxPrefetchPages = 5;
   final List<AssetModel> _allFetched = [];
   int _currentPage = 1;
   bool _prefetching = false;
@@ -53,8 +61,26 @@ class MediaPlaylistController extends GetxController {
     super.onInit();
     _media = Get.find<MediaService>();
     _downloads = Get.find<MediaDownloadService>();
+    if (_network != null) {
+      _networkWorker = ever<bool>(_network!.isOnline, (online) {
+        if (!online) {
+          _loadOfflineAssets();
+        } else {
+          fetchAssets(refresh: true);
+        }
+      });
+    }
     fetchAssets(refresh: true);
   }
+
+  @override
+  void onClose() {
+    _networkWorker?.dispose();
+    super.onClose();
+  }
+
+  MediaDownloadEntry? downloadEntryFor(AssetModel asset) =>
+      _downloads.entryFor(asset.id);
 
   EMediaDownloadState downloadStateFor(AssetModel asset) =>
       _downloads.stateFor(asset.id);
@@ -130,19 +156,34 @@ class MediaPlaylistController extends GetxController {
   }
 
   Future<void> _removeDownload(AssetModel asset) async {
+    final sizeStr = await _downloads.getOccupiedDiskSizeFormatted(asset.id);
     final context = Get.context;
-    if (context == null) return;
+    if (context == null || !context.mounted) return;
+
+    final confirmMessage = AppLocales.media.removeDownloadStorageConfirm
+        .trParams({'title': asset.displayTitle, 'size': sizeStr});
+    final confirmButton = AppLocales.media.removeDownloadWithSize
+        .trParams({'size': sizeStr});
 
     final confirmed = await AppDialog.confirm(
       context: context,
       title: AppLocales.media.removeDownloadTitle.tr,
-      message: AppLocales.media.removeDownloadConfirm.tr,
-      confirmLabel: AppLocales.media.removeDownload.tr,
+      message: confirmMessage,
+      confirmLabel: confirmButton,
     );
     if (!confirmed) return;
 
     try {
       await _downloads.deleteDownload(asset.id);
+      AppSnackbar.success(
+        AppLocales.media.freedStorage.trParams({
+          'title': asset.displayTitle,
+          'size': sizeStr,
+        }),
+      );
+      if (isOffline) {
+        await _loadOfflineAssets();
+      }
     } catch (error) {
       debugPrint('❌ [MediaPlaylistController] Remove download error: $error');
       AppSnackbar.error(AppLocales.media.downloadFailed.tr);
@@ -197,17 +238,56 @@ class MediaPlaylistController extends GetxController {
   Future<void> fetchAssets({bool refresh = false}) async {
     if (isLoading.value && !refresh) return;
 
+    if (isOffline) {
+      isLoading.value = true;
+      try {
+        await _loadOfflineAssets();
+      } finally {
+        isLoading.value = false;
+      }
+      return;
+    }
+
     isLoading.value = true;
     try {
       if (refresh) {
         _allFetched.clear();
       }
       await _loadPage(1, append: false);
-      await _prefetchUntilScrollable();
+      if (_allFetched.isEmpty) {
+        await _loadOfflineAssets();
+      } else {
+        await _prefetchUntilScrollable();
+      }
     } catch (e) {
       debugPrint('❌ [MediaPlaylistController] Fetch error: $e');
+      if (_allFetched.isEmpty) {
+        await _loadOfflineAssets();
+      }
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _loadOfflineAssets() async {
+    if (!Get.isRegistered<AppDatabase>()) return;
+    try {
+      final db = Get.find<AppDatabase>();
+      final localList = await db.getDownloadedAssets();
+      final models = <AssetModel>[];
+      if (localList.isNotEmpty) {
+        for (final item in localList) {
+          final children = await db.getChildAssets(item.id);
+          models.add(item.toAssetModel(children: children));
+        }
+      }
+      _allFetched
+        ..clear()
+        ..addAll(models);
+      hasMore.value = false;
+      _applyPlayableFilter();
+    } catch (e) {
+      debugPrint('⚠️ [MediaPlaylistController] Failed to load offline assets: $e');
     }
   }
 
@@ -229,7 +309,11 @@ class MediaPlaylistController extends GetxController {
     final res = await _media.getAssets(page: page, limit: _pageLimit);
 
     if (!res.success) {
-      AppSnackbar.error(res.message);
+      if (_allFetched.isEmpty) {
+        await _loadOfflineAssets();
+      } else {
+        AppSnackbar.error(res.message);
+      }
       return;
     }
 
@@ -248,18 +332,11 @@ class MediaPlaylistController extends GetxController {
   }
 
   Future<void> _prefetchUntilScrollable() async {
-    if (_prefetching) return;
+    if (_prefetching || !hasMore.value) return;
     _prefetching = true;
     try {
-      var attempts = 0;
-      while (hasMore.value &&
-          assets.length < _pageLimit &&
-          attempts < _maxPrefetchPages) {
-        attempts++;
-        final previousCount = assets.length;
-        final nextPage = _currentPage + 1;
-        await _loadPage(nextPage, append: true);
-        if (assets.length == previousCount) break;
+      if (assets.length < _pageLimit && hasMore.value) {
+        await _loadPage(_currentPage + 1, append: true);
       }
     } finally {
       _prefetching = false;

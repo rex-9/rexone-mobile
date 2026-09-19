@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
@@ -86,7 +87,14 @@ class VideoPlayerService extends GetxService {
       }
 
       debugPrint('🔍 [VideoPlayerService] Opening media: $url');
-      await _player!.open(Media(url), play: true);
+      final headers = UrlHelper.headersFor(url);
+      await _player!.open(
+        Media(
+          url,
+          httpHeaders: headers.isEmpty ? null : headers,
+        ),
+        play: true,
+      );
       await _applySubtitleForCurrentAsset();
       return true;
     } catch (error) {
@@ -233,7 +241,7 @@ class VideoPlayerService extends GetxService {
         try {
           await _player!.setSubtitleTrack(
             SubtitleTrack.uri(
-              track.url,
+              UrlHelper.normalize(track.url),
               title: track.displayLabel,
             ),
           );
@@ -296,7 +304,7 @@ class VideoPlayerService extends GetxService {
 
     final playback = await _resolvePlayback(asset);
     final url = playback?.delivery.url ?? '';
-    return url.isEmpty ? null : url;
+    return url.isEmpty ? null : UrlHelper.normalize(url);
   }
 
   List<ChildAssetModel> _effectiveSubtitles(AssetModel asset) {

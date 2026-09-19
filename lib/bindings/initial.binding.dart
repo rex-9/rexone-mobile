@@ -7,6 +7,7 @@ import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
 import '../modules/media/media.dart';
+import '../data/local/local.dart';
 import '../services/services.dart';
 import '../controllers/controllers.dart';
 
@@ -14,6 +15,9 @@ class InitialBinding extends Bindings {
   @override
   void dependencies() {
     // ===== Services =====
+
+    // Local SQLite Database (Drift)
+    Get.put(AppDatabase(), permanent: true);
 
     // Storage (no dependencies)
     Get.put(StorageService(), permanent: true);

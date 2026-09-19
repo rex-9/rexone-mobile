@@ -350,6 +350,13 @@ class _MediaLocales {
   final notificationChannelName = 'media.notification_channel_name';
   final notificationChannelDescription =
       'media.notification_channel_description';
+  final offlineEmptyTitle = 'media.offline_empty_title';
+  final offlineEmptyMessage = 'media.offline_empty_message';
+  final removeDownloadStorageConfirm = 'media.remove_download_storage_confirm';
+  final removeDownloadWithSize = 'media.remove_download_with_size';
+  final freedStorage = 'media.freed_storage';
+  final downloadWithSize = 'media.download_with_size';
+  final downloadedWithSize = 'media.downloaded_with_size';
 }
 
 class _AudioLocales {

@@ -19,6 +19,7 @@ class MediaAssetTile extends StatelessWidget {
     required this.downloadState,
     required this.downloadProgress,
     required this.onDownloadTap,
+    this.downloadEntry,
     this.onDownloadPauseTap,
     this.onDownloadLongPress,
     this.showLoadingTrailing = true,
@@ -31,12 +32,11 @@ class MediaAssetTile extends StatelessWidget {
   final VoidCallback onTap;
   final EMediaDownloadState downloadState;
   final double downloadProgress;
+  final MediaDownloadEntry? downloadEntry;
   final VoidCallback onDownloadTap;
   final VoidCallback? onDownloadPauseTap;
   final VoidCallback? onDownloadLongPress;
 
-  /// When true, the current row shows a spinner while [isLoading].
-  /// When false, shows pause icon if [isPlaying] or [isLoading] (video player).
   final bool showLoadingTrailing;
 
   @override
@@ -47,29 +47,48 @@ class MediaAssetTile extends StatelessWidget {
 
     return AppListTile(
       onTap: onTap,
-      leading: TrackArtwork(
-        url: asset.displayThumbnailUrl,
-        size: tileArtSize,
+      leading: Stack(
+        alignment: Alignment.center,
+        children: [
+          TrackArtwork(
+            url: asset.displayThumbnailUrl,
+            size: tileArtSize,
+          ),
+          if (isCurrent)
+            Container(
+              width: tileArtSize,
+              height: tileArtSize,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(Design.spacing.radiusSmall),
+              ),
+              child: Center(
+                child: isLoading
+                    ? AppLoading(size: LoadingSize.small, color: colors.onPrimary)
+                    : Icon(
+                        isPlaying ? Design.icons.pause : Design.icons.play,
+                        color: colors.onPrimary,
+                        size: Design.spacing.iconMedium,
+                      ),
+              ),
+            ),
+        ],
       ),
       title: Text(
         asset.displayTitle,
         style: typo.bodyLarge.copyWith(
           color: isCurrent ? colors.primary : colors.textPrimary,
+          fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
       subtitle: _subtitle(context),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          MediaDownloadButton(
-            state: downloadState,
-            progress: downloadProgress,
-            onPressed: onDownloadTap,
-            onPausePressed: onDownloadPauseTap,
-            onLongPress: onDownloadLongPress,
-          ),
-          if (isCurrent) _playbackTrailing(context),
-        ],
+      trailing: MediaDownloadButton(
+        state: downloadState,
+        progress: downloadProgress,
+        sizeText: asset.displaySize,
+        onPressed: onDownloadTap,
+        onPausePressed: onDownloadPauseTap,
+        onLongPress: onDownloadLongPress,
       ),
     );
   }
@@ -78,61 +97,57 @@ class MediaAssetTile extends StatelessWidget {
     final typo = context.typo;
     final colors = context.colors;
     final duration = asset.displayDuration;
-    final statusLabel = _downloadStatusLabel();
+    final size = downloadEntry?.formattedSize ?? asset.displaySize;
 
-    if (duration.isEmpty && statusLabel == null) return null;
-
-    final parts = <String>[
-      if (duration.isNotEmpty) duration,
-      ?statusLabel,
-    ];
-
-    return Text(
-      parts.join(' · '),
-      style: typo.bodySmall.copyWith(color: colors.textSecondary),
-    );
-  }
-
-  String? _downloadStatusLabel() {
+    String? text;
     switch (downloadState) {
+      case EMediaDownloadState.none:
+        final parts = [
+          if (duration.isNotEmpty) duration,
+          if (size.isNotEmpty) size,
+        ];
+        if (parts.isNotEmpty) text = parts.join(' · ');
       case EMediaDownloadState.queued:
-        return AppLocales.media.downloadQueued.tr;
+        final parts = [
+          if (duration.isNotEmpty) duration,
+          if (size.isNotEmpty) size,
+          AppLocales.media.downloadQueued.tr,
+        ];
+        text = parts.join(' · ');
       case EMediaDownloadState.downloading:
         final percent = (downloadProgress.clamp(0, 1) * 100).round();
-        return AppLocales.media.downloadProgress.trParams({
-          'percent': '$percent',
-        });
+        final progSize = downloadEntry?.formattedProgressSize;
+        if (progSize != null && progSize.isNotEmpty) {
+          text = '${AppLocales.media.downloading.tr} $progSize ($percent%)';
+        } else {
+          text = AppLocales.media.downloadProgress.trParams({'percent': '$percent'});
+        }
       case EMediaDownloadState.paused:
         final percent = (downloadProgress.clamp(0, 1) * 100).round();
-        return AppLocales.media.downloadPaused.trParams({
-          'percent': '$percent',
-        });
+        final progSize = downloadEntry?.formattedProgressSize;
+        if (progSize != null && progSize.isNotEmpty) {
+          text = '${AppLocales.media.downloadPaused.trParams({'percent': '$percent'})} ($progSize)';
+        } else {
+          text = AppLocales.media.downloadPaused.trParams({'percent': '$percent'});
+        }
       case EMediaDownloadState.processing:
-        return AppLocales.media.processing.tr;
-      case EMediaDownloadState.failed:
-        return AppLocales.media.downloadFailed.tr;
-      case EMediaDownloadState.none:
+        text = AppLocales.media.processing.tr;
       case EMediaDownloadState.ready:
-        return null;
-    }
-  }
-
-  Widget _playbackTrailing(BuildContext context) {
-    final colors = context.colors;
-
-    if (showLoadingTrailing && isLoading) {
-      return AppLoading(
-        size: LoadingSize.small,
-        color: colors.primary,
-      );
+        final parts = [
+          if (duration.isNotEmpty) duration,
+          if (size.isNotEmpty) size,
+          AppLocales.media.downloaded.tr,
+        ];
+        text = parts.join(' · ');
+      case EMediaDownloadState.failed:
+        text = AppLocales.media.downloadFailed.tr;
     }
 
-    final showPause =
-        showLoadingTrailing ? isPlaying : (isPlaying || isLoading);
-    return Icon(
-      showPause ? Design.icons.pause : Design.icons.play,
-      color: colors.primary,
-      size: Design.spacing.iconLarge,
+    if (text == null || text.isEmpty) return null;
+
+    return Text(
+      text,
+      style: typo.bodySmall.copyWith(color: colors.textSecondary),
     );
   }
 }

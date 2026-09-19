@@ -28,6 +28,7 @@ class AppIcons {
   IconData get feedback => Icons.feedback_outlined;
   IconData get delete => Icons.delete_outline;
   IconData get deleteSweep => Icons.delete_sweep_outlined;
+  IconData get refresh => Icons.refresh_rounded;
 
   // ── User / Auth ────────────────────────────────────────────────
   IconData get logout => Icons.logout_rounded;

@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rexone_mobile/config/app.config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/data/local/local.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/asset.model.dart';
 import 'package:rexone_mobile/models/media_download_entry.model.dart';
@@ -16,15 +19,19 @@ import 'package:rexone_mobile/services/storage.service.dart';
 
 class _PendingDownloadPlan {
   final String assetId;
+  final AssetModel? asset;
   final String title;
   final String? mediaFormat;
   final List<ChildAssetModel> subtitles;
+  final ChildAssetModel? thumbnail;
 
   const _PendingDownloadPlan({
     required this.assetId,
+    this.asset,
     required this.title,
     this.mediaFormat,
     this.subtitles = const [],
+    this.thumbnail,
   });
 }
 
@@ -33,6 +40,8 @@ class MediaDownloadService extends GetxService {
   late final StorageService _storage;
   late final MediaService _media;
   late final MediaDownloadNotificationService _notifications;
+  AppDatabase? get _db =>
+      Get.isRegistered<AppDatabase>() ? Get.find<AppDatabase>() : null;
   late Directory _offlineRoot;
   late Directory _decryptedCacheDir;
   late Directory _tempDir;
@@ -66,14 +75,14 @@ class MediaDownloadService extends GetxService {
       taskProgressCallback: _onTaskProgressUpdate,
     );
 
-    FileDownloader().configure(
-      androidConfig: [(Config.runInForeground, Config.whenAble)],
+    await FileDownloader().configure(
+      androidConfig: [(Config.runInForeground, Config.always)],
     );
 
     await FileDownloader().start(autoCleanDatabase: true);
     _downloaderStarted = true;
     await _ensureDirectories();
-    _loadIndexFromStorage();
+    await _loadIndex();
     await _reconcileInterruptedDownloads();
   }
 
@@ -196,8 +205,33 @@ class MediaDownloadService extends GetxService {
         progress: 0,
         title: asset.displayTitle,
         mediaFormat: asset.format,
+        sizeBytes: asset.sizeBytes,
       ),
     );
+
+    final db = _db;
+    if (db != null) {
+      try {
+        await db.upsertAsset(
+          asset.toCompanion(
+            downloadState: 'queued',
+            downloadProgress: 0.0,
+          ),
+        );
+        final childCompanions = <LocalChildAssetsTableCompanion>[];
+        if (asset.thumbnail != null) {
+          childCompanions.add(asset.thumbnail!.toCompanion(asset.id));
+        }
+        for (final s in asset.playableSubtitles) {
+          childCompanions.add(s.toCompanion(asset.id));
+        }
+        if (childCompanions.isNotEmpty) {
+          await db.upsertChildAssets(childCompanions);
+        }
+      } catch (e) {
+        debugPrint('⚠️ [MediaDownloadService] Failed to upsert asset into Drift: $e');
+      }
+    }
 
     try {
       final playback = await _media.getAssetPlayback(asset.id);
@@ -212,9 +246,11 @@ class MediaDownloadService extends GetxService {
 
       _pendingPlans[asset.id] = _PendingDownloadPlan(
         assetId: asset.id,
+        asset: asset,
         title: asset.displayTitle,
         mediaFormat: asset.format,
         subtitles: playback.data!.media.playableSubtitles,
+        thumbnail: asset.thumbnail,
       );
       _completedSubtitleIds[asset.id] = {};
       _activeAssetIds.add(asset.id);
@@ -224,6 +260,14 @@ class MediaDownloadService extends GetxService {
           state: EMediaDownloadState.downloading,
           progress: 0,
           clearErrorMessage: true,
+        ),
+      );
+
+      unawaited(
+        _db?.updateDownloadState(
+          assetId: asset.id,
+          state: 'downloading',
+          progress: 0.0,
         ),
       );
 
@@ -305,9 +349,28 @@ class MediaDownloadService extends GetxService {
           downloadedAt: DateTime.now(),
           title: title,
           mediaFormat: mediaFormat,
+          isEncrypted: true,
           clearErrorMessage: true,
         ),
       );
+
+      final db = _db;
+      if (db != null) {
+        await db.upsertAsset(
+          LocalAssetsTableCompanion(
+            id: drift.Value(assetId),
+            name: drift.Value(title ?? assetId),
+            title: drift.Value(title),
+            url: drift.Value(mediaFile.path),
+            type: drift.Value(mediaFormat ?? 'video'),
+            format: drift.Value(mediaFormat),
+            downloadState: const drift.Value('ready'),
+            downloadProgress: const drift.Value(1.0),
+            localFilePath: drift.Value(mediaFile.path),
+            downloadedAt: drift.Value(DateTime.now()),
+          ),
+        );
+      }
     } catch (error) {
       _setEntry(
         (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
@@ -336,6 +399,7 @@ class MediaDownloadService extends GetxService {
     entries.remove(assetId);
     entries.refresh();
     _persistIndex();
+    await _db?.deleteAssetCascade(assetId);
     await _notifications.endLiveActivityFor(assetId);
   }
 
@@ -354,12 +418,19 @@ class MediaDownloadService extends GetxService {
           await subtitle.delete();
         }
       }
+      for (final ext in ['jpg', 'png', 'webp', 'jpeg']) {
+        final thumb = File('${_offlineRoot.path}/${assetId}_thumb.$ext');
+        if (await thumb.exists()) {
+          await thumb.delete();
+        }
+      }
     }
 
     await _clearDecryptedCacheFor(assetId);
     entries.remove(assetId);
     entries.refresh();
     _persistIndex();
+    await _db?.deleteAssetCascade(assetId);
   }
 
   Future<void> clearAllDownloads() async {
@@ -377,18 +448,80 @@ class MediaDownloadService extends GetxService {
     entries.clear();
     entries.refresh();
     _storage.clearMediaDownloadsIndex();
+    await _db?.clearAllOfflineData();
     await _notifications.endAllLiveActivities();
+  }
+
+  /// Calculates the exact byte count occupied on device storage for a downloaded asset.
+  Future<int> getOccupiedDiskSizeBytes(String assetId) async {
+    int total = 0;
+    try {
+      final media = _mediaFile(assetId);
+      if (await media.exists()) {
+        total += await media.length();
+      }
+      final entry = entries[assetId];
+      if (entry != null) {
+        for (final subtitleId in entry.subtitlePaths.keys) {
+          final sub = _subtitleFile(assetId, subtitleId);
+          if (await sub.exists()) {
+            total += await sub.length();
+          }
+        }
+      }
+      for (final ext in ['jpg', 'png', 'webp', 'jpeg']) {
+        final thumb = File('${_offlineRoot.path}/${assetId}_thumb.$ext');
+        if (await thumb.exists()) {
+          total += await thumb.length();
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ [MediaDownloadService] Error calculating disk size for $assetId: $e');
+    }
+    return total;
+  }
+
+  /// Returns human-readable storage size occupied by this downloaded asset (e.g. `4.2 MB`).
+  Future<String> getOccupiedDiskSizeFormatted(String assetId) async {
+    final bytes = await getOccupiedDiskSizeBytes(assetId);
+    if (bytes > 0) {
+      return FileSizeHelper.formatBytes(bytes);
+    }
+    final entry = entries[assetId];
+    return entry?.formattedSize ?? '';
+  }
+
+  /// Returns the total bytes occupied on disk by all offline downloads combined.
+  Future<int> getTotalOccupiedDiskSizeBytes() async {
+    int total = 0;
+    for (final id in entries.keys) {
+      if (isDownloaded(id)) {
+        total += await getOccupiedDiskSizeBytes(id);
+      }
+    }
+    return total;
+  }
+
+  /// Returns human-readable total storage occupied by all offline downloads (e.g. `128.5 MB`).
+  Future<String> getTotalOccupiedDiskSizeFormatted() async {
+    final total = await getTotalOccupiedDiskSizeBytes();
+    return FileSizeHelper.formatBytes(total);
   }
 
   Future<String?> resolveDecryptedMediaPath(String assetId) async {
     final entry = entries[assetId];
     if (entry == null || !entry.isReady) return null;
 
-    final encryptedFile = _mediaFile(assetId);
-    if (!await encryptedFile.exists()) return null;
+    final mediaFile = _mediaFile(assetId);
+    if (!await mediaFile.exists()) return null;
+
+    // Direct sandboxed download: return path directly without duplicate cache copy
+    if (!entry.isEncrypted) {
+      return mediaFile.path;
+    }
 
     final cacheFile = _decryptedMediaCacheFile(assetId);
-    final encryptedModified = await encryptedFile.lastModified();
+    final encryptedModified = await mediaFile.lastModified();
     if (await cacheFile.exists()) {
       final cacheModified = await cacheFile.lastModified();
       if (!cacheModified.isBefore(encryptedModified)) {
@@ -397,7 +530,7 @@ class MediaDownloadService extends GetxService {
     }
 
     final decrypted = await MediaEncryptionHelper.decrypt(
-      ciphertext: await encryptedFile.readAsBytes(),
+      ciphertext: await mediaFile.readAsBytes(),
       encryptionKey: AppConfig.offlineEncryptionKey,
     );
     await cacheFile.writeAsBytes(decrypted, flush: true);
@@ -414,11 +547,16 @@ class MediaDownloadService extends GetxService {
     final relativePath = entry.subtitlePaths[subtitleId];
     if (relativePath == null || relativePath.isEmpty) return null;
 
-    final encryptedFile = File('${_offlineRoot.path}/$relativePath');
-    if (!await encryptedFile.exists()) return null;
+    final file = File('${_offlineRoot.path}/$relativePath');
+    if (!await file.exists()) return null;
+
+    // Direct sandboxed download: return path directly
+    if (!entry.isEncrypted) {
+      return file.path;
+    }
 
     final cacheFile = _decryptedSubtitleCacheFile(assetId, subtitleId);
-    final encryptedModified = await encryptedFile.lastModified();
+    final encryptedModified = await file.lastModified();
     if (await cacheFile.exists()) {
       final cacheModified = await cacheFile.lastModified();
       if (!cacheModified.isBefore(encryptedModified)) {
@@ -427,7 +565,7 @@ class MediaDownloadService extends GetxService {
     }
 
     final decrypted = await MediaEncryptionHelper.decrypt(
-      ciphertext: await encryptedFile.readAsBytes(),
+      ciphertext: await file.readAsBytes(),
       encryptionKey: AppConfig.offlineEncryptionKey,
     );
     await cacheFile.writeAsBytes(decrypted, flush: true);
@@ -504,6 +642,49 @@ class MediaDownloadService extends GetxService {
     }
   }
 
+  Future<void> _loadIndex() async {
+    final db = _db;
+    if (db != null) {
+      try {
+        final localAssets = await db.getAllLocalAssets();
+        if (localAssets.isNotEmpty) {
+          final loaded = <String, MediaDownloadEntry>{};
+          for (final a in localAssets) {
+            final state = EMediaDownloadState.fromStorage(a.downloadState);
+            final children = await db.getChildAssets(a.id);
+            final subtitlePaths = <String, String>{};
+            for (final c in children) {
+              if (c.isDownloaded && c.localFilePath != null) {
+                subtitlePaths[c.id] = c.localFilePath!;
+              }
+            }
+            loaded[a.id] = MediaDownloadEntry(
+              assetId: a.id,
+              state: state,
+              progress: a.downloadProgress,
+              mediaPath: a.localFilePath != null
+                  ? (a.localFilePath!.contains('/')
+                      ? a.localFilePath!.split('/').last
+                      : a.localFilePath!)
+                  : '',
+              subtitlePaths: subtitlePaths,
+              downloadedAt: a.downloadedAt,
+              errorMessage: a.errorMessage,
+              title: a.title ?? a.name,
+              mediaFormat: a.format,
+              isEncrypted: false,
+            );
+          }
+          entries.assignAll(loaded);
+          return;
+        }
+      } catch (e) {
+        debugPrint('⚠️ [MediaDownloadService] Failed to load index from Drift: $e');
+      }
+    }
+    _loadIndexFromStorage();
+  }
+
   void _loadIndexFromStorage() {
     final raw = _storage.getMediaDownloadsIndex();
     if (raw == null || raw.isEmpty) {
@@ -566,14 +747,23 @@ class MediaDownloadService extends GetxService {
   }
 
   void _onTaskProgressUpdate(TaskProgressUpdate update) {
-    _onTaskProgress(update.task, update.progress);
+    _onTaskProgress(
+      update.task,
+      update.progress,
+      expectedFileSize:
+          update.expectedFileSize > 0 ? update.expectedFileSize : null,
+    );
   }
 
   Future<void> _onTaskStatusUpdate(TaskStatusUpdate update) async {
     await _onTaskStatus(update.task, update.status);
   }
 
-  void _onTaskProgress(Task task, double progress) {
+  void _onTaskProgress(
+    Task task,
+    double progress, {
+    int? expectedFileSize,
+  }) {
     final meta = _parseMeta(task.metaData);
     final assetId = meta[MediaDownloadConstants.metaAssetId]?.toString() ?? '';
     if (assetId.isEmpty) return;
@@ -590,10 +780,27 @@ class MediaDownloadService extends GetxService {
       phaseProgress: progress,
     );
 
+    final effectiveTotal = entry.sizeBytes ?? expectedFileSize;
+    final downloadedBytes =
+        effectiveTotal != null && effectiveTotal > 0
+            ? (combined * effectiveTotal).round()
+            : null;
+
     _setEntry(
       entry.copyWith(
         state: EMediaDownloadState.downloading,
         progress: combined,
+        sizeBytes: effectiveTotal,
+        downloadedBytes: downloadedBytes,
+      ),
+    );
+
+    unawaited(
+      _db?.updateDownloadState(
+        assetId: assetId,
+        state: 'downloading',
+        progress: combined,
+        sizeBytes: effectiveTotal,
       ),
     );
 
@@ -618,12 +825,16 @@ class MediaDownloadService extends GetxService {
             state: EMediaDownloadState.queued,
           ),
         );
+        unawaited(_db?.updateDownloadState(assetId: assetId, state: 'queued'));
       case TaskStatus.running:
         if (stateFor(assetId) == EMediaDownloadState.paused) return;
         _setEntry(
           (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
             state: EMediaDownloadState.downloading,
           ),
+        );
+        unawaited(
+          _db?.updateDownloadState(assetId: assetId, state: 'downloading'),
         );
       case TaskStatus.paused:
         final entry = entries[assetId];
@@ -632,6 +843,7 @@ class MediaDownloadService extends GetxService {
         _setEntry(
           entry.copyWith(state: EMediaDownloadState.paused),
         );
+        unawaited(_db?.updateDownloadState(assetId: assetId, state: 'paused'));
         await _notifications.onDownloadPaused(
           assetId: assetId,
           title: entry.title ?? assetId,
@@ -716,6 +928,13 @@ class MediaDownloadService extends GetxService {
         progress: 0.95,
       ),
     );
+    unawaited(
+      _db?.updateDownloadState(
+        assetId: assetId,
+        state: 'processing',
+        progress: 0.95,
+      ),
+    );
 
     try {
       final mediaTemp = _mediaTempFile(assetId);
@@ -723,21 +942,75 @@ class MediaDownloadService extends GetxService {
         throw StateError('Downloaded media file is missing');
       }
 
-      final subtitleFiles = <String, File>{};
+      final mediaFile = _mediaFile(assetId);
+      await _moveFile(mediaTemp, mediaFile);
+
+      final subtitlePaths = <String, String>{};
       for (final subtitle in plan?.subtitles ?? const <ChildAssetModel>[]) {
         if (subtitle.id.isEmpty) continue;
-        final file = _subtitleTempFile(assetId, subtitle.id);
-        if (await file.exists()) {
-          subtitleFiles[subtitle.id] = file;
+        final tempFile = _subtitleTempFile(assetId, subtitle.id);
+        if (await tempFile.exists()) {
+          final targetFile = _subtitleFile(assetId, subtitle.id);
+          await _moveFile(tempFile, targetFile);
+          subtitlePaths[subtitle.id] = subtitleFileName(assetId, subtitle.id);
+          await _db?.markChildAssetDownloaded(
+            childId: subtitle.id,
+            localFilePath: targetFile.path,
+          );
         }
       }
 
-      await _storeEncryptedMediaFromFiles(
+      if (plan?.thumbnail != null) {
+        await _downloadThumbnailIfPresent(assetId, plan!.thumbnail);
+      }
+
+      await _clearDecryptedCacheFor(assetId);
+
+      int diskSizeBytes = 0;
+      if (await mediaFile.exists()) {
+        diskSizeBytes += await mediaFile.length();
+      }
+      for (final subtitleId in subtitlePaths.keys) {
+        final subFile = _subtitleFile(assetId, subtitleId);
+        if (await subFile.exists()) {
+          diskSizeBytes += await subFile.length();
+        }
+      }
+      for (final ext in ['jpg', 'png', 'webp', 'jpeg']) {
+        final thumb = File('${_offlineRoot.path}/${assetId}_thumb.$ext');
+        if (await thumb.exists()) {
+          diskSizeBytes += await thumb.length();
+        }
+      }
+
+      final now = DateTime.now();
+      final effectiveSize =
+          diskSizeBytes > 0 ? diskSizeBytes : (plan?.asset?.sizeBytes ?? entry.sizeBytes);
+
+      _setEntry(
+        (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+          state: EMediaDownloadState.ready,
+          progress: 1,
+          mediaPath: mediaFileName(assetId),
+          subtitlePaths: subtitlePaths,
+          downloadedAt: now,
+          title: plan?.title ?? entry.title,
+          mediaFormat: plan?.mediaFormat ?? entry.mediaFormat,
+          isEncrypted: false,
+          diskSizeBytes: diskSizeBytes > 0 ? diskSizeBytes : null,
+          sizeBytes: effectiveSize,
+          downloadedBytes: effectiveSize,
+          clearErrorMessage: true,
+        ),
+      );
+
+      await _db?.updateDownloadState(
         assetId: assetId,
-        plaintextFile: mediaTemp,
-        subtitleFiles: subtitleFiles,
-        title: plan?.title ?? entry.title,
-        mediaFormat: plan?.mediaFormat ?? entry.mediaFormat,
+        state: 'ready',
+        progress: 1.0,
+        localFilePath: mediaFile.path,
+        downloadedAt: now,
+        sizeBytes: effectiveSize,
       );
 
       await _deleteTempFiles(assetId);
@@ -755,48 +1028,54 @@ class MediaDownloadService extends GetxService {
     }
   }
 
-  Future<void> _storeEncryptedMediaFromFiles({
-    required String assetId,
-    required File plaintextFile,
-    Map<String, File> subtitleFiles = const {},
-    String? title,
-    String? mediaFormat,
-  }) async {
-    await _ensureDirectories();
-    final key = AppConfig.offlineEncryptionKey;
-
-    final encrypted = await MediaEncryptionHelper.encrypt(
-      plaintext: await plaintextFile.readAsBytes(),
-      encryptionKey: key,
-    );
-    final mediaFile = _mediaFile(assetId);
-    await mediaFile.writeAsBytes(encrypted, flush: true);
-
-    final subtitlePaths = <String, String>{};
-    for (final item in subtitleFiles.entries) {
-      final encryptedSubtitle = await MediaEncryptionHelper.encrypt(
-        plaintext: await item.value.readAsBytes(),
-        encryptionKey: key,
-      );
-      final subtitleFile = _subtitleFile(assetId, item.key);
-      await subtitleFile.writeAsBytes(encryptedSubtitle, flush: true);
-      subtitlePaths[item.key] = subtitleFileName(assetId, item.key);
+  Future<void> _downloadThumbnailIfPresent(
+    String assetId,
+    ChildAssetModel? thumbnail,
+  ) async {
+    if (thumbnail == null || thumbnail.url.isEmpty) {
+      return;
     }
+    final normalizedUrl = UrlHelper.normalize(thumbnail.url);
+    if (!normalizedUrl.startsWith('http://') &&
+        !normalizedUrl.startsWith('https://')) {
+      return;
+    }
+    try {
+      final ext = thumbnail.extension ?? 'jpg';
+      final targetFile = File('${_offlineRoot.path}/${assetId}_thumb.$ext');
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse(normalizedUrl));
+      UrlHelper.headersFor(normalizedUrl).forEach((k, v) {
+        request.headers.set(k, v);
+      });
+      final response = await request.close();
+      if (response.statusCode == HttpStatus.ok) {
+        final sink = targetFile.openWrite();
+        await response.pipe(sink);
+        final thumbId =
+            thumbnail.id.isNotEmpty ? thumbnail.id : '${assetId}_thumb';
+        await _db?.markChildAssetDownloaded(
+          childId: thumbId,
+          localFilePath: targetFile.path,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ [MediaDownloadService] Failed to cache thumbnail: $e');
+    }
+  }
 
-    await _clearDecryptedCacheFor(assetId);
-
-    _setEntry(
-      (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
-        state: EMediaDownloadState.ready,
-        progress: 1,
-        mediaPath: mediaFileName(assetId),
-        subtitlePaths: subtitlePaths,
-        downloadedAt: DateTime.now(),
-        title: title,
-        mediaFormat: mediaFormat,
-        clearErrorMessage: true,
-      ),
-    );
+  Future<void> _moveFile(File source, File destination) async {
+    try {
+      if (await destination.exists()) {
+        await destination.delete();
+      }
+      await source.rename(destination.path);
+    } catch (_) {
+      await source.copy(destination.path);
+      try {
+        await source.delete();
+      } catch (_) {}
+    }
   }
 
   Future<void> _failDownload(String assetId, String message) async {
@@ -815,6 +1094,14 @@ class MediaDownloadService extends GetxService {
         ),
       );
     }
+
+    unawaited(
+      _db?.updateDownloadState(
+        assetId: assetId,
+        state: 'failed',
+        errorMessage: message,
+      ),
+    );
 
     await _notifications.onDownloadFinished(
       assetId: assetId,
@@ -841,9 +1128,12 @@ class MediaDownloadService extends GetxService {
     required String title,
     String? mediaFormat,
   }) {
+    final normalizedUrl = UrlHelper.normalize(url);
+    final headers = UrlHelper.headersFor(normalizedUrl);
     return DownloadTask(
       taskId: _mediaTaskId(assetId),
-      url: url,
+      url: normalizedUrl,
+      headers: headers.isEmpty ? null : headers,
       filename: '$assetId${MediaDownloadConstants.tempMediaSuffix}',
       directory:
           '${MediaDownloadConstants.offlineRootDirName}/${MediaDownloadConstants.tempDirName}',
@@ -867,9 +1157,12 @@ class MediaDownloadService extends GetxService {
     required String title,
     String? mediaFormat,
   }) {
+    final normalizedUrl = UrlHelper.normalize(subtitle.url);
+    final headers = UrlHelper.headersFor(normalizedUrl);
     return DownloadTask(
       taskId: _subtitleTaskId(assetId, subtitle.id),
-      url: subtitle.url,
+      url: normalizedUrl,
+      headers: headers.isEmpty ? null : headers,
       filename:
           '${assetId}_${subtitle.id}${MediaDownloadConstants.tempSubtitleSuffix}',
       directory:
