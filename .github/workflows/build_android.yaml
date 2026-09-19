@@ -1,0 +1,141 @@
+name: Build Android APK (UAT & Production)
+
+on:
+  push:
+    branches:
+      - main
+      - uat
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Target Environment override (uat or prod)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Determine Target Environment
+        id: env_selector
+        run: |
+          # Detect branch or manual dispatch override
+          BRANCH="${GITHUB_REF##*/}"
+          MANUAL_OVERRIDE="${{ github.event.inputs.target_env }}"
+
+          if [ -n "$MANUAL_OVERRIDE" ]; then
+            TARGET_ENV="$MANUAL_OVERRIDE"
+          elif [ "$BRANCH" = "uat" ]; then
+            TARGET_ENV="uat"
+          else
+            TARGET_ENV="prod"
+          fi
+
+          echo "Selected Target Environment: $TARGET_ENV"
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+
+      - name: Inject Environment Secrets
+        env:
+          RAW_ENV_UAT: ${{ secrets.ENV_UAT }}
+          RAW_ENV_PROD: ${{ secrets.ENV_PROD }}
+        run: |
+          TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"
+
+          # Touch dummy files so pubspec.yaml asset bundle validation succeeds
+          touch .env.dev .env.uat .env.prod
+
+          if [ "$TARGET_ENV" = "uat" ]; then
+            echo "Writing .env.uat from GitHub Secrets..."
+            if [ -n "$RAW_ENV_UAT" ]; then
+              printf '%s\n' "$RAW_ENV_UAT" > .env.uat
+            else
+              echo "⚠️ WARNING: ENV_UAT secret is not set in GitHub Repository Secrets! Using fallback."
+              echo "APP_ENV=.env.uat" > .env.uat
+              echo "API_BASE_URL=https://uat.api.rexone.me" >> .env.uat
+            fi
+          else
+            echo "Writing .env.prod from GitHub Secrets..."
+            if [ -n "$RAW_ENV_PROD" ]; then
+              printf '%s\n' "$RAW_ENV_PROD" > .env.prod
+            else
+              echo "⚠️ WARNING: ENV_PROD secret is not set in GitHub Repository Secrets! Using fallback."
+              echo "APP_ENV=.env.prod" > .env.prod
+              echo "API_BASE_URL=https://api.rexone.me" >> .env.prod
+            fi
+          fi
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Read App Version from pubspec.yaml
+        id: app_version
+        run: |
+          RAW_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          VERSION_NAME=$(echo "$RAW_VERSION" | cut -d'+' -f1)
+          BUILD_NUMBER=$(echo "$RAW_VERSION" | cut -d'+' -f2)
+
+          TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"
+
+          if [ "$TARGET_ENV" = "uat" ]; then
+            TAG_NAME="v${VERSION_NAME}-uat+${BUILD_NUMBER}"
+            RELEASE_TITLE="UAT Android Build v${VERSION_NAME} (Build ${BUILD_NUMBER})"
+            APK_NAME="rexone-uat-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
+          else
+            TAG_NAME="v${VERSION_NAME}+${BUILD_NUMBER}"
+            RELEASE_TITLE="Production Android Release v${VERSION_NAME} (Build ${BUILD_NUMBER})"
+            APK_NAME="rexone-prod-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
+          fi
+
+          echo "Tag Name: $TAG_NAME"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "release_title=$RELEASE_TITLE" >> "$GITHUB_OUTPUT"
+          echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build Android APK
+        run: |
+          flutter build apk --release --dart-define=APP_ENV=.env.${{ steps.env_selector.outputs.target_env }}
+
+      - name: Prepare Release APK Artifact
+        run: |
+          SOURCE_APK="build/app/outputs/flutter-apk/app-release.apk"
+          DEST_APK="build/app/outputs/flutter-apk/${{ steps.app_version.outputs.apk_name }}"
+          cp "$SOURCE_APK" "$DEST_APK"
+          echo "Prepared $DEST_APK"
+
+      - name: Upload APK to GitHub Actions Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.app_version.outputs.apk_name }}
+          path: build/app/outputs/flutter-apk/${{ steps.app_version.outputs.apk_name }}
+          retention-days: 30
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.app_version.outputs.tag_name }}
+          name: ${{ steps.app_version.outputs.release_title }}
+          prerelease: ${{ steps.env_selector.outputs.target_env == 'uat' }}
+          files: build/app/outputs/flutter-apk/${{ steps.app_version.outputs.apk_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
