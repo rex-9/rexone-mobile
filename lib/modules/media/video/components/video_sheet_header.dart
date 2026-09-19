@@ -15,7 +15,7 @@ class VideoSheetHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typo = context.typo;
-    final colors = Design.colors.night;
+    final colors = context.colors;
 
     return Padding(
       padding: Design.spacing.paddingSymmetric(

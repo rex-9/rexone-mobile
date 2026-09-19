@@ -125,7 +125,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     try {
       await _loadSourceForIndex(index);
     } catch (error) {
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] Set assets error: $error');
     }
   }
 
@@ -183,7 +183,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       return true;
     } catch (error) {
       isLoading.value = false;
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] Play error: $error');
       return false;
     }
   }
@@ -260,7 +260,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       return true;
     } catch (error) {
       isLoading.value = false;
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] Toggle error: $error');
       return false;
     }
   }
@@ -336,7 +336,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       _persistSession(wasPlaying: false);
     } catch (error) {
       isLoading.value = false;
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] Restore session error: $error');
     }
   }
 
@@ -488,7 +488,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       }
     } catch (error) {
       if (epoch != _lyricsLoadEpoch) return;
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] Load lyrics error: $error');
       lyricsError.value = MediaPlaybackConstants.lyricsErrorFetchFailed;
     } finally {
       if (epoch == _lyricsLoadEpoch) {
@@ -528,7 +528,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
     } catch (error) {
-      debugPrint('Error: $error');
+      debugPrint('❌ [AudioPlayerService] AudioSession configure error: $error');
     }
   }
 

@@ -26,7 +26,7 @@ class VideoSettingsVolumePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Design.colors.night;
+    final colors = context.colors;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

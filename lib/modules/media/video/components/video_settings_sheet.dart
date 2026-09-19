@@ -81,7 +81,7 @@ class _VideoSettingsSheetBodyState extends State<_VideoSettingsSheetBody> {
                         selected: (currentRate - speed).abs() < 0.01,
                         onTap: () {
                           unawaited(widget.player.setRate(speed));
-                          Navigator.pop(context);
+                          Get.back();
                         },
                       ),
                     )

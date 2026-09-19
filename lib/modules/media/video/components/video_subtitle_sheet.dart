@@ -33,7 +33,7 @@ class _VideoSubtitleSheetBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typo = context.typo;
-    final colors = Design.colors.night;
+    final colors = context.colors;
 
     return Obx(() {
       final tracks = player.effectiveSubtitles;
@@ -51,7 +51,7 @@ class _VideoSubtitleSheetBody extends StatelessWidget {
               selected: !enabled,
               onTap: () {
                 unawaited(player.setSubtitlesEnabled(false));
-                Navigator.pop(context);
+                Get.back();
               },
             ),
             if (tracks.isEmpty)
@@ -73,7 +73,7 @@ class _VideoSubtitleSheetBody extends StatelessWidget {
                   selected: enabled && selectedIndex == index,
                   onTap: () {
                     unawaited(player.selectSubtitleTrack(index));
-                    Navigator.pop(context);
+                    Get.back();
                   },
                 );
               }),

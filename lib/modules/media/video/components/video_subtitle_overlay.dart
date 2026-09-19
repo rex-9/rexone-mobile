@@ -20,7 +20,7 @@ class VideoSubtitleOverlay {
         color: Design.colors.glowWhite,
         fontWeight: FontWeight.w600,
         height: 1.35,
-        backgroundColor: Design.colors.night.background.withValues(alpha: 0.6),
+        backgroundColor: context.colors.background.withValues(alpha: 0.6),
       ),
       textScaler: TextScaler.linear(1.0),
       padding: Design.spacing.paddingOnly(

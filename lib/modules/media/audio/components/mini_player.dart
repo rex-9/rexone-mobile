@@ -26,7 +26,7 @@ class MiniPlayer extends StatelessWidget {
         child: InkWell(
           onTap: () {
             player.isFullPlayerOpen.value = true;
-            Get.toNamed(AppRoutes.audioPlayer);
+            AppRoutes.toAudioPlayer();
           },
           child: Container(
             decoration: BoxDecoration(
