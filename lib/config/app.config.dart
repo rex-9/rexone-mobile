@@ -30,7 +30,7 @@ class AppConfig {
     AppEnvironment.prod => AppEnvironment.production,
     _ => AppEnvironment.development,
   };
-  static String get appName => dotenv.env[AppConstants.nameKey] ?? 'Rexone';
+  static String get appName => dotenv.env[AppConstants.nameKey] ?? 'RexOne';
   static String get appVersion =>
       dotenv.env[AppConstants.versionKey] ?? '1.0.0';
   static String get apiBaseUrl =>

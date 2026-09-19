@@ -3,7 +3,7 @@
 class AnalyticsConstants {
   const AnalyticsConstants._();
 
-  // Shared Rexone analytics contract. Every event uses action_noun format.
+  // Shared RexOne analytics contract. Every event uses action_noun format.
   static const String eventSignUp = 'sign_up';
   static const String eventSignIn = 'sign_in';
   static const String eventSignOut = 'sign_out';

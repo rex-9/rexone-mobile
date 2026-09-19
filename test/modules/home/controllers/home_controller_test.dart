@@ -14,7 +14,7 @@ void main() {
 
   setUpAll(() {
     PackageInfo.setMockInitialValues(
-      appName: 'Rexone',
+      appName: 'RexOne',
       packageName: 'com.rexone.mobile',
       version: '1.4.0',
       buildNumber: '42',
