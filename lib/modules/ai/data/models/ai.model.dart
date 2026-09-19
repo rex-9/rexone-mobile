@@ -130,7 +130,7 @@ class AiMessageModel {
 
   String? get audioUrl {
     for (final asset in assets) {
-      if (asset.type == AiKeys.audio && asset.url.isNotEmpty) {
+      if (asset.type == AiKeys.tts && asset.url.isNotEmpty) {
         return asset.url;
       }
     }

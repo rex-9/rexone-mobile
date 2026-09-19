@@ -14,6 +14,9 @@ class AppLocales {
   static const user = _UserLocales();
   static const notification = _NotificationLocales();
   static const update = _UpdateLocales();
+  static const audio = _AudioLocales();
+  static const video = _VideoLocales();
+  static const media = _MediaLocales();
 }
 
 class _AuthLocales {
@@ -316,4 +319,87 @@ class _NotificationLocales {
   final externalTitle = 'notification.external_title';
   final externalMessage = 'notification.external_message';
   final externalConfirm = 'notification.external_confirm';
+}
+
+class _MediaLocales {
+  const _MediaLocales();
+
+  final playlistTitle = 'media.playlist_title';
+  final playlistSubtitle = 'media.playlist_subtitle';
+  final playlistEmpty = 'media.playlist_empty';
+  final playAll = 'media.play_all';
+  final download = 'media.download';
+  final downloading = 'media.downloading';
+  final downloadProgress = 'media.download_progress';
+  final downloadQueued = 'media.download_queued';
+  final downloadPaused = 'media.download_paused';
+  final pauseDownload = 'media.pause_download';
+  final resumeDownload = 'media.resume_download';
+  final processing = 'media.processing';
+  final downloaded = 'media.downloaded';
+  final downloadFailed = 'media.download_failed';
+  final removeDownload = 'media.remove_download';
+  final removeDownloadTitle = 'media.remove_download_title';
+  final removeDownloadConfirm = 'media.remove_download_confirm';
+  final cancelDownload = 'media.cancel_download';
+  final cancelDownloadTitle = 'media.cancel_download_title';
+  final cancelDownloadConfirm = 'media.cancel_download_confirm';
+  final downloadTooMany = 'media.download_too_many';
+  final downloadComplete = 'media.download_complete';
+  final downloadCompleteNamed = 'media.download_complete_named';
+  final notificationChannelName = 'media.notification_channel_name';
+  final notificationChannelDescription =
+      'media.notification_channel_description';
+  final offlineEmptyTitle = 'media.offline_empty_title';
+  final offlineEmptyMessage = 'media.offline_empty_message';
+  final removeDownloadStorageConfirm = 'media.remove_download_storage_confirm';
+  final removeDownloadWithSize = 'media.remove_download_with_size';
+  final freedStorage = 'media.freed_storage';
+  final downloadWithSize = 'media.download_with_size';
+  final downloadedWithSize = 'media.downloaded_with_size';
+}
+
+class _AudioLocales {
+  const _AudioLocales();
+
+  final title = 'audio.title';
+  final playAll = 'audio.play_all';
+  final nowPlaying = 'audio.now_playing';
+  final play = 'audio.play';
+  final pause = 'audio.pause';
+  final next = 'audio.next';
+  final previous = 'audio.previous';
+  final playlistSubtitle = 'audio.playlist_subtitle';
+  final playbackFailed = 'audio.playback_failed';
+  final close = 'audio.close';
+  final empty = 'audio.empty';
+  final lyrics = 'audio.lyrics';
+  final lyricsLoading = 'audio.lyrics_loading';
+  final lyricsUnavailable = 'audio.lyrics_unavailable';
+  final lyricsLoadFailed = 'audio.lyrics_load_failed';
+  final lyricsTrack = 'audio.lyrics_track';
+}
+
+class _VideoLocales {
+  const _VideoLocales();
+
+  final title = 'video.title';
+  final playAll = 'video.play_all';
+  final nowPlaying = 'video.now_playing';
+  final play = 'video.play';
+  final pause = 'video.pause';
+  final next = 'video.next';
+  final previous = 'video.previous';
+  final playlistSubtitle = 'video.playlist_subtitle';
+  final playbackFailed = 'video.playback_failed';
+  final close = 'video.close';
+  final empty = 'video.empty';
+  final settings = 'video.settings';
+  final playbackSpeed = 'video.playback_speed';
+  final speedNormal = 'video.speed_normal';
+  final volume = 'video.volume';
+  final subtitles = 'video.subtitles';
+  final subtitlesOff = 'video.subtitles_off';
+  final subtitlesUnavailable = 'video.subtitles_unavailable';
+  final captions = 'video.captions';
 }

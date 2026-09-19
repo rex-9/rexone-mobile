@@ -16,6 +16,8 @@ void main() {
       expect(StorageKeys.userEmail, 'user_email');
       expect(StorageKeys.remainingAttempts, 'remainingAttempts');
       expect(StorageKeys.hasFailureHistory, 'hasFailureHistory');
+      expect(StorageKeys.skipPremium, 'skip_premium');
+      expect(StorageKeys.audioSession, 'audio_session');
     });
   });
 }

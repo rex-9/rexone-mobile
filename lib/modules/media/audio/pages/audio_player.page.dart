@@ -1,0 +1,187 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/design/design.dart';
+
+import '../../media.dart';
+
+class AudioPlayerPage extends GetView<AudioPlayerController> {
+  const AudioPlayerPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final player = controller.player;
+
+    return AppPage(
+      showBackButton: false,
+      padding: Design.spacing.zero,
+      child: Obx(() {
+        final asset = player.currentAsset;
+        final subtitleTracks = player.effectiveSubtitles;
+        final hasLyrics = player.hasEffectiveSubtitles;
+        final showLyrics = player.lyricsVisible.value && hasLyrics;
+        final showLyricsTrackPicker =
+            showLyrics && subtitleTracks.length > 1;
+        final duration = player.duration.value;
+        final position = player.position.value;
+        final maxMs = duration.inMilliseconds <= 0
+            ? 1.0
+            : duration.inMilliseconds.toDouble();
+        final valueMs = position.inMilliseconds.clamp(0, maxMs.toInt()).toDouble();
+
+        return SafeArea(
+          child: Padding(
+            padding: Design.spacing.padding(Design.spacing.screenPadding),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.chevronDown,
+                      tooltip: AppLocales.common.goBack.tr,
+                      onPressed: Get.back,
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (hasLyrics) ...[
+                          if (showLyricsTrackPicker)
+                            AppButton(
+                              type: EButtonType.icon,
+                              icon: Design.icons.playlist,
+                              tooltip: AppLocales.audio.lyricsTrack.tr,
+                              onPressed: () => AudioLyricsTrackSheet.show(
+                                context,
+                                player,
+                              ),
+                            ),
+                          AppButton(
+                            type: EButtonType.icon,
+                            icon: showLyrics
+                                ? Design.icons.lyricsActive
+                                : Design.icons.lyrics,
+                            tooltip: AppLocales.audio.lyrics.tr,
+                            color: showLyrics
+                                ? context.colors.primary
+                                : null,
+                            onPressed: player.toggleLyrics,
+                          ),
+                        ],
+                        AppButton(
+                          type: EButtonType.icon,
+                          icon: Design.icons.close,
+                          tooltip: AppLocales.audio.close.tr,
+                          onPressed: controller.closeAndExit,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: Design.spacing.lg),
+                Expanded(
+                  child: showLyrics
+                      ? AudioLyricsView(player: player)
+                      : Center(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final size = constraints.maxWidth;
+                              return TrackArtwork(
+                                url: asset?.displayThumbnailUrl ?? '',
+                                size: size,
+                                radius: Design.spacing.radiusLarge,
+                              );
+                            },
+                          ),
+                        ),
+                ),
+                SizedBox(height: Design.spacing.xxl),
+                Text(
+                  asset?.displayTitle ?? AppLocales.audio.nowPlaying.tr,
+                  textAlign: TextAlign.center,
+                  style: context.typo.headline3,
+                ),
+                SizedBox(height: Design.spacing.xs),
+                Text(
+                  asset?.displayDuration ?? '',
+                  textAlign: TextAlign.center,
+                  style: context.typo.bodyMedium,
+                ),
+                SizedBox(height: Design.spacing.xl),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: context.colors.primary,
+                    inactiveTrackColor: context.colors.divider,
+                    thumbColor: context.colors.primary,
+                    overlayColor: context.colors.primary.withValues(alpha: 0.12),
+                    trackHeight: Design.spacing.xs / 2,
+                  ),
+                  child: Slider(
+                    min: 0,
+                    max: maxMs,
+                    value: valueMs,
+                    onChanged: (value) {
+                      player.seek(Duration(milliseconds: value.round()));
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: Design.spacing.paddingSymmetric(h: Design.spacing.sm),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_format(position), style: context.typo.caption),
+                      Text(_format(duration), style: context.typo.caption),
+                    ],
+                  ),
+                ),
+                SizedBox(height: Design.spacing.xl),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.skipPrevious,
+                      tooltip: AppLocales.audio.previous.tr,
+                      onPressed: controller.skipPrevious,
+                    ),
+                    player.isLoading.value
+                        ? AppLoading(
+                            size: LoadingSize.medium,
+                            color: context.colors.primary,
+                          )
+                        : AppButton(
+                            type: EButtonType.icon,
+                            icon: player.isPlaying.value
+                                ? Design.icons.pause
+                                : Design.icons.play,
+                            tooltip: player.isPlaying.value
+                                ? AppLocales.audio.pause.tr
+                                : AppLocales.audio.play.tr,
+                            color: context.colors.primary,
+                            onPressed: controller.togglePlayback,
+                          ),
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.skipNext,
+                      tooltip: AppLocales.audio.next.tr,
+                      onPressed: controller.skipNext,
+                    ),
+                  ],
+                ),
+                SizedBox(height: Design.spacing.xxl),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  String _format(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+}

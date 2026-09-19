@@ -23,6 +23,13 @@ plugins {
 //   // https://firebase.google.com/docs/android/setup#available-libraries
 // }
 
+dependencies {
+    // Required by 'flutter_local_notifications' (and 'background_downloader'):
+    // Modern Android Gradle plugin requires core library desugaring to backport
+    // Java 8+ APIs (such as java.time and streams) to older Android versions without runtime crashes.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+}
+
 android {
     namespace = "com.rexone.mobile" // $APPLICATION_ID
     compileSdk = 37
@@ -30,6 +37,9 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Flag to enable Java 8+ API desugaring for flutter_local_notifications
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }

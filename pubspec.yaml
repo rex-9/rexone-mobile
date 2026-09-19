@@ -37,7 +37,7 @@ dependencies:
   get: ^4.7.3
   google_sign_in: ^7.2.0
   flutter_screenutil: ^5.9.3
-  pin_code_fields: ^9.3.0
+  pin_code_fields: ^10.0.0
   get_storage: ^2.1.1
   package_info_plus: ^10.2.0
   flutter_dotenv: ^6.0.1
@@ -51,7 +51,18 @@ dependencies:
   image_picker: ^1.2.3
   path_provider: ^2.1.5
   just_audio: ^0.10.6
+  just_audio_background: ^0.0.1-beta.17
+  audio_session: ^0.2.4
   connectivity_plus: ^7.3.1
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
+  cryptography: ^2.9.0
+  background_downloader: ^9.5.9
+  flutter_local_notifications: ^22.3.1
+  live_activities: ^2.6.0
+  drift: ^2.24.0
+  drift_flutter: ^0.3.1
 
 dev_dependencies:
   flutter_test:
@@ -59,9 +70,12 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   patrol_finders: ^3.6.0
+  drift_dev: ^2.24.0
+  build_runner: ^2.4.14
   # Test-only: lets tests point path_provider (used by get_storage) at a
   # temp directory, since platform channels are unavailable in flutter test.
   path_provider_platform_interface: ^2.1.2
+  plugin_platform_interface: ^2.1.8
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

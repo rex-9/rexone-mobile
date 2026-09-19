@@ -6,6 +6,8 @@ import '../modules/payment/payment.dart';
 import '../modules/profile/profile.dart';
 import '../modules/setting/setting.dart';
 import '../modules/notification/notification.dart';
+import '../modules/media/media.dart';
+import '../data/local/local.dart';
 import '../services/services.dart';
 import '../controllers/controllers.dart';
 
@@ -13,6 +15,9 @@ class InitialBinding extends Bindings {
   @override
   void dependencies() {
     // ===== Services =====
+
+    // Local SQLite Database (Drift)
+    Get.put(AppDatabase(), permanent: true);
 
     // Storage (no dependencies)
     Get.put(StorageService(), permanent: true);
@@ -23,7 +28,7 @@ class InitialBinding extends Bindings {
     // Analytics Service (Firebase Analytics)
     Get.put(AnalyticsService(), permanent: true);
 
-    // Push Notification Service (OneSignal)
+    // Notifications: OneSignal + local notifications + Live Activities
     Get.put(PushNotiService(), permanent: true);
 
     // API Service (interface + implementation)
@@ -38,6 +43,12 @@ class InitialBinding extends Bindings {
     // Media upload (depends on ApiService)
     Get.put(MediaService(), permanent: true);
 
+    // Offline media download notifications (no dependencies)
+    Get.put(MediaDownloadNotificationService(), permanent: true);
+
+    // Offline media downloads (depends on StorageService + MediaService)
+    Get.put(MediaDownloadService(), permanent: true);
+
     // WebSocket / Action Cable Socket Service
     Get.put(SocketService(), permanent: true);
 
@@ -46,6 +57,12 @@ class InitialBinding extends Bindings {
 
     // Shared live STT + TTS (depends on ApiService + SocketService)
     Get.put(SpeechService(), permanent: true);
+
+    // Playlist / background-capable audio (depends on SpeechService to pause TTS)
+    Get.put(AudioPlayerService(), permanent: true);
+
+    // Video streaming (media_kit)
+    Get.put(VideoPlayerService(), permanent: true);
 
     // Payment Service (depends on ApiService)
     Get.put(PaymentService(), permanent: true);

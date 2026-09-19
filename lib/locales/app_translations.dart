@@ -12,7 +12,7 @@ class AppTranslations extends Translations {
     'en_US': {
       // Common
       AppLocales.common.home: 'Home',
-      AppLocales.common.welcomeHome: 'Welcome to Rexone!',
+      AppLocales.common.welcomeHome: 'Welcome to RexOne!',
       AppLocales.common.loading: 'Loading...',
       AppLocales.common.signOut: 'Sign Out',
       AppLocales.common.goBack: 'Go Back',
@@ -44,7 +44,7 @@ class AppTranslations extends Translations {
           'Your session was replaced by a newer sign in on this platform.',
 
       // Auth Initial
-      AppLocales.auth.initial.title: '✨ Welcome to Rexone ✨',
+      AppLocales.auth.initial.title: '✨ Welcome to RexOne ✨',
       AppLocales.auth.initial.subtitle:
           'Support dreams or make yours come true',
       AppLocales.auth.initial.continueWithGoogle: 'Continue with Google',
@@ -197,7 +197,7 @@ class AppTranslations extends Translations {
       // Feedback
       AppLocales.feedback.title: 'Share Your Feedback',
       AppLocales.feedback.description:
-          'We value your thoughts and ideas to help improve Rexone.',
+          'We value your thoughts and ideas to help improve RexOne.',
       AppLocales.feedback.rateExperience: 'Rate your experience (1 - 10)',
       AppLocales.feedback.tellUsMore: "What's on your mind?",
       AppLocales.feedback.placeholder:
@@ -256,19 +256,6 @@ class AppTranslations extends Translations {
       AppLocales.user.accountInfo: 'Account Information',
       AppLocales.user.roles: 'Roles',
       AppLocales.user.permissions: 'Permissions',
-      AppLocales.ai.micPermissionTitle: 'Se requiere acceso al micrófono',
-      AppLocales.ai.micPermissionMessage:
-          'La entrada de voz necesita acceso al micrófono. Abre Ajustes para habilitarlo en esta app.',
-      AppLocales.ai.openSettings: 'Abrir ajustes',
-      AppLocales.ai.aiSendMessageFailed: 'No se pudo enviar el mensaje',
-      AppLocales.ai.aiResponseFailed:
-          'No se pudo obtener la respuesta de la IA',
-      AppLocales.ai.aiHistoryCleared: 'Historial de chat borrado',
-      AppLocales.ai.aiClearHistoryFailed: 'No se pudo borrar el historial',
-      AppLocales.ai.aiStartRecordingFailed: 'No se pudo iniciar la grabación',
-      AppLocales.ai.aiTranscriptionFailed: 'No se pudo transcribir el audio',
-      AppLocales.ai.aiTtsFailed: 'No se pudo reproducir el audio',
-      AppLocales.ai.aiTtsEmpty: 'Nada que reproducir',
 
       // Notification
       AppLocales.notification.title: 'Notifications',
@@ -284,13 +271,13 @@ class AppTranslations extends Translations {
       AppLocales.notification.deleteConfirm:
           'Are you sure you want to delete this notification? This action cannot be undone.',
       AppLocales.notification.failedToLoad: 'Failed to load notifications',
-      AppLocales.notification.webOnlyTitle: 'Available on Rexone Web',
+      AppLocales.notification.webOnlyTitle: 'Available on RexOne Web',
       AppLocales.notification.webOnlyMessage:
-          'This change is managed in the Rexone Web admin portal. View it there for full details.',
+          'This change is managed in the RexOne Web admin portal. View it there for full details.',
       AppLocales.notification.webOnlyConfirm: 'Understood',
       AppLocales.notification.externalTitle: 'Open external website?',
       AppLocales.notification.externalMessage:
-          'This link will leave Rexone and open in your browser.',
+          'This link will leave RexOne and open in your browser.',
       AppLocales.notification.externalConfirm: 'Open website',
 
       // Update
@@ -299,11 +286,89 @@ class AppTranslations extends Translations {
       AppLocales.update.prompt: 'Would you like to update it now?',
       AppLocales.update.update: 'UPDATE NOW',
       AppLocales.update.later: 'LATER',
+
+      // Media
+      AppLocales.media.playlistTitle: 'Playlist',
+      AppLocales.media.playlistSubtitle: 'Audio & video',
+      AppLocales.media.playlistEmpty: 'No media yet',
+      AppLocales.media.playAll: 'Play All',
+      AppLocales.media.download: 'Download',
+      AppLocales.media.downloading: 'Downloading…',
+      AppLocales.media.downloadProgress: 'Downloading… @percent%',
+      AppLocales.media.downloadQueued: 'Queued',
+      AppLocales.media.downloadPaused: 'Paused · @percent%',
+      AppLocales.media.pauseDownload: 'Pause download',
+      AppLocales.media.resumeDownload: 'Resume download',
+      AppLocales.media.processing: 'Processing…',
+      AppLocales.media.downloaded: 'Downloaded',
+      AppLocales.media.downloadFailed: 'Download failed',
+      AppLocales.media.removeDownload: 'Remove download',
+      AppLocales.media.removeDownloadTitle: 'Remove download?',
+      AppLocales.media.removeDownloadConfirm:
+          'This removes the offline copy from this device. You can download it again later.',
+      AppLocales.media.cancelDownload: 'Cancel download',
+      AppLocales.media.cancelDownloadTitle: 'Cancel download?',
+      AppLocales.media.cancelDownloadConfirm:
+          'Progress for this download will be discarded.',
+      AppLocales.media.downloadTooMany: 'Too many downloads in progress',
+      AppLocales.media.downloadComplete: 'Download complete',
+      AppLocales.media.downloadCompleteNamed: '@title downloaded',
+      AppLocales.media.notificationChannelName: 'Media downloads',
+      AppLocales.media.notificationChannelDescription:
+          'Offline media download status',
+      AppLocales.media.offlineEmptyTitle: 'No downloaded videos',
+      AppLocales.media.offlineEmptyMessage:
+          'No downloaded videos to view in offline mode. Connect to the internet to stream or download videos to enjoy offline.',
+      AppLocales.media.removeDownloadStorageConfirm:
+          'Remove "@title" from downloaded videos? This will free up @size of device storage.',
+      AppLocales.media.removeDownloadWithSize: 'Remove (@size)',
+      AppLocales.media.freedStorage: 'Removed "@title" and freed @size.',
+      AppLocales.media.downloadWithSize: 'Download (@size)',
+      AppLocales.media.downloadedWithSize: 'Downloaded · @size',
+
+      // Audio
+      AppLocales.audio.title: 'Audio Playlist',
+      AppLocales.audio.playAll: 'Play All',
+      AppLocales.audio.nowPlaying: 'Now Playing',
+      AppLocales.audio.play: 'Play',
+      AppLocales.audio.pause: 'Pause',
+      AppLocales.audio.next: 'Next',
+      AppLocales.audio.previous: 'Previous',
+      AppLocales.audio.playlistSubtitle: 'Sample Mix',
+      AppLocales.audio.playbackFailed: 'Could not play this track. Try again.',
+      AppLocales.audio.close: 'Close',
+      AppLocales.audio.empty: 'No audio tracks yet',
+      AppLocales.audio.lyrics: 'Lyrics',
+      AppLocales.audio.lyricsLoading: 'Loading lyrics…',
+      AppLocales.audio.lyricsUnavailable:
+          'Lyrics aren\'t available for this track',
+      AppLocales.audio.lyricsLoadFailed: 'Could not load lyrics. Try again.',
+      AppLocales.audio.lyricsTrack: 'Lyrics track',
+      AppLocales.video.title: 'Video Playlist',
+      AppLocales.video.playAll: 'Play All',
+      AppLocales.video.nowPlaying: 'Now Playing',
+      AppLocales.video.play: 'Play',
+      AppLocales.video.pause: 'Pause',
+      AppLocales.video.next: 'Next',
+      AppLocales.video.previous: 'Previous',
+      AppLocales.video.playlistSubtitle: 'Stream videos',
+      AppLocales.video.playbackFailed: 'Could not play this video. Try again.',
+      AppLocales.video.close: 'Close',
+      AppLocales.video.empty: 'No videos yet',
+      AppLocales.video.settings: 'Settings',
+      AppLocales.video.playbackSpeed: 'Playback speed',
+      AppLocales.video.speedNormal: 'Normal',
+      AppLocales.video.volume: 'Volume',
+      AppLocales.video.subtitles: 'Subtitles',
+      AppLocales.video.subtitlesOff: 'Off',
+      AppLocales.video.subtitlesUnavailable:
+          'No subtitle tracks are available for this video',
+      AppLocales.video.captions: 'Captions',
     },
     'my_MM': {
       // Common
       AppLocales.common.home: 'ပင်မ',
-      AppLocales.common.welcomeHome: 'Rexone မှ ကြိုဆိုပါတယ်!',
+      AppLocales.common.welcomeHome: 'RexOne မှ ကြိုဆိုပါတယ်!',
       AppLocales.common.loading: 'လုပ်ဆောင်နေဆဲ...',
       AppLocales.common.signOut: 'ထွက်မည်',
       AppLocales.common.goBack: 'နောက်သို့',
@@ -337,7 +402,7 @@ class AppTranslations extends Translations {
           'ဤစက်ပေါ်တွင် အသစ်ဝင်ရောက်မှုကြောင့် session အစားထိုးခံရပါသည်။',
 
       // Auth Initial
-      AppLocales.auth.initial.title: '✨ Rexone မှ ကြိုဆိုပါသည် ✨',
+      AppLocales.auth.initial.title: '✨ RexOne မှ ကြိုဆိုပါသည် ✨',
       AppLocales.auth.initial.subtitle: 'အိပ်မက်များကို အကောင်အထည်ဖော်လိုက်ပါ',
       AppLocales.auth.initial.continueWithGoogle: 'Google ဖြင့် ဆက်ရန်',
       AppLocales.auth.initial.or: 'သို့မဟုတ်',
@@ -489,7 +554,7 @@ class AppTranslations extends Translations {
       // Feedback
       AppLocales.feedback.title: 'အကြံပြုချက်',
       AppLocales.feedback.description:
-          'Rexone ပိုမိုကောင်းမွန်စေရန် သင့်အကြံပြုချက်ကို ကြိုဆိုပါသည်။',
+          'RexOne ပိုမိုကောင်းမွန်စေရန် သင့်အကြံပြုချက်ကို ကြိုဆိုပါသည်။',
       AppLocales.feedback.rateExperience: 'အဆင့်သတ်မှတ်ပါ (၁ - ၁၀)',
       AppLocales.feedback.tellUsMore: 'သင့်အကြံပြုချက် ရေးပါ',
       AppLocales.feedback.placeholder:
@@ -563,13 +628,13 @@ class AppTranslations extends Translations {
       AppLocales.notification.deleteConfirm:
           'ဤအသိပေးချက်ကို ဖျက်ရန် သေချာပါသလား? ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍မရပါ။',
       AppLocales.notification.failedToLoad: 'အသိပေးချက်များ ရယူ၍မရပါ',
-      AppLocales.notification.webOnlyTitle: 'Rexone Web တွင် ရနိုင်သည်',
+      AppLocales.notification.webOnlyTitle: 'RexOne Web တွင် ရနိုင်သည်',
       AppLocales.notification.webOnlyMessage:
-          'ဤအပြောင်းအလဲကို Rexone Web admin portal တွင် စီမံထားသည်။ အသေးစိတ်ကို ထိုနေရာတွင် ကြည့်ပါ။',
+          'ဤအပြောင်းအလဲကို RexOne Web admin portal တွင် စီမံထားသည်။ အသေးစိတ်ကို ထိုနေရာတွင် ကြည့်ပါ။',
       AppLocales.notification.webOnlyConfirm: 'နားလည်ပါပြီ',
       AppLocales.notification.externalTitle: 'ပြင်ပ ဝဘ်ဆိုက်ကို ဖွင့်မလား?',
       AppLocales.notification.externalMessage:
-          'ဤလင့်ခ်သည် Rexone မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
+          'ဤလင့်ခ်သည် RexOne မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
       AppLocales.notification.externalConfirm: 'ဝဘ်ဆိုက် ဖွင့်မည်',
 
       // Update
@@ -578,6 +643,84 @@ class AppTranslations extends Translations {
       AppLocales.update.prompt: 'ယခု အပ်ဒိတ်လုပ်လိုပါသလား?',
       AppLocales.update.update: 'ယခု အပ်ဒိတ်',
       AppLocales.update.later: 'နောက်မှ',
+
+      // Media
+      AppLocales.media.playlistTitle: 'စာရင်း',
+      AppLocales.media.playlistSubtitle: 'အသံနှင့် ဗီဒီယို',
+      AppLocales.media.playlistEmpty: 'မီဒီယာ မရှိသေးပါ',
+      AppLocales.media.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.media.download: 'ဒေါင်းလုဒ်',
+      AppLocales.media.downloading: 'ဒေါင်းလုဒ်လုပ်နေသည်…',
+      AppLocales.media.downloadProgress: 'ဒေါင်းလုဒ်လုပ်နေသည်… @percent%',
+      AppLocales.media.downloadQueued: 'စောင့်ဆိုင်းနေသည်',
+      AppLocales.media.downloadPaused: 'ရပ်ထားသည် · @percent%',
+      AppLocales.media.pauseDownload: 'ဒေါင်းလုဒ် ခေတ္တရပ်မည်',
+      AppLocales.media.resumeDownload: 'ဒေါင်းလုဒ် ပြန်စမည်',
+      AppLocales.media.processing: 'ပြင်ဆင်နေသည်…',
+      AppLocales.media.downloaded: 'ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.downloadFailed: 'ဒေါင်းလုဒ်မအောင်မြင်ပါ',
+      AppLocales.media.removeDownload: 'ဒေါင်းလုဒ်ဖယ်ရှားမည်',
+      AppLocales.media.removeDownloadTitle: 'ဒေါင်းလုဒ်ဖယ်ရှားမည်?',
+      AppLocales.media.removeDownloadConfirm:
+          'ဤစက်မှ offline မိတ္တူကို ဖယ်ရှားပါမည်။ နောက်မှ ပြန်ဒေါင်းလုဒ်လုပ်နိုင်ပါသည်။',
+      AppLocales.media.cancelDownload: 'ဒေါင်းလုဒ်ပယ်ဖျက်မည်',
+      AppLocales.media.cancelDownloadTitle: 'ဒေါင်းလုဒ်ပယ်ဖျက်မည်?',
+      AppLocales.media.cancelDownloadConfirm:
+          'ဤဒေါင်းလုဒ်၏ တိုးတက်မှုကို ပယ်ဖျက်ပါမည်။',
+      AppLocales.media.downloadTooMany: 'ဒေါင်းလုဒ်များလွန်းနေသည်',
+      AppLocales.media.downloadComplete: 'ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.downloadCompleteNamed: '@title ဒေါင်းလုဒ်ပြီးပါပြီ',
+      AppLocales.media.notificationChannelName: 'မီဒီယာ ဒေါင်းလုဒ်များ',
+      AppLocales.media.notificationChannelDescription:
+          'Offline မီဒီယာ ဒေါင်းလုဒ်အခြေအနေ',
+      AppLocales.media.offlineEmptyTitle: 'ဒေါင်းလုဒ်လုပ်ထားသော ဗီဒီယို မရှိပါ',
+      AppLocales.media.offlineEmptyMessage:
+          'အင်တာနက်မရှိချိန်တွင် ကြည့်ရှုရန် ဒေါင်းလုဒ်လုပ်ထားသော ဗီဒီယို မရှိသေးပါ။ အင်တာနက်ဖွင့်၍ တိုက်ရိုက်ကြည့်ရှုပါ သို့မဟုတ် အော့ဖ်လိုင်းကြည့်ရှုရန် ဒေါင်းလုဒ်လုပ်ပါ။',
+      AppLocales.media.removeDownloadStorageConfirm:
+          '"@title" ကို ဒေါင်းလုဒ်စာရင်းမှ ဖယ်ရှားမည်လား? စက်တွင်းနေရာ @size လွတ်သွားပါမည်။',
+      AppLocales.media.removeDownloadWithSize: 'ဖယ်ရှားမည် (@size)',
+      AppLocales.media.freedStorage: '"@title" ကို ဖယ်ရှားပြီး @size နေရာလွတ်ရရှိခဲ့သည်။',
+      AppLocales.media.downloadWithSize: 'ဒေါင်းလုဒ် (@size)',
+      AppLocales.media.downloadedWithSize: 'ဒေါင်းလုဒ်ပြီးပါပြီ · @size',
+
+      // Audio
+      AppLocales.audio.title: 'အသံစာရင်း',
+      AppLocales.audio.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.audio.nowPlaying: 'ယခုဖွင့်နေသည်',
+      AppLocales.audio.play: 'ဖွင့်မည်',
+      AppLocales.audio.pause: 'ရပ်မည်',
+      AppLocales.audio.next: 'ရှေ့သို့',
+      AppLocales.audio.previous: 'နောက်သို့',
+      AppLocales.audio.playlistSubtitle: 'နမူနာ သီချင်းများ',
+      AppLocales.audio.playbackFailed: 'ဤသီချင်းကို ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
+      AppLocales.audio.close: 'ပိတ်မည်',
+      AppLocales.audio.empty: 'အသံဖိုင်များ မရှိသေးပါ',
+      AppLocales.audio.lyrics: 'သီချင်းစာသား',
+      AppLocales.audio.lyricsLoading: 'သီချင်းစာသား ဖွင့်နေသည်…',
+      AppLocales.audio.lyricsUnavailable: 'ဤသီချင်းအတွက် သီချင်းစာသား မရှိပါ',
+      AppLocales.audio.lyricsLoadFailed:
+          'သီချင်းစာသား ဖွင့်၍မရပါ။ ထပ်ကြိုးစားပါ။',
+      AppLocales.audio.lyricsTrack: 'သီချင်းစာသား ခေါင်းစဉ်',
+      AppLocales.video.title: 'ဗီဒီယိုစာရင်း',
+      AppLocales.video.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.video.nowPlaying: 'ယခုဖွင့်နေသည်',
+      AppLocales.video.play: 'ဖွင့်မည်',
+      AppLocales.video.pause: 'ရပ်မည်',
+      AppLocales.video.next: 'ရှေ့သို့',
+      AppLocales.video.previous: 'နောက်သို့',
+      AppLocales.video.playlistSubtitle: 'ဗီဒီယိုများ',
+      AppLocales.video.playbackFailed:
+          'ဤဗီဒီယိုကို ဖွင့်၍မရပါ။ ထပ်စမ်းကြည့်ပါ။',
+      AppLocales.video.close: 'ပိတ်မည်',
+      AppLocales.video.empty: 'ဗီဒီယိုများ မရှိသေးပါ',
+      AppLocales.video.settings: 'ဆက်တင်များ',
+      AppLocales.video.playbackSpeed: 'ဖွင့်နှုန်း',
+      AppLocales.video.speedNormal: 'ပုံမှန်',
+      AppLocales.video.volume: 'အသံအတိုး',
+      AppLocales.video.subtitles: 'စာတန်းထိုး',
+      AppLocales.video.subtitlesOff: 'ပိတ်မည်',
+      AppLocales.video.subtitlesUnavailable: 'ဤဗီဒီယိုအတွက် စာတန်းထိုး မရှိပါ',
+      AppLocales.video.captions: 'စာတန်းထိုး',
     },
   };
 }

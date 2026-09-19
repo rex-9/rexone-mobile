@@ -27,6 +27,25 @@ class AssetKeys {
   static const children = 'children';
   static const createdAt = 'created_at';
   static const updatedAt = 'updated_at';
+  static const thumbnail = 'thumbnail';
+  static const subtitle = 'subtitle';
+  static const subtitles = 'subtitles';
+  static const statusReady = 'ready';
+
+  // ===== Playback response keys =====
+  static const assetId = 'asset_id';
+  static const delivery = 'delivery';
+  static const expiresAt = 'expires_at';
+  static const contentType = 'content_type';
+  static const media = 'media';
+
+  // ===== Asset type filters (legacy query param) =====
+  static const typeAudio = 'audio';
+  static const typeVideo = 'video';
+
+  // ===== Asset format values (attributes.format) =====
+  static const formatAudio = 'audio';
+  static const formatVideo = 'video';
 
   // ===== Upload constants (FormData values) =====
   static const typeAvatar = 'avatar';

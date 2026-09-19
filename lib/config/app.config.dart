@@ -58,4 +58,7 @@ class AppConfig {
 
   static String get iosAppId =>
       dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rexone.mobile';
+
+  static String get offlineEncryptionKey =>
+      dotenv.env[AppConstants.mediaOfflineEncryptionKey]?.trim() ?? '';
 }

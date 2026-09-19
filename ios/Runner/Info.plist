@@ -33,6 +33,8 @@
 	<string>Camera access is needed to take a profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Photo library access is needed to choose a profile picture.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -58,6 +60,8 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>audio</string>
+		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -86,6 +90,16 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.690728597235-gn4u93uln936upb7ohrpq2q35v92eg3e</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.rexone.mobile.download</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>rexonemobile</string>
 			</array>
 		</dict>
 	</array>

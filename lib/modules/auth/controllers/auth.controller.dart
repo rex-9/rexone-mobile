@@ -575,14 +575,14 @@ class AuthController extends GetxController {
   /// newer sign in on this platform (or session validation fails).
   void handleSessionExpired({bool replaced = false}) {
     if (!isLoggedIn.value) return;
-    _clearLocalSession();
+    unawaited(_clearLocalSession());
     AppRoutes.toAuth();
     if (replaced) {
       AppSnackbar.error(AppLocales.auth.shared.sessionReplaced.tr);
     }
   }
 
-  void _clearLocalSession() {
+  Future<void> _clearLocalSession() async {
     if (Get.isRegistered<SocketService>()) {
       Get.find<SocketService>().disconnect();
     }
@@ -611,6 +611,14 @@ class AuthController extends GetxController {
     if (Get.isRegistered<PushNotiService>()) {
       _pushNotiService.clearUser();
     }
+    await _clearOfflineMediaOnLogout();
+  }
+
+  Future<void> _clearOfflineMediaOnLogout() async {
+    if (!Get.isRegistered<MediaDownloadService>()) return;
+    try {
+      await Get.find<MediaDownloadService>().clearAllDownloads();
+    } catch (_) {}
   }
 
   // Sign out
@@ -629,7 +637,7 @@ class AuthController extends GetxController {
       }
     }
 
-    _clearLocalSession();
+    await _clearLocalSession();
     _storage.clearRouteStack();
     if (Get.isRegistered<AnalyticsService>()) {
       _analytics.logSignOut();

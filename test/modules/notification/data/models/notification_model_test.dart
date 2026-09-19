@@ -7,7 +7,7 @@ void main() {
     test('parses from flat JSON map correctly', () {
       final json = {
         'id': 'notif-123',
-        'title': 'Welcome to Rexone',
+        'title': 'Welcome to RexOne',
         'message': 'We are glad to have you here.',
         'link': '/dashboard',
         'metadata': {'type': 'welcome'},
@@ -20,7 +20,7 @@ void main() {
       final model = NotificationModel.fromJson(json);
 
       expect(model.id, 'notif-123');
-      expect(model.title, 'Welcome to Rexone');
+      expect(model.title, 'Welcome to RexOne');
       expect(model.message, 'We are glad to have you here.');
       expect(model.link, '/dashboard');
       expect(model.metadata['type'], 'welcome');

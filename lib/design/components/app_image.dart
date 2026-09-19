@@ -1,5 +1,7 @@
 // lib/design/components/app_image.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import '../elements/app_media.dart';
 
 class AppImage extends StatelessWidget {
@@ -73,9 +75,30 @@ class AppImage extends StatelessWidget {
             height: height,
             fit: fit,
           );
+    } else if (url!.startsWith('file://') || url!.startsWith('/')) {
+      final path = url!.startsWith('file://')
+          ? Uri.parse(url!).toFilePath()
+          : url!;
+      imageWidget = Image.file(
+        File(path),
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) {
+          return fallback ??
+              Image.asset(
+                media.error,
+                width: width,
+                height: height,
+                fit: fit,
+              );
+        },
+      );
     } else {
+      final headers = UrlHelper.headersFor(url!);
       imageWidget = Image.network(
         url!,
+        headers: headers.isEmpty ? null : headers,
         width: width,
         height: height,
         fit: fit,

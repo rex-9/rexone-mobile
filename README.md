@@ -223,6 +223,26 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 - Auto-reconnect and token refresh on authentication.
 - Centralized `SocketController` dispatches notifications and manages global toast feedback.
 
+### Media playback
+
+- Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
+- **Playlist**: Single mixed list from `GET /v1/assets` (no type filter); playable items (`attributes.format` `audio` / `video`) shown together. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
+- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]`. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`.
+- **Mixed queue**: Next/previous follow the full playlist order via `AudioPlayerService.playQueueAt()` — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
+- **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
+- **Video**: Inline 16:9 player via `media_kit`, YouTube-style settings sheet (speed/volume), and closed captions from the same subtitle tracks with per-track selection in the subtitle sheet.
+- **Offline downloads & Drift SQLite**: Per-item download from the playlist stores media and sidecars in the app sandbox (`ApplicationSupport/media_offline/`). Fully backed by a local **Drift (SQLite)** database (`rexone_offline`, documented in [`docs/CLIENT_DATABASE.md`](docs/CLIENT_DATABASE.md)) strictly mirroring the backend polymorphic `assets` schema.
+  - **Offline Playlist Mode**: When offline, the playlist queries local Drift SQLite; if no downloads exist, a straightforward empty state is shown ("No downloaded videos to view in offline mode. Connect to the internet to stream or download videos to enjoy offline."). If 1 or 2 items are downloaded, only those items appear and play smoothly with offline thumbnails and subtitles. Reconnecting auto-refreshes the full catalog.
+  - **Local-First Playback**: If an asset is already downloaded, it always plays from local decrypted storage even when the device is online, saving user bandwidth and providing instant playback.
+  - **Single Icon-Space UX**: Trailing controls occupy strictly one icon-space across all states (no jumping layouts): `none` (download icon), `queued`/`downloading` (progress ring enclosing pause icon), `paused` (progress ring enclosing resume icon), `ready` (single `'x'` close icon to remove), `failed` (retry icon). Active playback state is indicated by an artwork overlay and colored title.
+  - **Storage Transparency**: File sizes and progress are displayed across states: before download (`00:15 · 4.2 MB`), downloading (`Downloading 1.2 MB / 4.2 MB (28%)`), ready (`00:15 · 4.2 MB · Downloaded`). Tapping `'x'` presents a confirmation dialog indicating exact freed storage (`Remove (4.2 MB)`).
+  - **Security & Background Transfer**: AES-256-GCM sandbox encryption, max 2 concurrent transfers, and background execution via `background_downloader` with Android foreground notifications and iOS Live Activity support (`MediaDownloadWidget`).
+- **Shared helpers**: `SrtHelper` (parse + active cue), `VideoLayoutHelper` (inline viewport sizing), `FileSizeHelper` (byte and progress formatting), `MediaLayoutConstants`, `MediaPlaybackConstants`, and `MediaEncryptionHelper`.
+- Services return `Future<bool>` for playback failures; controllers and pages surface errors via `AppSnackbar` (LAW §3.3 — services never show UI).
+
+> [!IMPORTANT]
+> Offline encryption is practical sandbox protection, not DRM. The env key is bundled with the app; a determined attacker on a rooted/jailbroken device can still extract offline media.
+
 ### Client observability & telemetry
 
 - Global error capture through `FlutterError.onError` and `PlatformDispatcher.instance.onError`.
@@ -379,6 +399,7 @@ GOOGLE_SERVER_CLIENT_ID=your_google_server_client_id.apps.googleusercontent.com
 ONE_SIGNAL_APP_ID=your_onesignal_app_id
 ANDROID_APP_ID=com.rexone.mobile
 IOS_APP_ID=com.rexone.mobile
+MEDIA_OFFLINE_ENCRYPTION_KEY=your-long-random-secret-here
 ```
 
 4. Configure Firebase & Google Services:
@@ -523,7 +544,13 @@ rexone_mobile/
 │   │   ├── payment/          # Plans, Stripe Checkout WebView, subscriptions
 │   │   ├── profile/          # Account profile, avatar upload
 │   │   ├── setting/          # Theme, language, and account row
-│   │   └── ai/               # Assistant chat, rooms, history
+│   │   ├── ai/               # Assistant chat, rooms, history
+│   │   └── media/            # Audio & video playback (shared + audio/ + video/)
+│   │       ├── components/   # TrackArtwork, playlist tile/header/empty/load-more
+│   │       ├── controllers/  # MediaPlaylistController (mixed audio/video playlist)
+│   │       ├── pages/        # MediaPlaylistPage
+│   │       ├── audio/        # Full player, mini player, synced lyrics
+│   │       └── video/        # Inline player, settings & subtitle sheets
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
@@ -541,7 +568,7 @@ rexone_mobile/
 ├── test/                      # Unit, controller, and localization tests (88 tests)
 │   ├── controllers/           # Socket controller tests
 │   ├── mocks/                 # In-memory test service doubles
-│   ├── modules/               # Auth, Notification, Feedback, Setting, Payment, AI controller tests
+│   ├── modules/               # Auth, Notification, Feedback, Setting, Payment, AI, Media tests
 │   └── services/              # Speech and core service tests
 ├── test_driver/
 │   └── integration_test.dart  # Flutter Driver test bridge

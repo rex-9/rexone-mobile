@@ -1,4 +1,5 @@
 // test/locales_test.dart
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rexone_mobile/locales/app_locales.dart';
 import 'package:rexone_mobile/locales/app_translations.dart';
@@ -30,6 +31,32 @@ void main() {
       expect(AppLocales.payment.title, 'payment.title');
       expect(AppLocales.notification.title, 'notification.title');
       expect(AppLocales.update.title, 'update.title');
+      expect(AppLocales.audio.title, 'audio.title');
+      expect(AppLocales.video.title, 'video.title');
+    });
+
+    test('AppTranslations contains no duplicate keys in locale maps', () {
+      final file = File('lib/locales/app_translations.dart');
+      if (!file.existsSync()) return;
+      final source = file.readAsStringSync();
+      for (final locale in ['en_US', 'my_MM']) {
+        final marker = "'$locale': {";
+        final start = source.indexOf(marker);
+        if (start < 0) continue;
+        final end = source.indexOf('\n    },', start);
+        if (end < 0) continue;
+        final body = source.substring(start + marker.length, end);
+        final entryPattern = RegExp(
+          r'(AppLocales(?:\.[a-zA-Z_][a-zA-Z0-9_]*)+)\s*:',
+        );
+        final keys = entryPattern.allMatches(body).map((m) => m.group(1)!).toList();
+        final duplicates = <String>{};
+        final seen = <String>{};
+        for (final k in keys) {
+          if (!seen.add(k)) duplicates.add(k);
+        }
+        expect(duplicates, isEmpty, reason: 'Duplicate keys in $locale: $duplicates');
+      }
     });
   });
 }

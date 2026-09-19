@@ -2,7 +2,9 @@
 // ignore_for_file: must_call_super
 import 'dart:async';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:live_activities/models/url_scheme_data.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/ai/ai.dart';
@@ -15,12 +17,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:rexone_mobile/modules/profile/profile.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 import 'package:rexone_mobile/services/media.service.dart';
+import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/network.service.dart';
 import 'package:rexone_mobile/services/permission.service.dart';
 import 'package:rexone_mobile/services/push_noti.service.dart';
 import 'package:rexone_mobile/services/socket.service.dart';
 import 'package:rexone_mobile/services/speech.service.dart';
 import 'package:rexone_mobile/services/version.service.dart';
+import 'package:rexone_mobile/modules/media/media.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
 /// In-memory storage service that replaces GetStorage box for unit tests.
@@ -92,6 +96,38 @@ class FakeStorageService extends StorageService {
 
   @override
   bool getSkipPremium() => memory[StorageKeys.skipPremium] == true;
+
+  @override
+  void saveAudioSession(Map<String, dynamic> session) {
+    memory[StorageKeys.audioSession] = Map<String, dynamic>.from(session);
+  }
+
+  @override
+  Map<String, dynamic>? getAudioSession() {
+    final data = memory[StorageKeys.audioSession];
+    if (data is! Map) return null;
+    return Map<String, dynamic>.from(data);
+  }
+
+  @override
+  void clearAudioSession() => memory.remove(StorageKeys.audioSession);
+
+  @override
+  Map<String, dynamic>? getMediaDownloadsIndex() {
+    final data = memory[StorageKeys.mediaDownloads];
+    if (data is! Map) return null;
+    return Map<String, dynamic>.from(
+      data.map((key, value) => MapEntry(key.toString(), value)),
+    );
+  }
+
+  @override
+  void saveMediaDownloadsIndex(Map<String, dynamic> index) {
+    memory[StorageKeys.mediaDownloads] = Map<String, dynamic>.from(index);
+  }
+
+  @override
+  void clearMediaDownloadsIndex() => memory.remove(StorageKeys.mediaDownloads);
 
   @override
   void clearAll() => memory.clear();
@@ -168,9 +204,48 @@ class FakePushNotiService extends GetxService implements PushNotiService {
   bool permissionRequested = false;
   UserModel? syncedUser;
   bool userCleared = false;
+  bool platformInitialized = false;
+
+  @override
+  bool get isLocalNotificationsReady => true;
+
+  @override
+  Stream<UrlSchemeData>? liveActivityUrlSchemeStream() => null;
 
   @override
   void onInit() {}
+
+  @override
+  Future<void> initializePlatform() async {
+    platformInitialized = true;
+  }
+
+  @override
+  Future<void> createAndroidChannel(AndroidNotificationChannel channel) async {}
+
+  @override
+  Future<void> showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+    required NotificationDetails details,
+    String? payload,
+  }) async {}
+
+  @override
+  Future<void> createLiveActivity(
+    String activityId,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> updateLiveActivity(
+    String activityId,
+    Map<String, dynamic> data,
+  ) async {}
+
+  @override
+  Future<void> endLiveActivity(String activityId) async {}
 
   @override
   Future<void> requestPermission() async {
@@ -617,6 +692,9 @@ class FakeSpeechService extends GetxService
   @override
   bool get isBusy => isListenSessionActive || isPlaying.value;
 
+  @override
+  Future<void> Function()? beforeTtsPlayback;
+
   SocketMessage? lastSpeechEvent;
   ESpeechEventType? lastSpeechEventType;
 
@@ -846,13 +924,46 @@ class FakeVersionService extends VersionService {
 /// Fake Media Service.
 class FakeMediaService extends MediaService {
   ApiResponse<AssetUploadResponse>? uploadResponse;
+  PaginatedResponse<AssetModel>? assetsResponse;
+  final Map<String, ApiResponse<AssetPlaybackResponse>> playbackByAssetId = {};
+  String? lastPlaybackAssetId;
   String? lastUploadedFilePath;
   String? lastUploadedType;
   String? lastUploadedAssetableType;
   String? lastUploadedAssetableId;
+  String? lastAssetsType;
+  int? lastAssetsPage;
+  int? lastAssetsLimit;
 
   @override
   void onInit() {}
+
+  @override
+  Future<ApiResponse<AssetPlaybackResponse>> getAssetPlayback(
+    String assetId,
+  ) async {
+    lastPlaybackAssetId = assetId;
+    return playbackByAssetId[assetId] ??
+        ApiResponse.error(message: 'Playback unavailable', statusCode: 404);
+  }
+
+  @override
+  Future<PaginatedResponse<AssetModel>> getAssets({
+    String? type,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    lastAssetsType = type;
+    lastAssetsPage = page;
+    lastAssetsLimit = limit;
+    return assetsResponse ??
+        const PaginatedResponse<AssetModel>(
+          records: [],
+          message: 'OK',
+          statusCode: 200,
+          success: true,
+        );
+  }
 
   @override
   Future<ApiResponse<AssetUploadResponse>> uploadImage({
@@ -892,6 +1003,142 @@ class FakeMediaService extends MediaService {
             ),
           ),
         );
+  }
+}
+
+/// Lightweight offline download double for controller unit tests.
+class FakeMediaDownloadService extends MediaDownloadService {
+  bool clearedAll = false;
+
+  @override
+  void onInit() {}
+
+  @override
+  Future<void> initializeDownloader() async {}
+
+  @override
+  Future<void> downloadAsset(AssetModel asset) async {
+    entries[asset.id] = MediaDownloadEntry(
+      assetId: asset.id,
+      state: EMediaDownloadState.ready,
+      progress: 1,
+      title: asset.displayTitle,
+      mediaFormat: asset.format,
+      mediaPath: '${asset.id}.enc',
+      downloadedAt: DateTime.now(),
+    );
+    entries.refresh();
+  }
+
+  @override
+  Future<void> cancelDownload(String assetId) async {
+    entries.remove(assetId);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> pauseDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null) return;
+    entries[assetId] = entry.copyWith(state: EMediaDownloadState.paused);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> resumeDownload(String assetId) async {
+    final entry = entries[assetId];
+    if (entry == null) return;
+    entries[assetId] = entry.copyWith(state: EMediaDownloadState.downloading);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> deleteDownload(String assetId) async {
+    entries.remove(assetId);
+    entries.refresh();
+  }
+
+  @override
+  Future<void> clearAllDownloads() async {
+    entries.clear();
+    entries.refresh();
+    clearedAll = true;
+  }
+}
+
+/// Lightweight audio player double for controller unit tests.
+class FakeAudioPlayerService extends AudioPlayerService {
+  bool playResult = true;
+  int? lastPlayedIndex;
+  int? lastQueueIndex;
+
+  @override
+  void onInit() {}
+
+  @override
+  Future<void> setAssets(List<AssetModel> next) async {
+    assets.assignAll(next);
+  }
+
+  @override
+  Future<bool> playQueueAt(int index) async {
+    lastQueueIndex = index;
+    if (index < 0 || index >= queue.length) return false;
+    queueIndex.value = index;
+    final asset = queue[index];
+
+    if (asset.isAudioMedia) {
+      final audioIndex = assets.indexWhere((item) => item.id == asset.id);
+      if (audioIndex < 0) return false;
+      return play(audioIndex);
+    }
+
+    if (asset.isVideoMedia && Get.isRegistered<VideoPlayerService>()) {
+      final video = Get.find<VideoPlayerService>();
+      final videoIndex = video.assets.indexWhere((item) => item.id == asset.id);
+      if (videoIndex < 0) return false;
+      return video.play(videoIndex);
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> play([int? index]) async {
+    if (assets.isEmpty) return true;
+    lastPlayedIndex = (index ?? currentIndex.value).clamp(0, assets.length - 1);
+    hasSession.value = true;
+    currentIndex.value = lastPlayedIndex!;
+    return playResult;
+  }
+
+  @override
+  Future<bool> toggle() async => playResult;
+}
+
+/// Lightweight video player double for controller unit tests.
+class FakeVideoPlayerService extends VideoPlayerService {
+  bool playResult = true;
+  int? lastPlayedIndex;
+  bool toggleCalled = false;
+
+  @override
+  Future<void> setAssets(List<AssetModel> next) async {
+    assets.assignAll(next);
+  }
+
+  @override
+  Future<bool> play(int index) async {
+    if (assets.isEmpty) return true;
+    lastPlayedIndex = index.clamp(0, assets.length - 1);
+    hasSession.value = true;
+    currentIndex.value = lastPlayedIndex!;
+    return playResult;
+  }
+
+  @override
+  Future<void> toggle() async {
+    toggleCalled = true;
   }
 }
 

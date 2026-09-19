@@ -7,6 +7,19 @@ Set<String> placeholders(String value) => RegExp(
 bool sameSet(Set<String> left, Set<String> right) =>
     left.length == right.length && left.containsAll(right);
 
+List<String> readLocaleRawKeys(String source, String locale) {
+  final marker = "'$locale': {";
+  final start = source.indexOf(marker);
+  if (start < 0) return [];
+  final end = source.indexOf('\n    },', start);
+  if (end < 0) return [];
+  final body = source.substring(start + marker.length, end);
+  final entryPattern = RegExp(
+    r'(AppLocales(?:\.[a-zA-Z_][a-zA-Z0-9_]*)+)\s*:\s*([\s\S]*?)(?=\n\s+AppLocales|$)',
+  );
+  return entryPattern.allMatches(body).map((m) => m.group(1)!).toList();
+}
+
 Map<String, Set<String>> readLocaleEntries(String source, String locale) {
   final marker = "'$locale': {";
   final start = source.indexOf(marker);
@@ -73,6 +86,16 @@ void main(List<String> args) {
   }
 
   for (final locale in supportedLocales) {
+    final rawKeys = readLocaleRawKeys(translationsSource, locale);
+    final duplicates = <String>{};
+    final seen = <String>{};
+    for (final k in rawKeys) {
+      if (!seen.add(k)) duplicates.add(k);
+    }
+    if (duplicates.isNotEmpty) {
+      errors.add('$locale contains duplicate translation keys: $duplicates');
+    }
+
     final entries = locales[locale] ?? const <String, Set<String>>{};
     for (final key in reference.keys.toSet().difference(entries.keys.toSet())) {
       errors.add('$locale is missing $key');

@@ -132,6 +132,13 @@ class HomePage extends GetView<AuthController> {
                       text: '🤖 ${AppLocales.ai.title.tr}',
                       onPressed: AppRoutes.toAi,
                     ),
+                    SizedBox(height: Design.spacing.md),
+                    AppButton(
+                      type: EButtonType.secondary,
+                      text: AppLocales.media.playlistTitle.tr,
+                      icon: Design.icons.playlist,
+                      onPressed: AppRoutes.toPlaylist,
+                    ),
                     SizedBox(height: Design.spacing.lg),
                     AppButton(
                       type: EButtonType.text,
