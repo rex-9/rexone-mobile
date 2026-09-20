@@ -466,8 +466,28 @@ RexOne Mobile includes an automated Android build and release pipeline ([`.githu
 
 #### Required GitHub Repository Secrets:
 Configure in repository **Settings > Secrets and variables > Actions**:
-1. `ENV_UAT`: The raw file content of `.env.uat`.
-2. `ENV_PROD`: The raw file content of `.env.prod`.
+
+| Secret Name | Scope | Branch | Description |
+| :--- | :--- | :--- | :--- |
+| `ENV_UAT` | Required for UAT | `uat` | The raw file content of `.env.uat`. Injected into `.env.uat` prior to build. |
+| `ENV_PROD` | Required for Prod | `main` | The raw file content of `.env.prod`. Injected into `.env.prod` prior to build. |
+| `GOOGLE_SERVICES_JSON` | Recommended | `uat` & `main` | Raw JSON content of `android/app/google-services.json`. Shared across UAT and Production builds. |
+| `GOOGLE_SERVICES_JSON_UAT` | Optional | `uat` | Environment-specific `google-services.json` if using a separate UAT Firebase project. Overrides `GOOGLE_SERVICES_JSON` for UAT. |
+| `GOOGLE_SERVICES_JSON_PROD` | Optional | `main` | Environment-specific `google-services.json` if using a separate Production Firebase project. Overrides `GOOGLE_SERVICES_JSON` for Prod. |
+| `GOOGLE_SERVICES_JSON_BASE64` | Optional | `uat` & `main` | Base64-encoded string of `android/app/google-services.json` (`base64 -i android/app/google-services.json`). |
+| `GOOGLE_SERVICE_INFO_PLIST` | Recommended (iOS) | `uat` & `main` | Raw XML content of `ios/Runner/GoogleService-Info.plist` for iOS CI builds. |
+
+> [!NOTE]
+> **CI Fallback Safeguard**: If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
+
+> [!TIP]
+> **Exporting for GitHub Secrets**:
+> - **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
+> - **Base64 format** (avoids whitespace or line break formatting issues):
+>   ```sh
+>   base64 -i android/app/google-services.json | pbcopy
+>   # Paste directly into GOOGLE_SERVICES_JSON_BASE64
+>   ```
 
 ---
 
