@@ -15,76 +15,66 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     final colors = context.colors;
     final typo = context.typo;
 
-    return AppPage(
-      showBackButton: false,
-      padding: Design.spacing.zero,
-      child: Obx(() {
-        final asset = player.currentAsset;
-        final videoController = player.videoController;
-        player.subtitlesEnabled.value;
-        final controlsTheme = VideoPlayerControls.theme(context, player);
-        final subtitleConfig = VideoSubtitleOverlay.config(context, player);
-        final assets = player.assets;
-        final currentIndex = player.currentIndex.value;
-        final playing = player.isPlaying.value;
+    return Obx(() {
+      final asset = player.currentAsset;
+      final videoController = player.videoController;
+      player.subtitlesEnabled.value;
+      final controlsTheme = VideoPlayerControls.theme(context, player);
+      final subtitleConfig = VideoSubtitleOverlay.config(context, player);
+      final assets = player.assets;
+      final currentIndex = player.currentIndex.value;
+      final playing = player.isPlaying.value;
 
-        return SafeArea(
-          child: Padding(
-            padding: Design.spacing.padding(Design.spacing.screenPadding),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final videoSize = VideoLayoutHelper.inlineVideoSize(constraints);
+      return AppPage(
+        title: asset?.displayTitle ?? AppLocales.video.nowPlaying.tr,
+        showBackButton: true,
+        onBackPressed: controller.closeAndExit,
+        padding: Design.spacing.padding(Design.spacing.screenPadding),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final videoSize = VideoLayoutHelper.inlineVideoSize(constraints);
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppButton(
-                      type: EButtonType.icon,
-                      icon: Design.icons.chevronDown,
-                      tooltip: AppLocales.video.close.tr,
-                      onPressed: controller.closeAndExit,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                VideoPlayerViewport(
+                  size: videoSize,
+                  videoController: videoController,
+                  controlsTheme: controlsTheme,
+                  subtitleConfig: subtitleConfig,
+                ),
+                SizedBox(height: Design.spacing.md),
+                Text(
+                  asset?.displayTitle ?? AppLocales.video.nowPlaying.tr,
+                  style: typo.headline3,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (asset?.displayDuration.isNotEmpty ?? false) ...[
+                  SizedBox(height: Design.spacing.xs),
+                  Text(
+                    asset!.displayDuration,
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.textSecondary,
                     ),
-                    SizedBox(height: Design.spacing.md),
-                    VideoPlayerViewport(
-                      size: videoSize,
-                      videoController: videoController,
-                      controlsTheme: controlsTheme,
-                      subtitleConfig: subtitleConfig,
-                    ),
-                    SizedBox(height: Design.spacing.lg),
-                    Text(
-                      asset?.displayTitle ?? AppLocales.video.nowPlaying.tr,
-                      style: typo.headline3,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (asset?.displayDuration.isNotEmpty ?? false) ...[
-                      SizedBox(height: Design.spacing.xs),
-                      Text(
-                        asset!.displayDuration,
-                        style: typo.bodyMedium.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                    SizedBox(height: Design.spacing.lg),
-                    Expanded(
-                      child: VideoPlaylistPanel(
-                        assets: assets,
-                        currentIndex: currentIndex,
-                        hasSession: player.hasSession.value,
-                        isPlaying: playing,
-                        isLoading: player.isLoading.value,
-                        onPlayAt: controller.playAt,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      }),
-    );
+                  ),
+                ],
+                SizedBox(height: Design.spacing.lg),
+                Expanded(
+                  child: VideoPlaylistPanel(
+                    assets: assets,
+                    currentIndex: currentIndex,
+                    hasSession: player.hasSession.value,
+                    isPlaying: playing,
+                    isLoading: player.isLoading.value,
+                    onPlayAt: controller.playAt,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    });
   }
 }

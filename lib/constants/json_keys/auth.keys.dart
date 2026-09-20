@@ -43,3 +43,21 @@ class AuthKeys {
   static const description = 'description';
   static const system = 'system';
 }
+
+/// Standardized HTTP headers used across Auth and API communication.
+class AuthHeaders {
+  const AuthHeaders._();
+
+  static const platform = 'X-Platform';
+  static const locale = 'X-Locale';
+  static const acceptLanguage = 'Accept-Language';
+  static const authorization = 'Authorization';
+  static const contentType = 'Content-Type';
+  static const accept = 'Accept';
+  static const host = 'Host';
+  static const forwardedHost = 'X-Forwarded-Host';
+  static const forwardedFor = 'X-Forwarded-For';
+  static const forwardedProto = 'X-Forwarded-Proto';
+  static const xAmzSignature = 'X-Amz-Signature';
+}
+
