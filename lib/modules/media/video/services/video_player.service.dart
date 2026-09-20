@@ -13,6 +13,8 @@ import 'package:rexone_mobile/services/speech.service.dart';
 import '../../audio/services/audio_player.service.dart';
 
 class VideoPlayerService extends GetxService {
+  static bool get isAndroid => GetPlatform.isAndroid;
+
   Player? _player;
   VideoController? _videoController;
 
@@ -33,6 +35,8 @@ class VideoPlayerService extends GetxService {
 
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
+
+  static bool get isIOS => GetPlatform.isIOS;
 
   MediaService get _media => Get.find<MediaService>();
   MediaDownloadService? get _downloads =>
@@ -190,7 +194,16 @@ class VideoPlayerService extends GetxService {
   void _ensurePlayer() {
     if (_player != null) return;
     _player = Player();
-    _videoController = VideoController(_player!);
+
+    // Android: MediaCodec surface avoids black/blank frames on emulators and
+    // some devices where the default GL/EGL path fails.
+    _videoController = VideoController(
+      _player!,
+      configuration: VideoControllerConfiguration(
+        vo: isAndroid ? 'mediacodec_embed' : null,
+        hwdec: isAndroid ? 'mediacodec' : null,
+      ),
+    );
     _bindStreams();
   }
 
