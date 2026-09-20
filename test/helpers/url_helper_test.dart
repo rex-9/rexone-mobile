@@ -89,6 +89,15 @@ void main() {
       );
     });
 
+    test('returns Host: localhost:3100 for presigned Garage URL with X-Amz-Signature on Android', () {
+      const url =
+          'http://10.0.2.2:3100/rexone/dev/video.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123';
+      expect(
+        UrlHelper.headersFor(url, isAndroid: true),
+        {'Host': 'localhost:3100'},
+      );
+    });
+
     test('returns empty map for external cloud host on Android', () {
       const url = 'https://s3.amazonaws.com/bucket/video.mp4';
       expect(UrlHelper.headersFor(url, isAndroid: true), isEmpty);

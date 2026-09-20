@@ -91,6 +91,7 @@ class UrlHelper {
     final isTargetHost =
         host == '10.0.2.2' ||
         host == '127.0.0.1' ||
+        host == 'localhost' ||
         (apiHost != null && apiHost.isNotEmpty && host == apiHost);
 
     if (isTargetHost) {
