@@ -195,14 +195,8 @@ class VideoPlayerService extends GetxService {
     if (_player != null) return;
     _player = Player();
 
-    // Android: MediaCodec surface avoids black/blank frames on emulators and
-    // some devices where the default GL/EGL path fails.
     _videoController = VideoController(
       _player!,
-      configuration: VideoControllerConfiguration(
-        vo: isAndroid ? 'mediacodec_embed' : null,
-        hwdec: isAndroid ? 'mediacodec' : null,
-      ),
     );
     _bindStreams();
   }
