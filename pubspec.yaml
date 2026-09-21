@@ -130,6 +130,6 @@ flutter:
 patrol:
   app_name: RexOne
   android:
-    package_name: com.rexone.mobile
+    package_name: com.rex9.rexone
   ios:
-    bundle_id: com.rexone.mobile
+    bundle_id: com.rex9.rexone

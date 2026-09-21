@@ -54,8 +54,8 @@ class AppConfig {
       'one signal app id not found';
 
   static String get androidAppId =>
-      dotenv.env[AppConstants.androidAppIdKey] ?? 'com.rexone.mobile';
+      dotenv.env[AppConstants.androidAppIdKey] ?? 'com.rex9.rexone';
 
   static String get iosAppId =>
-      dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rexone.mobile';
+      dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rex9.rexone';
 }

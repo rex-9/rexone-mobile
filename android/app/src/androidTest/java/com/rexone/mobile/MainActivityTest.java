@@ -1,4 +1,4 @@
-package com.rexone.mobile;
+package com.rex9.rexone;
 
 import org.junit.Rule;
 import org.junit.runner.RunWith;

@@ -10,7 +10,7 @@ To run Patrol integration tests on iOS, you need to configure the iOS project fo
 4. Set the following:
    - **Product Name**: `RunnerUITests`
    - **Team**: Select your team
-   - **Organization Identifier**: `com.rexone.mobile`
+   - **Organization Identifier**: `com.rex9.rexone`
    - **Language**: Objective-C (or Swift, Patrol supports both, but Obj-C is often easier to integrate with Flutter's generated code)
    - **Target to be Tested**: `Runner`
 5. Click **Finish**.
@@ -27,6 +27,7 @@ To run Patrol integration tests on iOS, you need to configure the iOS project fo
 2. Replace its contents with the boilerplate provided by Patrol.
 
 If using Objective-C (`RunnerUITests.m`):
+
 ```objc
 @import XCTest;
 @import patrol;
@@ -50,6 +51,7 @@ PATROL_INTEGRATION_TEST_IOS_RUNNER(RunnerUITests)
 ## 4. Run the tests
 
 Once configured, you can run Patrol tests on iOS using the Patrol CLI:
+
 ```bash
 patrol test --target integration_test/auth/sign_in_test.dart
 ```
