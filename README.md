@@ -25,10 +25,15 @@ Built under the same creed as RexOne Core and RexOne Web: **Start from One. Not 
 
 ---
 
-> [!IMPORTANT]
-> **🏛️ Unified Ecosystem**: For the complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile, see the canonical **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)**.
->
-> **📜 Constitutional Law**: All development must strictly adhere to the architecture, design system, and state laws in **[LAW.md](LAW.md)**. Zero exceptions.
+### 🏛️ Unified Ecosystem & Constitutional Directives
+
+| Resource | Purpose & Canonical Specification |
+| :--- | :--- |
+| **🏛️ Unified Ecosystem** | Complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile: **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)** |
+| **📜 Constitutional Law** | Non-negotiable architecture, design system, and state laws: **[LAW.md](LAW.md)** *(Zero exceptions)* |
+| **🌐 AI Discovery & GEO** | Generative Engine Optimization, crawler allowlists, and LLM context files: **[AI Discovery & GEO Guide](https://github.com/rex-9/rexone-web/blob/dev/docs/SEO_GEO.md)** |
+
+---
 
 ## Why RexOne Mobile?
 
@@ -386,8 +391,7 @@ IOS_APP_ID=com.rex9.rexone
 - **Android**: Copy `android/app/google-services.json.example` to `android/app/google-services.json` and configure your Firebase project values.
 - **iOS**: Copy `ios/Runner/GoogleService-Info.plist.example` to `ios/Runner/GoogleService-Info.plist` and configure your Firebase project values.
 
-> [!NOTE]
-> `google-services.json` and `GoogleService-Info.plist` are included in `.gitignore` to prevent credential exposure.
+**Note:** `google-services.json` and `GoogleService-Info.plist` are included in `.gitignore` to prevent credential exposure.
 
 ---
 
@@ -478,18 +482,16 @@ Configure in repository **Settings > Secrets and variables > Actions**:
 | `GOOGLE_SERVICES_JSON_BASE64` | Optional          | `uat` & `main` | Base64-encoded string of `android/app/google-services.json` (`base64 -i android/app/google-services.json`).                             |
 | `GOOGLE_SERVICE_INFO_PLIST`   | Recommended (iOS) | `uat` & `main` | Raw XML content of `ios/Runner/GoogleService-Info.plist` for iOS CI builds.                                                             |
 
-> [!NOTE]
-> **CI Fallback Safeguard**: If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
+### 🛡️ CI Fallback Safeguard
+If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
 
-> [!TIP]
-> **Exporting for GitHub Secrets**:
->
-> - **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
-> - **Base64 format** (avoids whitespace or line break formatting issues):
->   ```sh
->   base64 -i android/app/google-services.json | pbcopy
->   # Paste directly into GOOGLE_SERVICES_JSON_BASE64
->   ```
+### 💡 Exporting for GitHub Secrets
+- **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
+- **Base64 format** (avoids whitespace or line break formatting issues):
+  ```sh
+  base64 -i android/app/google-services.json | pbcopy
+  # Paste directly into GOOGLE_SERVICES_JSON_BASE64
+  ```
 
 ---
 
@@ -574,12 +576,12 @@ rexone_mobile/
 
 ## 🎨 Rebranding & Utility Scripts
 
-> [!TIP]
-> **Recommended**: For full, synchronized rebranding across all 3 platforms (Core Backend, Web SPA, and Mobile App), run the master rebrand engine from **`rexone-core`**:
->
-> ```bash
-> cd ../rexone-core && ./scripts/rebrand.sh
-> ```
+### 💡 Master Rebranding Engine
+For full, synchronized rebranding across all 3 platforms (Core Backend, Web SPA, and Mobile App), run the master rebrand engine from **`rexone-core`**:
+
+```bash
+cd ../rexone-core && ./scripts/rebrand.sh
+```
 
 For standalone mobile development or isolated updates, you can use the local scripts below:
 
