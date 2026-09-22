@@ -123,7 +123,7 @@ fi
 
 # Dynamically resolve package name from pubspec.yaml or fallback
 PACKAGE_NAME=$(grep -E '^\s*package_name:\s*' pubspec.yaml | head -n 1 | awk '{print $2}' || true)
-PACKAGE_NAME="${PACKAGE_NAME:-com.rexone.mobile}"
+PACKAGE_NAME="${PACKAGE_NAME:-com.rex9.rexone}"
 
 if [ "$TARGET" = "all" ]; then
   TEST_FILES=(

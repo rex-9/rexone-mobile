@@ -11,7 +11,7 @@ plugins {
 // Somehow no need
 // dependencies {
 //   // Import the Firebase BoM
-//   implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+//   implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
 
 
 //   // TODO: Add the dependencies for Firebase products you want to use
@@ -31,7 +31,7 @@ dependencies {
 }
 
 android {
-    namespace = "com.rexone.mobile" // $APPLICATION_ID
+    namespace = "com.rex9.rexone" // $APPLICATION_ID
     compileSdk = 37
     // compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -50,7 +50,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.rexone.mobile" // $APPLICATION_ID
+        applicationId = "com.rex9.rexone" // $APPLICATION_ID
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

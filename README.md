@@ -397,9 +397,8 @@ APP_VERSION=1.0.0
 API_BASE_URL=http://10.0.2.2:3000
 GOOGLE_SERVER_CLIENT_ID=your_google_server_client_id.apps.googleusercontent.com
 ONE_SIGNAL_APP_ID=your_onesignal_app_id
-ANDROID_APP_ID=com.rexone.mobile
-IOS_APP_ID=com.rexone.mobile
-MEDIA_OFFLINE_ENCRYPTION_KEY=your-long-random-secret-here
+ANDROID_APP_ID=com.rex9.rexone
+IOS_APP_ID=com.rex9.rexone
 ```
 
 4. Configure Firebase & Google Services:
@@ -483,12 +482,34 @@ RexOne Mobile includes an automated Android build and release pipeline ([`.githu
   - Builds the release APK with `--dart-define=APP_ENV=.env.prod`.
   - Uploads `rexone-prod-v${VERSION}-b${BUILD}.apk` as a workflow artifact.
   - Automatically creates a production GitHub Release tagged `v${VERSION}+${BUILD}` with the APK attached.
-  - *Integration Tip*: The GitHub Release download link can be linked directly into the RexOne Admin App Versions portal (`/v1/admin/client/versions`) to distribute in-app updates!
+  - _Integration Tip_: The GitHub Release download link can be linked directly into the RexOne Admin App Versions portal (`/v1/admin/client/versions`) to distribute in-app updates!
 
 #### Required GitHub Repository Secrets:
+
 Configure in repository **Settings > Secrets and variables > Actions**:
-1. `ENV_UAT`: The raw file content of `.env.uat`.
-2. `ENV_PROD`: The raw file content of `.env.prod`.
+
+| Secret Name                   | Scope             | Branch         | Description                                                                                                                             |
+| :---------------------------- | :---------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| `ENV_UAT`                     | Required for UAT  | `uat`          | The raw file content of `.env.uat`. Injected into `.env.uat` prior to build.                                                            |
+| `ENV_PROD`                    | Required for Prod | `main`         | The raw file content of `.env.prod`. Injected into `.env.prod` prior to build.                                                          |
+| `GOOGLE_SERVICES_JSON`        | Recommended       | `uat` & `main` | Raw JSON content of `android/app/google-services.json`. Shared across UAT and Production builds.                                        |
+| `GOOGLE_SERVICES_JSON_UAT`    | Optional          | `uat`          | Environment-specific `google-services.json` if using a separate UAT Firebase project. Overrides `GOOGLE_SERVICES_JSON` for UAT.         |
+| `GOOGLE_SERVICES_JSON_PROD`   | Optional          | `main`         | Environment-specific `google-services.json` if using a separate Production Firebase project. Overrides `GOOGLE_SERVICES_JSON` for Prod. |
+| `GOOGLE_SERVICES_JSON_BASE64` | Optional          | `uat` & `main` | Base64-encoded string of `android/app/google-services.json` (`base64 -i android/app/google-services.json`).                             |
+| `GOOGLE_SERVICE_INFO_PLIST`   | Recommended (iOS) | `uat` & `main` | Raw XML content of `ios/Runner/GoogleService-Info.plist` for iOS CI builds.                                                             |
+
+> [!NOTE]
+> **CI Fallback Safeguard**: If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
+
+> [!TIP]
+> **Exporting for GitHub Secrets**:
+>
+> - **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
+> - **Base64 format** (avoids whitespace or line break formatting issues):
+>   ```sh
+>   base64 -i android/app/google-services.json | pbcopy
+>   # Paste directly into GOOGLE_SERVICES_JSON_BASE64
+>   ```
 
 ---
 

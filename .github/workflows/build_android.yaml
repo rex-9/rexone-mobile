@@ -84,6 +84,38 @@ jobs:
             fi
           fi
 
+      - name: Inject Google Services Configuration
+        env:
+          RAW_GOOGLE_SERVICES_JSON_UAT: ${{ secrets.GOOGLE_SERVICES_JSON_UAT }}
+          RAW_GOOGLE_SERVICES_JSON_PROD: ${{ secrets.GOOGLE_SERVICES_JSON_PROD }}
+          RAW_GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          RAW_GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          mkdir -p android/app
+          TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"
+          CONTENT=""
+
+          if [ "$TARGET_ENV" = "uat" ] && [ -n "$RAW_GOOGLE_SERVICES_JSON_UAT" ]; then
+            echo "Using GOOGLE_SERVICES_JSON_UAT..."
+            CONTENT="$RAW_GOOGLE_SERVICES_JSON_UAT"
+          elif [ "$TARGET_ENV" = "prod" ] && [ -n "$RAW_GOOGLE_SERVICES_JSON_PROD" ]; then
+            echo "Using GOOGLE_SERVICES_JSON_PROD..."
+            CONTENT="$RAW_GOOGLE_SERVICES_JSON_PROD"
+          elif [ -n "$RAW_GOOGLE_SERVICES_JSON" ]; then
+            echo "Using shared GOOGLE_SERVICES_JSON..."
+            CONTENT="$RAW_GOOGLE_SERVICES_JSON"
+          fi
+
+          if [ -n "$CONTENT" ]; then
+            printf '%s\n' "$CONTENT" > android/app/google-services.json
+          elif [ -n "$RAW_GOOGLE_SERVICES_JSON_BASE64" ]; then
+            echo "Decoding android/app/google-services.json from GitHub Secrets (base64)..."
+            printf '%s' "$RAW_GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+          elif [ -f "android/app/google-services.json.example" ]; then
+            echo "⚠️ WARNING: No GOOGLE_SERVICES_JSON secret configured. Using google-services.json.example as fallback for CI compilation."
+            cp android/app/google-services.json.example android/app/google-services.json
+          fi
+
       - name: Install Dependencies
         run: flutter pub get
 

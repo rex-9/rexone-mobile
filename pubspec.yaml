@@ -37,7 +37,7 @@ dependencies:
   get: ^4.7.3
   google_sign_in: ^7.2.0
   flutter_screenutil: ^5.9.3
-  pin_code_fields: ^9.4.0
+  pin_code_fields: ^10.0.0
   get_storage: ^2.1.1
   package_info_plus: ^10.2.0
   flutter_dotenv: ^6.0.1
@@ -142,6 +142,6 @@ flutter:
 patrol:
   app_name: RexOne
   android:
-    package_name: com.rexone.mobile
+    package_name: com.rex9.rexone
   ios:
-    bundle_id: com.rexone.mobile
+    bundle_id: com.rex9.rexone

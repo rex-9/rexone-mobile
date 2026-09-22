@@ -37,3 +37,16 @@ For the full binding text and universal ecosystem laws, always refer to the [Uni
 | **M8. Testing & Static Analysis**       | 100% passing tests across unit, widget, and integration suites. Zero analyzer errors or warnings.                                                                               | `flutter analyze`, `flutter test`, `integration_test/`                     |
 | **M9. Module Boundaries**               | Feature domains live in `lib/modules/<feature>/` (`data/`, `controllers/`, `services/`, `pages/`, `widgets/`). Shared code in `lib/design/`, `lib/services/`.                   | Clean encapsulation, modular bindings                                      |
 | **M10. Local Timezone Presentation**    | Backend operates in UTC. Mobile client formats incoming UTC timestamps into the device's local timezone for presentation.                                                       | Localized date formatting, zero UTC shifting on backend                    |
+
+---
+
+## 🌐 Universal Constitutional Highlights (Ecosystem-Wide)
+
+| Universal Law                       | Ecosystem Architectural Principle                                                                                                                       | Client Implementation                                                             |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- |
+| **U2. Zero Loose Literals**         | Centralized constants/enums for all keys, statuses, providers, and action names. Zero magic strings.                                                     | `StorageKeys.*`, centralized route and action constants                           |
+| **U5. Lifecycle Hierarchy**         | Universal `discard` (soft delete) & `undiscard` (restore). Permanent `destroy` strictly confined to Recycle Bin.                                        | Soft-delete actions in active views, permanent purge strictly in Recycle Bin       |
+| **U6. Confirmation Dialogs**        | ALL destructive, irreversible actions gated behind explicit confirmation dialogs.                                                                       | `AppDialog.confirm` component; raw unconfirmed executions strictly forbidden      |
+| **U9. Parameter Integrity**         | Strict, deterministic parameters. Zero fallback chains (`params[:a] || params[:b]`).                                                                    | Strongly typed request payloads matching backend strong parameters                |
+| **U14. Zero Loose Code**            | Strict parameter contracts. Zero alias shims or fallback kwargs (`name: nil, user_name: nil`). Pass cohesive entities directly. Zero dead code.         | Strongly typed GetX models, zero loose dynamic params, clean signatures          |
+| **U15. Human-Readable Code**        | Plain English naming, compact straightforward variables, zero alien/cryptic syntax. Easy to read and review.                                             | Self-documenting code, natural English identifiers, clean idiomatic control flow  |

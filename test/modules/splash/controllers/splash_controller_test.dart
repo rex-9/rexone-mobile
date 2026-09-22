@@ -22,8 +22,8 @@ void main() {
 
   setUpAll(() {
     PackageInfo.setMockInitialValues(
-      appName: 'Rexone',
-      packageName: 'com.rexone.mobile',
+      appName: 'RexOne',
+      packageName: 'com.rex9.rexone',
       version: '1.0.0',
       buildNumber: '1',
       buildSignature: '',
@@ -79,43 +79,55 @@ void main() {
       expect(fakeStorage.getSkipPremium(), isTrue);
     });
 
-    test('checkAppVersion writes skip_premium false when Core returns false', () async {
-      fakeStorage.setSkipPremium(true);
-      fakeVersion.currentResponse = ApiResponse.success(
-        message: 'OK',
-        statusCode: 200,
-        data: version(skipPremium: false),
-      );
+    test(
+      'checkAppVersion writes skip_premium false when Core returns false',
+      () async {
+        fakeStorage.setSkipPremium(true);
+        fakeVersion.currentResponse = ApiResponse.success(
+          message: 'OK',
+          statusCode: 200,
+          data: version(skipPremium: false),
+        );
 
-      await controller.checkAppVersion();
+        await controller.checkAppVersion();
 
-      expect(fakeStorage.getSkipPremium(), isFalse);
-    });
+        expect(fakeStorage.getSkipPremium(), isFalse);
+      },
+    );
 
-    test('checkAppVersion keeps stored skip_premium when the request fails', () async {
-      fakeStorage.setSkipPremium(true);
-      fakeVersion.throwOnGet = true;
+    test(
+      'checkAppVersion keeps stored skip_premium when the request fails',
+      () async {
+        fakeStorage.setSkipPremium(true);
+        fakeVersion.throwOnGet = true;
 
-      await controller.checkAppVersion();
+        await controller.checkAppVersion();
 
-      expect(controller.latestVersion.value, isNull);
-      expect(fakeStorage.getSkipPremium(), isTrue);
-    });
+        expect(controller.latestVersion.value, isNull);
+        expect(fakeStorage.getSkipPremium(), isTrue);
+      },
+    );
 
-    test('checkAppVersion does not store version when the API has no data', () async {
-      fakeVersion.currentResponse = ApiResponse.error(
-        message: 'Unavailable',
-        statusCode: 500,
-      );
+    test(
+      'checkAppVersion does not store version when the API has no data',
+      () async {
+        fakeVersion.currentResponse = ApiResponse.error(
+          message: 'Unavailable',
+          statusCode: 500,
+        );
 
-      await controller.checkAppVersion();
+        await controller.checkAppVersion();
 
-      expect(controller.latestVersion.value, isNull);
-      expect(fakeStorage.getSkipPremium(), isFalse);
-    });
+        expect(controller.latestVersion.value, isNull);
+        expect(fakeStorage.getSkipPremium(), isFalse);
+      },
+    );
 
     test('promptUpdateIfNeeded is a no-op without a widget context', () async {
-      controller.latestVersion.value = version(updateRequired: true, mustUpdate: true);
+      controller.latestVersion.value = version(
+        updateRequired: true,
+        mustUpdate: true,
+      );
 
       await controller.promptUpdateIfNeeded();
 

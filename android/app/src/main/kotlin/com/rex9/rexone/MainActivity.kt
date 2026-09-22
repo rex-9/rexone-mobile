@@ -1,4 +1,4 @@
-package com.rexone.mobile
+package com.rex9.rexone
 
 import com.ryanheise.audioservice.AudioServiceActivity
 

@@ -30,7 +30,7 @@ class AppConfig {
     AppEnvironment.prod => AppEnvironment.production,
     _ => AppEnvironment.development,
   };
-  static String get appName => dotenv.env[AppConstants.nameKey] ?? 'Rexone';
+  static String get appName => dotenv.env[AppConstants.nameKey] ?? 'RexOne';
   static String get appVersion =>
       dotenv.env[AppConstants.versionKey] ?? '1.0.0';
   static String get apiBaseUrl =>
@@ -54,10 +54,10 @@ class AppConfig {
       'one signal app id not found';
 
   static String get androidAppId =>
-      dotenv.env[AppConstants.androidAppIdKey] ?? 'com.rexone.mobile';
+      dotenv.env[AppConstants.androidAppIdKey] ?? 'com.rex9.rexone';
 
   static String get iosAppId =>
-      dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rexone.mobile';
+        dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rex9.rexone';
 
   static String get offlineEncryptionKey =>
       dotenv.env[AppConstants.mediaOfflineEncryptionKey]?.trim() ?? '';

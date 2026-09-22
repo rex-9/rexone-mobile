@@ -1,4 +1,4 @@
-/// Request keys for client log payloads sent to Rexone Core.
+/// Request keys for client log payloads sent to RexOne Core.
 class LogKeys {
   const LogKeys._();
 
