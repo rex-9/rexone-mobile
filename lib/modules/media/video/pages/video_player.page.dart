@@ -20,10 +20,8 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
       padding: Design.spacing.zero,
       child: Obx(() {
         final asset = player.currentAsset;
-        final videoController = player.videoController;
+        final betterPlayer = player.controller.value;
         player.subtitlesEnabled.value;
-        final controlsTheme = VideoPlayerControls.theme(context, player);
-        final subtitleConfig = VideoSubtitleOverlay.config(context, player);
         final assets = player.assets;
         final currentIndex = player.currentIndex.value;
         final playing = player.isPlaying.value;
@@ -47,9 +45,7 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
                     SizedBox(height: Design.spacing.md),
                     VideoPlayerViewport(
                       size: videoSize,
-                      videoController: videoController,
-                      controlsTheme: controlsTheme,
-                      subtitleConfig: subtitleConfig,
+                      controller: betterPlayer,
                     ),
                     SizedBox(height: Design.spacing.lg),
                     Text(

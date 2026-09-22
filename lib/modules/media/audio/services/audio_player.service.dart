@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/widgets.dart';
@@ -49,7 +48,6 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   final Map<String, List<SubtitleCue>> _lyricsCache = {};
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
-  final GetConnect _subtitleClient = GetConnect();
 
   MediaService get _media => Get.find<MediaService>();
   MediaDownloadService? get _downloads =>
@@ -468,7 +466,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     lyrics.assignAll([]);
 
     try {
-      final body = await _loadSubtitleBody(track.url);
+      final body = await _media.fetchSubtitleBody(track.url);
       if (epoch != _lyricsLoadEpoch) return;
 
       if (body == null || body.trim().isEmpty) {
@@ -495,24 +493,6 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
         lyricsLoading.value = false;
       }
     }
-  }
-
-  Future<String?> _loadSubtitleBody(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri != null && uri.scheme == 'file') {
-      final file = File(uri.toFilePath());
-      if (!await file.exists()) return null;
-      return file.readAsString();
-    }
-
-    final normalizedUrl = UrlHelper.normalize(url);
-    final headers = UrlHelper.headersFor(normalizedUrl);
-    final response = await _subtitleClient.get(
-      normalizedUrl,
-      headers: headers.isEmpty ? null : headers,
-    );
-    if (!response.isOk) return null;
-    return response.bodyString;
   }
 
   Future<void> _releaseNativePlayer() async {
@@ -725,8 +705,9 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
       return true;
     }
 
-    final ok = await video.play(videoIndex);
-    if (ok) navigateToVideo();
-    return ok;
+    // Mount the player page before open so ExoPlayer/AVPlayer has a surface.
+    navigateToVideo();
+    await Future<void>.delayed(Duration.zero);
+    return video.play(videoIndex);
   }
 }

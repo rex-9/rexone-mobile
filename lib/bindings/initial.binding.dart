@@ -61,7 +61,7 @@ class InitialBinding extends Bindings {
     // Playlist / background-capable audio (depends on SpeechService to pause TTS)
     Get.put(AudioPlayerService(), permanent: true);
 
-    // Video streaming (media_kit)
+    // Video streaming (better_player)
     Get.put(VideoPlayerService(), permanent: true);
 
     // Payment Service (depends on ApiService)

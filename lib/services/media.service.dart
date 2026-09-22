@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
@@ -11,6 +12,8 @@ import 'package:rexone_mobile/services/api.service.dart';
 class MediaService extends GetxService {
   late final ApiService _api;
   final Map<String, AssetPlaybackResponse> _playbackCache = {};
+  final Map<String, String> _subtitleBodyCache = {};
+  final GetConnect _subtitleClient = GetConnect();
 
   @override
   void onInit() {
@@ -21,6 +24,7 @@ class MediaService extends GetxService {
   void clearPlaybackCache({String? assetId}) {
     if (assetId == null) {
       _playbackCache.clear();
+      _subtitleBodyCache.clear();
       return;
     }
     _playbackCache.remove(assetId);
@@ -133,5 +137,54 @@ class MediaService extends GetxService {
     }
 
     return parsed;
+  }
+
+  /// Loads SRT/VTT body from a local path or signed network URL.
+  /// Network responses are cached by normalized URL for the session.
+  Future<String?> fetchSubtitleBody(String url) async {
+    if (url.isEmpty) return null;
+
+    final uri = Uri.tryParse(url);
+    if (uri != null && uri.scheme == 'file') {
+      return _readLocalSubtitle(uri.toFilePath());
+    }
+
+    if (!url.contains('://')) {
+      return _readLocalSubtitle(url);
+    }
+
+    final normalizedUrl = UrlHelper.normalize(url);
+    final cached = _subtitleBodyCache[normalizedUrl];
+    if (cached != null) return cached;
+
+    final headers = UrlHelper.headersFor(normalizedUrl);
+    final response = await _subtitleClient.get(
+      normalizedUrl,
+      headers: headers.isEmpty ? null : headers,
+    );
+    if (!response.isOk) {
+      debugPrint(
+        '❌ [MediaService] Subtitle fetch ${response.statusCode}: '
+        '$normalizedUrl',
+      );
+      return null;
+    }
+
+    final body = response.bodyString;
+    if (body == null || body.trim().isEmpty) return null;
+    _subtitleBodyCache[normalizedUrl] = body;
+    return body;
+  }
+
+  Future<String?> _readLocalSubtitle(String path) async {
+    final cached = _subtitleBodyCache[path];
+    if (cached != null) return cached;
+
+    final file = File(path);
+    if (!await file.exists()) return null;
+    final body = await file.readAsString();
+    if (body.trim().isEmpty) return null;
+    _subtitleBodyCache[path] = body;
+    return body;
   }
 }

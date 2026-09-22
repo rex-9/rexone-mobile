@@ -1,21 +1,17 @@
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:rexone_mobile/design/design.dart';
 
-/// Inline 16:9 video surface with loading and media_kit controls.
+/// Inline 16:9 video surface powered by better_player.
 class VideoPlayerViewport extends StatelessWidget {
   const VideoPlayerViewport({
     super.key,
     required this.size,
-    required this.videoController,
-    required this.controlsTheme,
-    required this.subtitleConfig,
+    required this.controller,
   });
 
   final Size size;
-  final VideoController? videoController;
-  final MaterialVideoControlsThemeData controlsTheme;
-  final SubtitleViewConfiguration subtitleConfig;
+  final BetterPlayerController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +25,10 @@ class VideoPlayerViewport extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
           child: ColoredBox(
-            color: colors.surface,
-            child: videoController == null
+            color: Colors.black,
+            child: controller == null
                 ? Center(child: AppLoading(color: colors.primary))
-                : MaterialVideoControlsTheme(
-                    normal: controlsTheme,
-                    fullscreen: controlsTheme,
-                    child: Video(
-                      controller: videoController!,
-                      controls: MaterialVideoControls,
-                      subtitleViewConfiguration: subtitleConfig,
-                    ),
-                  ),
+                : BetterPlayer(controller: controller!),
           ),
         ),
       ),

@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:better_player/better_player.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:get/get.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/media.service.dart';
@@ -14,10 +14,10 @@ import '../../audio/services/audio_player.service.dart';
 
 class VideoPlayerService extends GetxService {
   static bool get isAndroid => GetPlatform.isAndroid;
+  static bool get isIOS => GetPlatform.isIOS;
 
-  Player? _player;
-  VideoController? _videoController;
-
+  /// Reactive so [Obx] mounts [BetterPlayer] as soon as the controller exists.
+  final Rxn<BetterPlayerController> controller = Rxn<BetterPlayerController>();
   final RxList<AssetModel> assets = <AssetModel>[].obs;
   final RxInt currentIndex = (-1).obs;
   final RxBool isPlaying = false.obs;
@@ -28,23 +28,17 @@ class VideoPlayerService extends GetxService {
   final Rx<Duration> position = Duration.zero.obs;
   final Rx<Duration> duration = Duration.zero.obs;
 
-  StreamSubscription<bool>? _playingSub;
-  StreamSubscription<Duration>? _positionSub;
-  StreamSubscription<Duration>? _durationSub;
-  StreamSubscription<bool>? _bufferingSub;
+  double _volume = 100.0;
+  double _rate = 1.0;
 
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
-
-  static bool get isIOS => GetPlatform.isIOS;
 
   MediaService get _media => Get.find<MediaService>();
   MediaDownloadService? get _downloads =>
       Get.isRegistered<MediaDownloadService>()
           ? Get.find<MediaDownloadService>()
           : null;
-
-  VideoController? get videoController => _videoController;
 
   AssetModel? get currentAsset {
     final index = currentIndex.value;
@@ -79,10 +73,12 @@ class VideoPlayerService extends GetxService {
     _syncQueueIndex(nextIndex);
     _syncSubtitleSelectionForCurrentAsset();
     isLoading.value = true;
+    position.value = Duration.zero;
+    duration.value = Duration.zero;
 
     try {
       await _pauseAudioAndSpeech();
-      _ensurePlayer();
+      _ensureController();
 
       final url = await _playbackUrl(assets[nextIndex]);
       if (url == null || url.isEmpty) {
@@ -91,15 +87,13 @@ class VideoPlayerService extends GetxService {
       }
 
       debugPrint('🔍 [VideoPlayerService] Opening media: $url');
-      final headers = UrlHelper.headersFor(url);
-      await _player!.open(
-        Media(
-          url,
-          httpHeaders: headers.isEmpty ? null : headers,
-        ),
-        play: true,
-      );
-      await _applySubtitleForCurrentAsset();
+      // Prefetch our SRT URLs into memory sources so better_player's built-in
+      // Subtitles menu lists them and can render without its own HTTP fetch.
+      final subtitleSources = await _preloadSubtitleSources();
+      final dataSource = _buildDataSource(url, subtitles: subtitleSources);
+      await controller.value!.setupDataSource(dataSource);
+      await controller.value!.play();
+      isLoading.value = false;
       return true;
     } catch (error) {
       isLoading.value = false;
@@ -109,12 +103,22 @@ class VideoPlayerService extends GetxService {
   }
 
   Future<void> pause() async {
-    await _player?.pause();
+    await controller.value?.pause();
   }
 
   Future<void> toggle() async {
     if (!hasSession.value) return;
-    await _player?.playOrPause();
+    final player = controller.value;
+    if (player == null) return;
+    try {
+      if (player.isPlaying() == true) {
+        await player.pause();
+      } else {
+        await player.play();
+      }
+    } catch (error) {
+      debugPrint('❌ [VideoPlayerService] Toggle error: $error');
+    }
   }
 
   Future<void> next() async {
@@ -136,42 +140,23 @@ class VideoPlayerService extends GetxService {
   }
 
   Future<void> seek(Duration target) async {
-    await _player?.seek(target);
+    await controller.value?.seekTo(target);
     position.value = target;
   }
 
   Future<void> setVolume(double volume) async {
-    await _player?.setVolume(volume.clamp(0.0, 100.0));
+    _volume = volume.clamp(0.0, 100.0);
+    await controller.value?.setVolume(_volume / 100.0);
   }
 
   Future<void> setRate(double rate) async {
-    await _player?.setRate(rate);
+    _rate = rate.clamp(0.25, 2.0);
+    await controller.value?.setSpeed(_rate);
   }
 
-  Future<void> setSubtitlesEnabled(bool enabled) async {
-    if (enabled) {
-      subtitlesEnabled.value = true;
-      if (selectedSubtitleIndex.value < 0) {
-        selectedSubtitleIndex.value = hasEffectiveSubtitles ? 0 : -1;
-      }
-    } else {
-      subtitlesEnabled.value = false;
-      selectedSubtitleIndex.value = -1;
-    }
-    await _applySubtitleForCurrentAsset();
-  }
+  double get volume => _volume;
 
-  Future<void> selectSubtitleTrack(int index) async {
-    final tracks = effectiveSubtitles;
-    if (index < 0 || index >= tracks.length) return;
-    selectedSubtitleIndex.value = index;
-    subtitlesEnabled.value = true;
-    await _applySubtitleForCurrentAsset();
-  }
-
-  double get volume => _player?.state.volume ?? 100.0;
-
-  double get rate => _player?.state.rate ?? 1.0;
+  double get rate => _rate;
 
   Future<void> dismiss() async {
     hasSession.value = false;
@@ -182,7 +167,7 @@ class VideoPlayerService extends GetxService {
     currentIndex.value = -1;
     position.value = Duration.zero;
     duration.value = Duration.zero;
-    await _disposePlayer();
+    _disposeController();
   }
 
   @override
@@ -191,93 +176,137 @@ class VideoPlayerService extends GetxService {
     super.onClose();
   }
 
-  void _ensurePlayer() {
-    if (_player != null) return;
-    _player = Player();
+  void _ensureController() {
+    if (controller.value != null) return;
 
-    _videoController = VideoController(
-      _player!,
+    final betterPlayerController = BetterPlayerController(
+      BetterPlayerConfiguration(
+        autoPlay: false,
+        aspectRatio: 16 / 9,
+        fit: BoxFit.contain,
+        autoDispose: false,
+        handleLifecycle: true,
+        allowedScreenSleep: false,
+        controlsConfiguration: const BetterPlayerControlsConfiguration(
+          enableSkips: false,
+          enableQualities: false,
+          enableAudioTracks: false,
+        ),
+      ),
     );
-    _bindStreams();
+
+    betterPlayerController.addEventsListener(_onPlayerEvent);
+    controller.value = betterPlayerController;
   }
 
-  void _bindStreams() {
-    final player = _player!;
-    _playingSub = player.stream.playing.listen((playing) {
-      isPlaying.value = playing;
-    });
-    _positionSub = player.stream.position.listen((value) {
-      position.value = value;
-    });
-    _durationSub = player.stream.duration.listen((value) {
-      duration.value = value;
-    });
-    _bufferingSub = player.stream.buffering.listen((buffering) {
-      isLoading.value = buffering;
-    });
+  void _onPlayerEvent(BetterPlayerEvent event) {
+    switch (event.betterPlayerEventType) {
+      case BetterPlayerEventType.play:
+        isPlaying.value = true;
+        isLoading.value = false;
+      case BetterPlayerEventType.pause:
+        isPlaying.value = false;
+      case BetterPlayerEventType.finished:
+        isPlaying.value = false;
+      case BetterPlayerEventType.progress:
+        final progress = event.parameters?['progress'];
+        final total = event.parameters?['duration'];
+        if (progress is Duration) position.value = progress;
+        if (total is Duration) duration.value = total;
+      case BetterPlayerEventType.bufferingEnd:
+      case BetterPlayerEventType.initialized:
+        isLoading.value = false;
+      case BetterPlayerEventType.changedSubtitles:
+        _syncSubtitlesFromPlayer();
+      case BetterPlayerEventType.exception:
+        isLoading.value = false;
+        debugPrint(
+          '❌ [VideoPlayerService] Player exception: ${event.parameters}',
+        );
+      default:
+        break;
+    }
+  }
+
+  BetterPlayerDataSource _buildDataSource(
+    String url, {
+    List<BetterPlayerSubtitlesSource> subtitles = const [],
+  }) {
+    final isFile = url.startsWith('file:') || !url.contains('://');
+    final headers = UrlHelper.headersFor(url);
+    final resolvedUrl =
+        isFile ? _filePathFromUrl(url) : UrlHelper.normalize(url);
+
+    return BetterPlayerDataSource(
+      isFile
+          ? BetterPlayerDataSourceType.file
+          : BetterPlayerDataSourceType.network,
+      resolvedUrl,
+      headers: headers.isEmpty ? null : headers,
+      subtitles: subtitles.isEmpty ? null : subtitles,
+      // Offline decrypted files may keep a non-media extension (.enc).
+      videoExtension: isFile ? 'mp4' : null,
+    );
+  }
+
+  String _filePathFromUrl(String url) {
+    if (url.startsWith('file:')) {
+      return Uri.parse(url).toFilePath();
+    }
+    return url;
   }
 
   void _syncSubtitleSelectionForCurrentAsset() {
-    final tracks = effectiveSubtitles;
-    if (tracks.isEmpty) {
-      selectedSubtitleIndex.value = -1;
+    selectedSubtitleIndex.value = -1;
+    subtitlesEnabled.value = false;
+  }
+
+  void _syncSubtitlesFromPlayer() {
+    final source = controller.value?.betterPlayerSubtitlesSource;
+    if (source == null ||
+        source.type == BetterPlayerSubtitlesSourceType.none) {
       subtitlesEnabled.value = false;
+      selectedSubtitleIndex.value = -1;
       return;
     }
-    if (subtitlesEnabled.value) {
-      selectedSubtitleIndex.value = 0;
-    } else {
-      selectedSubtitleIndex.value = -1;
-    }
-  }
 
-  ChildAssetModel? _selectedSubtitleTrack() {
     final tracks = effectiveSubtitles;
-    if (tracks.isEmpty) return null;
-    final index = selectedSubtitleIndex.value;
-    if (index < 0 || index >= tracks.length) return tracks.first;
-    return tracks[index];
+    final index =
+        tracks.indexWhere((track) => track.displayLabel == source.name);
+    subtitlesEnabled.value = true;
+    selectedSubtitleIndex.value = index;
   }
 
-  Future<void> _applySubtitleForCurrentAsset() async {
-    if (_player == null) return;
+  Future<List<BetterPlayerSubtitlesSource>> _preloadSubtitleSources() async {
+    final tracks = effectiveSubtitles;
+    if (tracks.isEmpty) return const [];
 
-    if (subtitlesEnabled.value) {
-      final track = _selectedSubtitleTrack();
-      if (track != null) {
-        try {
-          await _player!.setSubtitleTrack(
-            SubtitleTrack.uri(
-              UrlHelper.normalize(track.url),
-              title: track.displayLabel,
-            ),
+    final loaded = await Future.wait(
+      tracks.map((track) async {
+        final body = await _media.fetchSubtitleBody(track.url);
+        if (body == null || body.trim().isEmpty) {
+          debugPrint(
+            '❌ [VideoPlayerService] Empty subtitle body for ${track.url}',
           );
-        } catch (error) {
-          debugPrint('❌ [VideoPlayerService] Subtitle error: $error');
+          return null;
         }
-        return;
-      }
-    }
+        return BetterPlayerSubtitlesSource(
+          type: BetterPlayerSubtitlesSourceType.memory,
+          name: track.displayLabel,
+          content: body,
+        );
+      }),
+    );
 
-    try {
-      await _player!.setSubtitleTrack(SubtitleTrack.no());
-    } catch (error) {
-      debugPrint('❌ [VideoPlayerService] Clear subtitle error: $error');
-    }
+    return loaded.whereType<BetterPlayerSubtitlesSource>().toList();
   }
 
-  Future<void> _disposePlayer() async {
-    await _playingSub?.cancel();
-    await _positionSub?.cancel();
-    await _durationSub?.cancel();
-    await _bufferingSub?.cancel();
-    _playingSub = null;
-    _positionSub = null;
-    _durationSub = null;
-    _bufferingSub = null;
-    await _player?.dispose();
-    _player = null;
-    _videoController = null;
+  void _disposeController() {
+    final player = controller.value;
+    if (player != null) {
+      player.dispose(forceDispose: true);
+    }
+    controller.value = null;
   }
 
   Future<AssetPlaybackResponse?> _resolvePlayback(AssetModel asset) async {
@@ -298,13 +327,15 @@ class VideoPlayerService extends GetxService {
   Future<String?> _playbackUrl(AssetModel asset) async {
     final downloads = _downloads;
     if (downloads != null && downloads.isDownloaded(asset.id)) {
-
       final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
       debugPrint('🔍 [VideoPlayerService] Local path: $localPath');
       if (localPath != null && localPath.isNotEmpty) {
         _offlineSubtitlesByAssetId[asset.id] =
             await downloads.resolveOfflineSubtitleTracks(asset);
-      debugPrint('🔍 [VideoPlayerService] Offline subtitles: ${_offlineSubtitlesByAssetId[asset.id]}');
+        debugPrint(
+          '🔍 [VideoPlayerService] Offline subtitles: '
+          '${_offlineSubtitlesByAssetId[asset.id]}',
+        );
         return Uri.file(localPath).toString();
       }
     }

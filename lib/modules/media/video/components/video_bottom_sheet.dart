@@ -12,6 +12,7 @@ class VideoBottomSheet {
   }) {
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: context.colors.surface,
       shape: RoundedRectangleBorder(

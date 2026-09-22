@@ -7,7 +7,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/routes/routes.dart';
@@ -19,7 +18,6 @@ import 'modules/setting/setting.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
 
   // Telemetry & Error Listeners ("It works on my machine" killer)
   final originalOnError = FlutterError.onError;
