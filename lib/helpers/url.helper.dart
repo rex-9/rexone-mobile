@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:rexone_mobile/config/app.config.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 
 /// Helper to normalize network URLs across platforms and environments.
 ///
@@ -87,13 +88,15 @@ class UrlHelper {
       }
     } catch (_) {}
 
-    final isTargetHost = host == '10.0.2.2' ||
+    final isTargetHost =
+        host == '10.0.2.2' ||
         host == '127.0.0.1' ||
+        host == 'localhost' ||
         (apiHost != null && apiHost.isNotEmpty && host == apiHost);
 
     if (isTargetHost) {
       final portPart = uri.hasPort ? ':${uri.port}' : '';
-      return {'Host': 'localhost$portPart'};
+      return {AppConstants.headerHost: 'localhost$portPart'};
     }
 
     return const {};

@@ -47,6 +47,11 @@ class AppConstants {
   static const headerXPlatform = 'X-Platform';
   static const headerXLocale = 'X-Locale';
   static const headerAcceptLanguage = 'Accept-Language';
+  static const headerHost = 'Host';
+  static const headerXForwardedHost = 'X-Forwarded-Host';
+  static const headerXForwardedFor = 'X-Forwarded-For';
+  static const headerXForwardedProto = 'X-Forwarded-Proto';
+  static const queryParamXAmzSignature = 'X-Amz-Signature';
   static const contentTypeJson = 'application/json';
   static const platformAndroid = 'android';
   static const platformIos = 'ios';

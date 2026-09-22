@@ -31,6 +31,8 @@ class AssetKeys {
   static const subtitle = 'subtitle';
   static const subtitles = 'subtitles';
   static const statusReady = 'ready';
+  static const content = 'content';
+  static const coreUrl = 'core_url';
 
   // ===== Playback response keys =====
   static const assetId = 'asset_id';
