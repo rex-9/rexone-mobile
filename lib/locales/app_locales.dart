@@ -316,4 +316,6 @@ class _NotificationLocales {
   final externalTitle = 'notification.external_title';
   final externalMessage = 'notification.external_message';
   final externalConfirm = 'notification.external_confirm';
+  final openLink = 'notification.open_link';
+  final readMore = 'notification.read_more';
 }

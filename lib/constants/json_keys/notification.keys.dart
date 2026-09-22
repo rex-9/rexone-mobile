@@ -7,6 +7,7 @@ class NotificationKeys {
   static const String title = 'title';
   static const String message = 'message';
   static const String link = 'link';
+  static const String ctaText = 'cta_text';
   static const String clients = 'clients';
   static const String metadata = 'metadata';
   static const String data = 'data';
