@@ -233,14 +233,16 @@ class VideoPlayerService extends GetxService {
     List<PlayerSubtitlesSource> subtitles = const [],
   }) {
     final isFile = url.startsWith('file:') || !url.contains('://');
-    final headers = UrlHelper.headersFor(url);
     final resolvedUrl =
         isFile ? _filePathFromUrl(url) : UrlHelper.normalize(url);
 
+    // Dynamic playback URLs from GET /playback are presigned specifically for the client host
+    // (e.g. 10.0.2.2:3100 on Android). Overriding the Host header causes AWS SigV4 / Garage
+    // signature verification to fail with 403 Forbidden.
     return PlayerDataSource(
       isFile ? DataSourceType.file : DataSourceType.network,
       resolvedUrl,
-      headers: headers.isEmpty ? null : headers,
+      headers: null,
       subtitles: subtitles.isEmpty ? null : subtitles,
       // Offline decrypted files may keep a non-media extension (.enc).
       videoExtension: isFile ? 'mp4' : null,

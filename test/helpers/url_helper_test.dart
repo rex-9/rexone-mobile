@@ -1,5 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/url.helper.dart';
 
 void main() {
@@ -85,7 +86,7 @@ void main() {
       const url = 'http://127.0.0.1:3100/rexone/dev/video.mp4';
       expect(
         UrlHelper.headersFor(url, isAndroid: true),
-        {'Host': 'localhost:3100'},
+        {AuthHeaders.host: 'localhost:3100'},
       );
     });
 
@@ -94,7 +95,7 @@ void main() {
           'http://10.0.2.2:3100/rexone/dev/video.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123';
       expect(
         UrlHelper.headersFor(url, isAndroid: true),
-        {'Host': 'localhost:3100'},
+        {AuthHeaders.host: 'localhost:3100'},
       );
     });
 

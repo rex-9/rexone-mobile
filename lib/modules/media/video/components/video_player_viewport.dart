@@ -1,6 +1,7 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/locales/locales.dart';
 
 /// Inline 16:9 video surface powered by better_player.
 class VideoPlayerViewport extends StatelessWidget {
@@ -28,7 +29,11 @@ class VideoPlayerViewport extends StatelessWidget {
             color: Colors.black,
             child: controller == null
                 ? Center(child: AppLoading(color: colors.primary))
-                : BetterPlayer(controller: controller!),
+                : Localizations.override(
+                    context: context,
+                    delegates: AppLocalizations.delegates,
+                    child: BetterPlayer(controller: controller!),
+                  ),
           ),
         ),
       ),

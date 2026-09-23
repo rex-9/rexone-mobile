@@ -100,7 +100,7 @@ class UrlHelper {
 
     if (isTargetHost) {
       final portPart = uri.hasPort ? ':${uri.port}' : '';
-      return {AppConstants.headerHost: 'localhost$portPart'};
+      return {AuthHeaders.host: 'localhost$portPart'};
     }
 
     return const {};

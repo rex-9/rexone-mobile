@@ -1323,11 +1323,18 @@ class MediaDownloadService extends GetxService {
     String? mediaFormat,
   }) {
     final normalizedUrl = UrlHelper.normalize(url);
-    final headers = UrlHelper.headersFor(normalizedUrl);
+    final uri = Uri.tryParse(url);
+    // Playback URLs dynamically presigned for the client host (e.g. 10.0.2.2:3100) must not have
+    // their Host header overridden, as doing so invalidates the S3 SigV4 signature.
+    final isDynamicallySigned = uri != null &&
+        uri.queryParameters.containsKey(AuthHeaders.xAmzSignature) &&
+        uri.host != 'localhost' &&
+        uri.host != '127.0.0.1';
+    final headers = isDynamicallySigned ? null : (UrlHelper.headersFor(normalizedUrl).isEmpty ? null : UrlHelper.headersFor(normalizedUrl));
     return DownloadTask(
       taskId: _mediaTaskId(assetId),
       url: normalizedUrl,
-      headers: headers.isEmpty ? null : headers,
+      headers: headers,
       filename: '$assetId${MediaDownloadConstants.tempMediaSuffix}',
       directory:
           '${MediaDownloadConstants.offlineRootDirName}/${MediaDownloadConstants.tempDirName}',

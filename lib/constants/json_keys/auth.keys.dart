@@ -58,6 +58,13 @@ class AuthHeaders {
   static const forwardedHost = 'X-Forwarded-Host';
   static const forwardedFor = 'X-Forwarded-For';
   static const forwardedProto = 'X-Forwarded-Proto';
+  static const multipart = 'X-Multipart';
+
+  // ===== AWS / S3 SigV4 Constants =====
+  static const xAmzAlgorithm = 'X-Amz-Algorithm';
+  static const xAmzCredential = 'X-Amz-Credential';
+  static const xAmzDate = 'X-Amz-Date';
+  static const xAmzExpires = 'X-Amz-Expires';
+  static const xAmzSignedHeaders = 'X-Amz-SignedHeaders';
   static const xAmzSignature = 'X-Amz-Signature';
 }
-

@@ -32,7 +32,7 @@ This application is built upon the **RexOne Ecosystem** (`rex-9`). These are imm
 
 ---
 
-> _"If you don't follow These LAWS, u're gay... even if u're AI"_
+> _"If you don't follow These LAWS, u're gay... even if u're an AI"_
 >
 > — _RexOne's First Law_
 

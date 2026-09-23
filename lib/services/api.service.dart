@@ -15,7 +15,6 @@ import '../modules/setting/setting.dart';
 
 class ApiService extends GetConnect {
   static const String sessionReplacedError = 'Active session not found';
-  static const String _multipartHeader = 'X-Multipart';
 
   @override
   void onInit() {
@@ -32,15 +31,15 @@ class ApiService extends GetConnect {
 
   void _setupInterceptors() {
     httpClient.addRequestModifier<dynamic>((request) async {
-      request.headers[AppConstants.headerAccept] = AppConstants.contentTypeJson;
-      final isMultipart = request.headers[_multipartHeader] == 'true';
+      request.headers[AuthHeaders.accept] = AppConstants.contentTypeJson;
+      final isMultipart = request.headers[AuthHeaders.multipart] == 'true';
       if (!isMultipart) {
-        request.headers[AppConstants.headerContentType] =
+        request.headers[AuthHeaders.contentType] =
             AppConstants.contentTypeJson;
       } else {
-        request.headers.remove(AppConstants.headerContentType);
+        request.headers.remove(AuthHeaders.contentType);
       }
-      request.headers[AppConstants.headerXPlatform] =
+      request.headers[AuthHeaders.platform] =
           AppConstants.currentPlatform;
       String apiLocale = 'en';
       if (Get.isRegistered<SettingController>()) {
@@ -50,8 +49,8 @@ class ApiService extends GetConnect {
         final code = Get.find<StorageService>().getLocaleCode() ?? 'en_US';
         apiLocale = code.split('_').first.toLowerCase();
       }
-      request.headers[AppConstants.headerXLocale] = apiLocale;
-      request.headers[AppConstants.headerAcceptLanguage] = apiLocale;
+      request.headers[AuthHeaders.locale] = apiLocale;
+      request.headers[AuthHeaders.acceptLanguage] = apiLocale;
       String token = '';
       if (Get.isRegistered<AuthController>()) {
         token = Get.find<AuthController>().authToken.value;
@@ -60,7 +59,7 @@ class ApiService extends GetConnect {
         token = Get.find<StorageService>().getToken() ?? '';
       }
       if (token.isNotEmpty) {
-        request.headers[AppConstants.headerAuthorization] =
+        request.headers[AuthHeaders.authorization] =
             '${AppConstants.bearerPrefix}$token';
       }
       return request;
@@ -140,7 +139,7 @@ class ApiService extends GetConnect {
       () => super.post(
         url,
         form,
-        headers: {_multipartHeader: 'true'},
+        headers: {AuthHeaders.multipart: 'true'},
         uploadProgress: uploadProgress,
       ),
       showLoading,

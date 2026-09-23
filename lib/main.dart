@@ -13,7 +13,7 @@ import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/services.dart';
 import 'bindings/initial.binding.dart';
-import 'locales/app_translations.dart';
+import 'locales/locales.dart';
 import 'modules/media/media.dart';
 import 'modules/setting/setting.dart';
 
@@ -75,15 +75,19 @@ class MyApp extends StatelessWidget {
           translations: AppTranslations(),
           locale: settings.locale,
           fallbackLocale: const Locale('en', 'US'),
+          localizationsDelegates: AppLocalizations.delegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           debugShowCheckedModeBanner: false,
           initialRoute: AppRoutes.splash,
           getPages: AppRoutes.pages,
           unknownRoute: AppRoutes.notFound,
           navigatorObservers: [analytics.observer, MiniPlayerRouteObserver()],
           builder: (context, child) {
-            return AppNetworkBanner(
-              child: AppMiniPlayerHost(
-                child: AppLoading.builder(context, child),
+            return Overlay.wrap(
+              child: AppNetworkBanner(
+                child: AppMiniPlayerHost(
+                  child: AppLoading.builder(context, child),
+                ),
               ),
             );
           },

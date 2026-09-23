@@ -639,10 +639,12 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     if (uri.scheme == 'file') {
       return AudioSource.file(uri.toFilePath(), tag: tag);
     }
-    final headers = UrlHelper.headersFor(url);
+    // Dynamic playback URLs from GET /playback are presigned specifically for the client host
+    // (e.g. 10.0.2.2:3100 on Android). Overriding the Host header causes AWS SigV4 / Garage
+    // signature verification to fail with 403 Forbidden.
     return AudioSource.uri(
       uri,
-      headers: headers.isEmpty ? null : headers,
+      headers: null,
       tag: tag,
     );
   }
