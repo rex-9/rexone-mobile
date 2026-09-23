@@ -27,11 +27,11 @@ Built under the same creed as RexOne Core and RexOne Web: **Start from One. Not 
 
 ### 🏛️ Unified Ecosystem & Constitutional Directives
 
-| Resource | Purpose & Canonical Specification |
-| :--- | :--- |
-| **🏛️ Unified Ecosystem** | Complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile: **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)** |
-| **📜 Constitutional Law** | Non-negotiable architecture, design system, and state laws: **[LAW.md](LAW.md)** *(Zero exceptions)* |
-| **🌐 AI Discovery & GEO** | Generative Engine Optimization, crawler allowlists, and LLM context files: **[AI Discovery & GEO Guide](https://github.com/rex-9/rexone-web/blob/dev/docs/SEO_GEO.md)** |
+| Resource                  | Purpose & Canonical Specification                                                                                                                                                                                                                                                                                       |
+| :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **🏛️ Unified Ecosystem**  | Complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile: **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)** |
+| **📜 Constitutional Law** | Non-negotiable architecture, design system, and state laws: **[LAW.md](LAW.md)** _(Zero exceptions)_                                                                                                                                                                                                                    |
+| **🌐 AI Discovery & GEO** | Generative Engine Optimization, crawler allowlists, and LLM context files: **[AI Discovery & GEO Guide](https://github.com/rex-9/rexone-web/blob/dev/docs/SEO_GEO.md)**                                                                                                                                                 |
 
 ---
 
@@ -232,7 +232,7 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Media playback
 
 - Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
-- **Playlist**: Mixed library from `GET /v1/assets` (no type filter) showing audio, video, avatar/image, and attachment rows (subtitle/thumbnail sidecars excluded). Tap plays A/V, previews images, or opens attachments externally. Header **Play All** starts the first playable item; **Download all missing** bulk-enqueues offline saves. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
+- **Playlist**: Mixed library from `GET /v1/assets` (no type filter) showing audio, video, avatar/image, and attachment rows (subtitle/thumbnail sidecars excluded). Tap plays A/V, previews images, or opens attachments externally. Header **Play All** starts the first playable item; **Download all** bulk-enqueues offline saves. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
 - **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]` for audio/video. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`. Image/attachment downloads use the list/signed `asset.url`.
 - **Mixed queue**: Next/previous follow the playlist via `AudioPlayerService.playQueueAt()`, skipping non-playable rows — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
 - **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
@@ -504,9 +504,11 @@ Configure in repository **Settings > Secrets and variables > Actions**:
 | `GOOGLE_SERVICE_INFO_PLIST`   | Recommended (iOS) | `uat` & `main` | Raw XML content of `ios/Runner/GoogleService-Info.plist` for iOS CI builds.                                                             |
 
 ### 🛡️ CI Fallback Safeguard
+
 If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
 
 ### 💡 Exporting for GitHub Secrets
+
 - **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
 - **Base64 format** (avoids whitespace or line break formatting issues):
   ```sh
@@ -604,6 +606,7 @@ rexone_mobile/
 ## 🎨 Rebranding & Utility Scripts
 
 ### 💡 Master Rebranding Engine
+
 For full, synchronized rebranding across all 3 platforms (Core Backend, Web SPA, and Mobile App), run the master rebrand engine from **`rexone-core`**:
 
 ```bash

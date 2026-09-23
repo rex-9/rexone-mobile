@@ -294,7 +294,7 @@ class AppTranslations extends Translations {
       AppLocales.media.playlistSubtitle: 'Audio, video, images & files',
       AppLocales.media.playlistEmpty: 'No media yet',
       AppLocales.media.playAll: 'Play All',
-      AppLocales.media.downloadAll: 'Download all missing',
+      AppLocales.media.downloadAll: 'Download all',
       AppLocales.media.downloadAllStarted: 'Started @count download(s)',
       AppLocales.media.downloadAllNone: 'Nothing new to download',
       AppLocales.media.typeAudio: 'Audio',
@@ -604,7 +604,8 @@ class AppTranslations extends Translations {
       AppLocales.payment.proceedToCheckout: 'ငွေပေးချေမှုသို့ ဆက်သွားမည်',
       AppLocales.payment.free: 'အခမဲ့',
       AppLocales.payment.orderSummary: 'အော်ဒါ အကျဉ်းချုပ်',
-      AppLocales.payment.discountApplied: '@discount လျှော့စျေး ထည့်သွင်းပြီးပါပြီ',
+      AppLocales.payment.discountApplied:
+          '@discount လျှော့စျေး ထည့်သွင်းပြီးပါပြီ',
 
       // User
       AppLocales.user.profile: 'ပရိုဖိုင်',
@@ -673,9 +674,11 @@ class AppTranslations extends Translations {
       AppLocales.media.typeImage: 'ပုံ',
       AppLocales.media.typeAttachment: 'ပူးတွဲဖိုင်',
       AppLocales.media.noPlayableMedia: 'ဖွင့်ရန် အသံ/ဗီဒီယို မရှိပါ',
-      AppLocales.media.openUnsupported: 'ဤဖိုင်အမျိုးအစားကို ဤနေရာတွင် ဖွင့်မရပါ',
+      AppLocales.media.openUnsupported:
+          'ဤဖိုင်အမျိုးအစားကို ဤနေရာတွင် ဖွင့်မရပါ',
       AppLocales.media.openFailed: 'ဖိုင်ကို ဖွင့်မရပါ',
-      AppLocales.media.openNoViewer: 'ဤဖိုင်အမျိုးအစားကို ဖွင့်မည့် အက်ပ် မရှိပါ',
+      AppLocales.media.openNoViewer:
+          'ဤဖိုင်အမျိုးအစားကို ဖွင့်မည့် အက်ပ် မရှိပါ',
       AppLocales.media.download: 'ဒေါင်းလုဒ်',
       AppLocales.media.downloading: 'ဒေါင်းလုဒ်လုပ်နေသည်…',
       AppLocales.media.downloadProgress: 'ဒေါင်းလုဒ်လုပ်နေသည်… @percent%',
@@ -706,7 +709,8 @@ class AppTranslations extends Translations {
       AppLocales.media.removeDownloadStorageConfirm:
           '"@title" ကို ဒေါင်းလုဒ်စာရင်းမှ ဖယ်ရှားမည်လား? စက်တွင်းနေရာ @size လွတ်သွားပါမည်။',
       AppLocales.media.removeDownloadWithSize: 'ဖယ်ရှားမည် (@size)',
-      AppLocales.media.freedStorage: '"@title" ကို ဖယ်ရှားပြီး @size နေရာလွတ်ရရှိခဲ့သည်။',
+      AppLocales.media.freedStorage:
+          '"@title" ကို ဖယ်ရှားပြီး @size နေရာလွတ်ရရှိခဲ့သည်။',
       AppLocales.media.downloadWithSize: 'ဒေါင်းလုဒ် (@size)',
       AppLocales.media.downloadedWithSize: 'ဒေါင်းလုဒ်ပြီးပါပြီ · @size',
 
