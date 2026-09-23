@@ -22,12 +22,6 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
         final showLyrics = player.lyricsVisible.value && hasLyrics;
         final showLyricsTrackPicker =
             showLyrics && subtitleTracks.length > 1;
-        final duration = player.duration.value;
-        final position = player.position.value;
-        final maxMs = duration.inMilliseconds <= 0
-            ? 1.0
-            : duration.inMilliseconds.toDouble();
-        final valueMs = position.inMilliseconds.clamp(0, maxMs.toInt()).toDouble();
 
         return SafeArea(
           child: Padding(
@@ -108,34 +102,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                   textAlign: TextAlign.center,
                   style: context.typo.bodyMedium,
                 ),
-                SizedBox(height: Design.spacing.xl),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: context.colors.primary,
-                    inactiveTrackColor: context.colors.divider,
-                    thumbColor: context.colors.primary,
-                    overlayColor: context.colors.primary.withValues(alpha: 0.12),
-                    trackHeight: Design.spacing.xs / 2,
-                  ),
-                  child: Slider(
-                    min: 0,
-                    max: maxMs,
-                    value: valueMs,
-                    onChanged: (value) {
-                      player.seek(Duration(milliseconds: value.round()));
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: Design.spacing.paddingSymmetric(h: Design.spacing.sm),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_format(position), style: context.typo.caption),
-                      Text(_format(duration), style: context.typo.caption),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 0),
+                _AudioProgressBar(player: player),
                 SizedBox(height: Design.spacing.xl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -178,10 +146,82 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
       }),
     );
   }
+}
+
+class _AudioProgressBar extends StatefulWidget {
+  const _AudioProgressBar({required this.player});
+
+  final AudioPlayerService player;
+
+  @override
+  State<_AudioProgressBar> createState() => _AudioProgressBarState();
+}
+
+class _AudioProgressBarState extends State<_AudioProgressBar> {
+  double? _dragValueMs;
 
   String _format(Duration duration) {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final duration = widget.player.duration.value;
+      final position = widget.player.position.value;
+      final maxMs = duration.inMilliseconds <= 0
+          ? 1.0
+          : duration.inMilliseconds.toDouble();
+      final currentMs =
+          position.inMilliseconds.clamp(0, maxMs.toInt()).toDouble();
+      final displayMs = (_dragValueMs ?? currentMs).clamp(0.0, maxMs);
+
+      final displayPosition = _dragValueMs != null
+          ? Duration(milliseconds: _dragValueMs!.round())
+          : position;
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: context.colors.primary,
+              inactiveTrackColor: context.colors.divider,
+              thumbColor: context.colors.primary,
+              overlayColor: context.colors.primary.withValues(alpha: 0.12),
+              trackHeight: Design.spacing.xs / 2,
+            ),
+            child: Slider(
+              min: 0,
+              max: maxMs,
+              value: displayMs,
+              onChangeStart: (value) {
+                setState(() => _dragValueMs = value);
+              },
+              onChanged: (value) {
+                setState(() => _dragValueMs = value);
+              },
+              onChangeEnd: (value) {
+                final targetMs = value.round();
+                setState(() => _dragValueMs = null);
+                widget.player.seek(Duration(milliseconds: targetMs));
+              },
+            ),
+          ),
+          Padding(
+            padding: Design.spacing.paddingSymmetric(h: Design.spacing.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_format(displayPosition), style: context.typo.caption),
+                Text(_format(duration), style: context.typo.caption),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

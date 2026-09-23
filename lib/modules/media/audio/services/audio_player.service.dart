@@ -291,10 +291,39 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     return play(prevIndex);
   }
 
+  Duration? _pendingSeek;
+  bool _isSeeking = false;
+
   Future<void> seek(Duration position) async {
-    await _player?.seek(position);
+    _pendingSeek = position;
     this.position.value = position;
-    _persistSession();
+    if (_isSeeking) return;
+    _isSeeking = true;
+    try {
+      while (_pendingSeek != null) {
+        final target = _pendingSeek!;
+        _pendingSeek = null;
+        await _player?.seek(target);
+      }
+    } catch (error) {
+      debugPrint('❌ [AudioPlayerService] Seek error: $error');
+    } finally {
+      _isSeeking = false;
+      _persistSession();
+    }
+  }
+
+  Future<void> fastForward([Duration step = const Duration(seconds: 10)]) {
+    final next = position.value + step;
+    final max = duration.value;
+    final clamped = max > Duration.zero && next > max ? max : next;
+    return seek(clamped);
+  }
+
+  Future<void> rewind([Duration step = const Duration(seconds: 10)]) {
+    final next = position.value - step;
+    final clamped = next < Duration.zero ? Duration.zero : next;
+    return seek(clamped);
   }
 
   /// Releases the native player so TTS can use just_audio.
@@ -351,7 +380,21 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
 
   void _ensureNativePlayer() {
     if (_player != null) return;
-    _player = AudioPlayer();
+    _player = AudioPlayer(
+      audioLoadConfiguration: const AudioLoadConfiguration(
+        androidLoadControl: AndroidLoadControl(
+          minBufferDuration: Duration(seconds: 30),
+          maxBufferDuration: Duration(seconds: 120),
+          bufferForPlaybackDuration: Duration(milliseconds: 1000),
+          bufferForPlaybackAfterRebufferDuration: Duration(seconds: 2),
+          backBufferDuration: Duration(minutes: 5),
+          prioritizeTimeOverSizeThresholds: true,
+        ),
+        darwinLoadControl: DarwinLoadControl(
+          automaticallyWaitsToMinimizeStalling: true,
+        ),
+      ),
+    );
     _bindPlayerStreams();
   }
 
