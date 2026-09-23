@@ -15,20 +15,28 @@ class AudioLyricsTrackSheet {
   const AudioLyricsTrackSheet._();
 
   static Future<void> show(
-    BuildContext context,
-    AudioPlayerService player,
-  ) {
+    BuildContext context, {
+    required AudioPlayerService player,
+    required void Function(int index) onSelectTrack,
+  }) {
     return VideoBottomSheet.show(
       context,
-      child: _AudioLyricsTrackSheetBody(player: player),
+      child: _AudioLyricsTrackSheetBody(
+        player: player,
+        onSelectTrack: onSelectTrack,
+      ),
     );
   }
 }
 
 class _AudioLyricsTrackSheetBody extends StatelessWidget {
-  const _AudioLyricsTrackSheetBody({required this.player});
+  const _AudioLyricsTrackSheetBody({
+    required this.player,
+    required this.onSelectTrack,
+  });
 
   final AudioPlayerService player;
+  final void Function(int index) onSelectTrack;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +56,8 @@ class _AudioLyricsTrackSheetBody extends StatelessWidget {
                 label: track.displayLabel,
                 selected: selectedIndex == index,
                 onTap: () {
-                  unawaited(player.selectLyricsTrack(index));
-                  Navigator.pop(context);
+                  onSelectTrack(index);
+                  Get.back();
                 },
               );
             }),

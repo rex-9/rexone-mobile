@@ -82,10 +82,7 @@ Two
 ''');
 
     test('returns -1 before first cue', () {
-      expect(
-        SrtHelper.activeIndexAt(cues, Duration.zero),
-        -1,
-      );
+      expect(SrtHelper.activeIndexAt(cues, Duration.zero), -1);
     });
 
     test('returns active cue index during playback', () {
@@ -104,6 +101,71 @@ Two
         SrtHelper.activeIndexAt(cues, const Duration(milliseconds: 4000)),
         0,
       );
+    });
+  });
+
+  group('SrtHelper.formatTimestamp', () {
+    test('formats duration into standard SRT timestamp HH:MM:SS,mmm', () {
+      expect(
+        SrtHelper.formatTimestamp(
+          const Duration(hours: 1, minutes: 2, seconds: 3, milliseconds: 456),
+        ),
+        '01:02:03,456',
+      );
+      expect(SrtHelper.formatTimestamp(Duration.zero), '00:00:00,000');
+    });
+  });
+
+  group('SrtHelper.bridgeSmallGaps', () {
+    test('bridges small inter-cue gaps <= maxGap', () {
+      const raw = '''
+1
+00:00:01,000 --> 00:00:03,000
+Hello
+
+2
+00:00:03,500 --> 00:00:06,000
+World
+''';
+
+      final bridged = SrtHelper.bridgeSmallGaps(
+        raw,
+        maxGap: const Duration(milliseconds: 800),
+      );
+
+      final parsed = SrtHelper.parse(bridged);
+      expect(parsed, hasLength(2));
+      // Cue 1 end extended to Cue 2 start (03,500)
+      expect(parsed[0].end, const Duration(milliseconds: 3500));
+      expect(parsed[1].start, const Duration(milliseconds: 3500));
+    });
+
+    test('preserves large gaps with modest tail cushion', () {
+      const raw = '''
+1
+00:00:01,000 --> 00:00:03,000
+Hello
+
+2
+00:00:07,000 --> 00:00:09,000
+World
+''';
+
+      final bridged = SrtHelper.bridgeSmallGaps(
+        raw,
+        maxGap: const Duration(milliseconds: 800),
+      );
+
+      final parsed = SrtHelper.parse(bridged);
+      expect(parsed, hasLength(2));
+      // Extended by 300ms cushion
+      expect(parsed[0].end, const Duration(milliseconds: 3300));
+      expect(parsed[1].start, const Duration(milliseconds: 7000));
+    });
+
+    test('returns original string if empty or blank', () {
+      expect(SrtHelper.bridgeSmallGaps(''), '');
+      expect(SrtHelper.bridgeSmallGaps('   '), '   ');
     });
   });
 }

@@ -85,6 +85,7 @@ enum EMediaDownloadState {
   failed;
 
   String get storageValue => name;
+  static const defaultStorageValue = 'none';
 
   static EMediaDownloadState fromStorage(String? value) {
     if (value == null || value.isEmpty) return EMediaDownloadState.none;

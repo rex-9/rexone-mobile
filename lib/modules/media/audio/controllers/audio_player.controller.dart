@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -30,6 +32,10 @@ class AudioPlayerController extends GetxController {
     await player.dismiss();
     Get.back();
   }
+
+  void toggleLyrics() => player.toggleLyrics();
+
+  void selectLyricsTrack(int index) => unawaited(player.selectLyricsTrack(index));
 
   @override
   void onInit() {

@@ -18,7 +18,6 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
     return Obx(() {
       final asset = player.currentAsset;
       final betterPlayer = player.controller.value;
-      player.subtitlesEnabled.value;
       final assets = player.assets;
       final currentIndex = player.currentIndex.value;
       final playing = player.isPlaying.value;
@@ -64,6 +63,11 @@ class VideoPlayerPage extends GetView<VideoPlayerController> {
                     isPlaying: playing,
                     isLoading: player.isLoading.value,
                     onPlayAt: controller.playAt,
+                    downloadStateFor: controller.downloadStateFor,
+                    downloadProgressFor: controller.downloadProgressFor,
+                    onDownloadTap: controller.onDownloadTap,
+                    onDownloadPauseTap: controller.onDownloadPauseTap,
+                    onDownloadLongPress: controller.onDownloadLongPress,
                   ),
                 ),
               ],

@@ -26,7 +26,7 @@ class VideoPlayerViewport extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
           child: ColoredBox(
-            color: Colors.black,
+            color: colors.background,
             child: controller == null
                 ? Center(child: AppLoading(color: colors.primary))
                 : Localizations.override(

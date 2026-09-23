@@ -100,6 +100,56 @@ class SrtHelper {
     return -1;
   }
 
+  /// Formats [duration] as a standard SRT timestamp: `HH:MM:SS,mmm`.
+  static String formatTimestamp(Duration duration) {
+    final hours = duration.inHours.toString().padLeft(2, '0');
+    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    final millis = (duration.inMilliseconds % 1000).toString().padLeft(3, '0');
+    return '$hours:$minutes:$seconds,$millis';
+  }
+
+  /// Normalizes raw SRT content by bridging small inter-cue gaps (<= [maxGap])
+  /// between consecutive subtitles and extending cue endings with a small cushion.
+  ///
+  /// Prevents blank subtitle flickers when seeking or rewinding into brief pauses
+  /// between dialogue segments.
+  static String bridgeSmallGaps(
+    String raw, {
+    Duration maxGap = const Duration(milliseconds: 800),
+  }) {
+    final cues = parse(raw);
+    if (cues.isEmpty) return raw;
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < cues.length; i++) {
+      final cue = cues[i];
+      var cueEnd = cue.end;
+
+      if (i + 1 < cues.length) {
+        final nextStart = cues[i + 1].start;
+        final gap = nextStart - cueEnd;
+        if (gap > Duration.zero && gap <= maxGap) {
+          cueEnd = nextStart;
+        } else if (gap > maxGap) {
+          final extended = cueEnd + const Duration(milliseconds: 300);
+          cueEnd = extended < nextStart ? extended : nextStart;
+        }
+      } else {
+        cueEnd += const Duration(milliseconds: 500);
+      }
+
+      buffer.writeln('${i + 1}');
+      buffer.writeln(
+        '${formatTimestamp(cue.start)} --> ${formatTimestamp(cueEnd)}',
+      );
+      buffer.writeln(cue.text);
+      buffer.writeln();
+    }
+
+    return buffer.toString().trimRight();
+  }
+
   static Duration _durationFromMatch(RegExpMatch match, int startGroup) {
     final hours = int.parse(match.group(startGroup)!);
     final minutes = int.parse(match.group(startGroup + 1)!);

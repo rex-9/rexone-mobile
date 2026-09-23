@@ -2,32 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:rexone_mobile/routes/app.routes.dart';
 
 import '../../media.dart';
 
-class MiniPlayer extends StatelessWidget {
+class MiniPlayer extends GetView<MiniPlayerController> {
   const MiniPlayer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<AudioPlayerService>()) {
+    if (!controller.isRegistered) {
       return const SizedBox.shrink();
     }
-    final player = Get.find<AudioPlayerService>();
 
     return Obx(() {
-      if (!player.hasSession.value) return const SizedBox.shrink();
-      final asset = player.currentAsset;
+      if (!controller.hasSession) return const SizedBox.shrink();
+      final asset = controller.currentAsset;
       if (asset == null) return const SizedBox.shrink();
 
       return Material(
         color: context.colors.surface,
         child: InkWell(
-          onTap: () {
-            player.isFullPlayerOpen.value = true;
-            AppRoutes.toAudioPlayer();
-          },
+          onTap: controller.openFullPlayer,
           child: Container(
             decoration: BoxDecoration(
               border: Border(
@@ -65,42 +60,32 @@ class MiniPlayer extends StatelessWidget {
                     ],
                   ),
                 ),
-                player.isLoading.value
+                controller.isLoading
                     ? AppLoading(
                         size: LoadingSize.small,
                         color: context.colors.primary,
                       )
                     : AppButton(
                         type: EButtonType.icon,
-                        icon: player.isPlaying.value
+                        icon: controller.isPlaying
                             ? Design.icons.pause
                             : Design.icons.play,
-                        tooltip: player.isPlaying.value
+                        tooltip: controller.isPlaying
                             ? AppLocales.audio.pause.tr
                             : AppLocales.audio.play.tr,
-                        onPressed: () async {
-                          if (!await player.toggle()) {
-                            AppSnackbar.error(
-                              AppLocales.audio.playbackFailed.tr,
-                            );
-                          }
-                        },
+                        onPressed: controller.togglePlayPause,
                       ),
                 AppButton(
                   type: EButtonType.icon,
                   icon: Design.icons.skipNext,
                   tooltip: AppLocales.audio.next.tr,
-                  onPressed: () async {
-                    if (!await player.next()) {
-                      AppSnackbar.error(AppLocales.audio.playbackFailed.tr);
-                    }
-                  },
+                  onPressed: controller.playNext,
                 ),
                 AppButton(
                   type: EButtonType.icon,
                   icon: Design.icons.close,
                   tooltip: AppLocales.audio.close.tr,
-                  onPressed: player.dismiss,
+                  onPressed: controller.dismiss,
                 ),
               ],
             ),

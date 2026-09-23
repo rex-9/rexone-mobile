@@ -51,13 +51,13 @@ class MediaPlaylistController extends GetxController {
       assets.where((item) => item.isVideoMedia).toList();
 
   bool get hasMissingDownloads => assets.any((asset) {
-        if (!asset.isDownloadableAsset) return false;
-        final state = downloadStateFor(asset);
-        return state != EMediaDownloadState.ready &&
-            state != EMediaDownloadState.queued &&
-            state != EMediaDownloadState.downloading &&
-            state != EMediaDownloadState.processing;
-      });
+    if (!asset.isDownloadableAsset) return false;
+    final state = downloadStateFor(asset);
+    return state != EMediaDownloadState.ready &&
+        state != EMediaDownloadState.queued &&
+        state != EMediaDownloadState.downloading &&
+        state != EMediaDownloadState.processing;
+  });
 
   AssetModel? get heroAsset {
     if (_audioPlayer.hasSession.value) {
@@ -150,9 +150,7 @@ class MediaPlaylistController extends GetxController {
         AppSnackbar.info(AppLocales.media.downloadAllNone.tr);
       } else {
         AppSnackbar.success(
-          AppLocales.media.downloadAllStarted.trParams({
-            'count': '$started',
-          }),
+          AppLocales.media.downloadAllStarted.trParams({'count': '$started'}),
         );
       }
     } catch (error) {
@@ -166,27 +164,21 @@ class MediaPlaylistController extends GetxController {
   Future<void> _startDownload(AssetModel asset) async {
     try {
       await _downloads.downloadAsset(asset);
+    } on MediaDownloadLimitException {
+      AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
     } catch (error) {
-      final message = error.toString();
-      if (message.contains('Too many active downloads')) {
-        AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
-      } else {
-        AppSnackbar.error(AppLocales.media.downloadFailed.tr);
-      }
+      AppSnackbar.error(AppLocales.media.downloadFailed.tr);
     }
   }
 
   Future<void> _resumeDownload(AssetModel asset) async {
     try {
       await _downloads.resumeDownload(asset.id);
+    } on MediaDownloadLimitException {
+      AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
     } catch (error) {
-      final message = error.toString();
-      if (message.contains('Too many active downloads')) {
-        AppSnackbar.error(AppLocales.media.downloadTooMany.tr);
-      } else {
-        debugPrint('❌ [MediaPlaylistController] Resume download error: $error');
-        AppSnackbar.error(AppLocales.media.downloadFailed.tr);
-      }
+      debugPrint('❌ [MediaPlaylistController] Resume download error: $error');
+      AppSnackbar.error(AppLocales.media.downloadFailed.tr);
     }
   }
 
@@ -197,8 +189,9 @@ class MediaPlaylistController extends GetxController {
 
     final confirmMessage = AppLocales.media.removeDownloadStorageConfirm
         .trParams({'title': asset.displayTitle, 'size': sizeStr});
-    final confirmButton = AppLocales.media.removeDownloadWithSize
-        .trParams({'size': sizeStr});
+    final confirmButton = AppLocales.media.removeDownloadWithSize.trParams({
+      'size': sizeStr,
+    });
 
     final confirmed = await AppDialog.confirm(
       context: context,
@@ -322,7 +315,9 @@ class MediaPlaylistController extends GetxController {
       hasMore.value = false;
       _applyLibraryFilter();
     } catch (e) {
-      debugPrint('⚠️ [MediaPlaylistController] Failed to load offline assets: $e');
+      debugPrint(
+        '⚠️ [MediaPlaylistController] Failed to load offline assets: $e',
+      );
     }
   }
 
@@ -454,10 +449,7 @@ class MediaPlaylistController extends GetxController {
           alignment: Alignment.topRight,
           children: [
             InteractiveViewer(
-              child: AppImage.network(
-                imageUrl,
-                fit: BoxFit.contain,
-              ),
+              child: AppImage.network(imageUrl, fit: BoxFit.contain),
             ),
             AppButton(
               type: EButtonType.icon,
@@ -500,7 +492,8 @@ class MediaPlaylistController extends GetxController {
         insetPadding: Design.spacing.padding(Design.spacing.screenPadding),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height *
+            maxHeight:
+                MediaQuery.sizeOf(context).height *
                 MediaLayoutConstants.textPreviewMaxHeightFraction,
             maxWidth: MediaQuery.sizeOf(context).width,
           ),
@@ -536,9 +529,7 @@ class MediaPlaylistController extends GetxController {
                   padding: Design.spacing.padding(Design.spacing.md),
                   child: SelectableText(
                     body,
-                    style: typo.bodyMedium.copyWith(
-                      color: colors.textPrimary,
-                    ),
+                    style: typo.bodyMedium.copyWith(color: colors.textPrimary),
                   ),
                 ),
               ),

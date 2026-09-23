@@ -72,6 +72,11 @@ class AssetKeys {
     'yml',
   };
 
+  // ===== Extensions & Formats =====
+  static const extensionSrt = 'srt';
+  static const extensionEnc = 'enc';
+  static const imageExtensions = ['jpg', 'png', 'webp', 'jpeg'];
+
   // ===== Upload constants (FormData values) =====
   static const assetableUser = 'User';
   static const sourceUpload = 'upload';

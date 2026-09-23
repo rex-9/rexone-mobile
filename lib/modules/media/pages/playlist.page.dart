@@ -57,10 +57,7 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
 
     if (_controller.isLoading.value && assets.isEmpty) {
       return Center(
-        child: AppLoading(
-          type: LoadingType.circular,
-          color: colors.primary,
-        ),
+        child: AppLoading(type: LoadingType.circular, color: colors.primary),
       );
     }
 
@@ -78,9 +75,6 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
         ),
       );
     }
-
-    // Touch download map so Obx rebuilds bulk-download affordance.
-    _controller.downloadStateFor(assets.first);
 
     return RefreshIndicator(
       onRefresh: () => _controller.fetchAssets(refresh: true),
@@ -100,8 +94,10 @@ class _MediaPlaylistPageState extends State<MediaPlaylistPage> {
             downloadAllLabel: _controller.isBulkDownloading.value
                 ? AppLocales.common.loading.tr
                 : AppLocales.media.downloadAll.tr,
-            canPlay: assets.any((item) => item.isPlayableMedia) && !headerLoading,
-            canDownloadAll: _controller.hasMissingDownloads &&
+            canPlay:
+                assets.any((item) => item.isPlayableMedia) && !headerLoading,
+            canDownloadAll:
+                _controller.hasMissingDownloads &&
                 !_controller.isBulkDownloading.value,
             isPlayAllLoading: headerLoading,
             isDownloadAllLoading: _controller.isBulkDownloading.value,

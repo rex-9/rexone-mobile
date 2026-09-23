@@ -1015,6 +1015,7 @@ class FakeMediaService extends MediaService {
 /// Lightweight offline download double for controller unit tests.
 class FakeMediaDownloadService extends MediaDownloadService {
   bool clearedAll = false;
+  Exception? downloadError;
 
   @override
   void onInit() {}
@@ -1024,6 +1025,7 @@ class FakeMediaDownloadService extends MediaDownloadService {
 
   @override
   Future<void> downloadAsset(AssetModel asset) async {
+    if (downloadError != null) throw downloadError!;
     entries[asset.id] = MediaDownloadEntry(
       assetId: asset.id,
       state: EMediaDownloadState.ready,

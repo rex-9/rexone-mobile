@@ -48,7 +48,8 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                               tooltip: AppLocales.audio.lyricsTrack.tr,
                               onPressed: () => AudioLyricsTrackSheet.show(
                                 context,
-                                player,
+                                player: player,
+                                onSelectTrack: controller.selectLyricsTrack,
                               ),
                             ),
                           AppButton(
@@ -60,7 +61,7 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                             color: showLyrics
                                 ? context.colors.primary
                                 : null,
-                            onPressed: player.toggleLyrics,
+                            onPressed: controller.toggleLyrics,
                           ),
                         ],
                         AppButton(
@@ -102,7 +103,6 @@ class AudioPlayerPage extends GetView<AudioPlayerController> {
                   textAlign: TextAlign.center,
                   style: context.typo.bodyMedium,
                 ),
-                const SizedBox(height: 0),
                 _AudioProgressBar(player: player),
                 SizedBox(height: Design.spacing.xl),
                 Row(

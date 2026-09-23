@@ -1,5 +1,7 @@
 // lib/constants/media_download.constants.dart
 
+import 'package:rexone_mobile/config/app.config.dart';
+
 /// Offline media download layout and persisted field names.
 class MediaDownloadConstants {
   const MediaDownloadConstants._();
@@ -7,12 +9,17 @@ class MediaDownloadConstants {
   /// Encrypted audio/video (+ decrypted cache + download temp).
   static const offlineRootDirName = 'media_offline';
 
-  /// Plaintext images, attachments, and other non-A/V offline files.
-  static const plaintextRootDirName = 'hysanejunior';
+  /// Plaintext images, attachments, and other non-A/V offline files (named after the app).
+  static String get plaintextRootDirName => AppConfig.appName
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9_]'), '_');
 
   static const decryptedCacheDirName = 'decrypted_cache';
   static const mediaFileSuffix = '.enc';
   static const subtitleFileSuffix = '.sub.enc';
+  static const encryptedExtension = 'enc';
+  static const defaultState = 'none';
 
   static const keySalt = 'rexone_mobile_offline_v1';
 
@@ -25,7 +32,8 @@ class MediaDownloadConstants {
   static const notificationChannelId = 'media_download';
 
   /// MethodChannel for Live Activity Pause/Resume (must match AppDelegate).
-  static const liveActivityMethodChannel = 'rexone/media_download_live_activity';
+  static const liveActivityMethodChannel =
+      'rexone/media_download_live_activity';
   static const liveActivityMethodAction = 'action';
   static const liveActivityMethodTakePending = 'takePending';
 

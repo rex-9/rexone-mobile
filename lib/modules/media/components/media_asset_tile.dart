@@ -59,7 +59,7 @@ class MediaAssetTile extends StatelessWidget {
               width: tileArtSize,
               height: tileArtSize,
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: colors.textPrimary.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(Design.spacing.radiusSmall),
               ),
               child: Center(

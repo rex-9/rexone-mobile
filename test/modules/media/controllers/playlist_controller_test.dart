@@ -259,6 +259,18 @@ void main() {
       expect(downloads.stateFor(asset.id), EMediaDownloadState.downloading);
     });
 
+    test('onDownloadTap handles MediaDownloadLimitException and generic error gracefully', () async {
+      final controller = Get.put(MediaPlaylistController());
+      final asset = _asset(id: 'a_limit', format: AssetKeys.formatAudio);
+      final downloads = Get.find<MediaDownloadService>() as FakeMediaDownloadService;
+
+      downloads.downloadError = const MediaDownloadLimitException();
+      await expectLater(controller.onDownloadTap(asset), completes);
+
+      downloads.downloadError = const MediaDownloadException('Generic failure');
+      await expectLater(controller.onDownloadTap(asset), completes);
+    });
+
     test('next from audio continues to video in mixed queue order', () async {
       Get.put(MediaPlaylistController());
       final mixed = [

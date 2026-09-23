@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 
 /// SQLite table storing local parent assets (videos, audios, and metadata).
 class LocalAssetsTable extends Table {
@@ -28,9 +29,8 @@ class LocalAssetsTable extends Table {
 
   // Download status & offline file location
   TextColumn get downloadState =>
-      text().withDefault(const Constant('none'))();
-  RealColumn get downloadProgress =>
-      real().withDefault(const Constant(0.0))();
+      text().withDefault(const Constant(MediaDownloadConstants.defaultState))();
+  RealColumn get downloadProgress => real().withDefault(const Constant(0.0))();
   TextColumn get localFilePath => text().nullable()();
   TextColumn get errorMessage => text().nullable()();
   DateTimeColumn get downloadedAt => dateTime().nullable()();

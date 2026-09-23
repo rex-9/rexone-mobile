@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/services/media.service.dart';
@@ -30,6 +32,7 @@ class VideoPlayerService extends GetxService {
 
   double _volume = 100.0;
   double _rate = 1.0;
+  Timer? _positionHeartbeatTimer;
 
   final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
@@ -37,8 +40,8 @@ class VideoPlayerService extends GetxService {
   MediaService get _media => Get.find<MediaService>();
   MediaDownloadService? get _downloads =>
       Get.isRegistered<MediaDownloadService>()
-          ? Get.find<MediaDownloadService>()
-          : null;
+      ? Get.find<MediaDownloadService>()
+      : null;
 
   AssetModel? get currentAsset {
     final index = currentIndex.value;
@@ -80,7 +83,8 @@ class VideoPlayerService extends GetxService {
       await _pauseAudioAndSpeech();
       _ensureController();
 
-      final url = await _playbackUrl(assets[nextIndex]);
+      final targetAsset = assets[nextIndex];
+      final url = await _playbackUrl(targetAsset);
       if (url == null || url.isEmpty) {
         isLoading.value = false;
         return false;
@@ -90,9 +94,25 @@ class VideoPlayerService extends GetxService {
       // Prefetch our SRT URLs into memory sources so better_player's built-in
       // Subtitles menu lists them and can render without its own HTTP fetch.
       final subtitleSources = await _preloadSubtitleSources();
-      final dataSource = _buildDataSource(url, subtitles: subtitleSources);
+      final dataSource = buildDataSource(
+        url,
+        cacheKey: targetAsset.id,
+        subtitles: subtitleSources,
+      );
       await controller.value!.setupDataSource(dataSource);
+      try {
+        controller.value?.setMixWithOthers(false);
+      } catch (e) {
+        debugPrint('⚠️ [VideoPlayerService] setMixWithOthers warning: $e');
+      }
+      try {
+        await controller.value?.setVolume(_volume / 100.0);
+      } catch (_) {}
+      try {
+        await controller.value?.setSpeed(_rate);
+      } catch (_) {}
       await controller.value!.play();
+      _startPositionHeartbeat();
       isLoading.value = false;
       return true;
     } catch (error) {
@@ -103,6 +123,7 @@ class VideoPlayerService extends GetxService {
   }
 
   Future<void> pause() async {
+    _stopPositionHeartbeat();
     await controller.value?.pause();
   }
 
@@ -112,9 +133,11 @@ class VideoPlayerService extends GetxService {
     if (player == null) return;
     try {
       if (player.isPlaying() == true) {
+        _stopPositionHeartbeat();
         await player.pause();
       } else {
         await player.play();
+        _startPositionHeartbeat();
       }
     } catch (error) {
       debugPrint('❌ [VideoPlayerService] Toggle error: $error');
@@ -140,8 +163,9 @@ class VideoPlayerService extends GetxService {
   }
 
   Future<void> seek(Duration target) async {
-    await controller.value?.seekTo(target);
     position.value = target;
+    await controller.value?.seekTo(target);
+    _onSeekCompleted();
   }
 
   Future<void> setVolume(double volume) async {
@@ -159,6 +183,7 @@ class VideoPlayerService extends GetxService {
   double get rate => _rate;
 
   Future<void> dismiss() async {
+    _stopPositionHeartbeat();
     hasSession.value = false;
     isPlaying.value = false;
     isLoading.value = false;
@@ -172,6 +197,7 @@ class VideoPlayerService extends GetxService {
 
   @override
   void onClose() {
+    _stopPositionHeartbeat();
     unawaited(dismiss());
     super.onClose();
   }
@@ -204,10 +230,20 @@ class VideoPlayerService extends GetxService {
       case PlayerEventType.play:
         isPlaying.value = true;
         isLoading.value = false;
+        _startPositionHeartbeat();
       case PlayerEventType.pause:
         isPlaying.value = false;
+        _stopPositionHeartbeat();
       case PlayerEventType.finished:
         isPlaying.value = false;
+        _stopPositionHeartbeat();
+      case PlayerEventType.seekTo:
+        final seekTarget =
+            event.parameters?[PlayerEventConstants.durationParameter];
+        if (seekTarget is Duration) {
+          position.value = seekTarget;
+        }
+        _onSeekCompleted();
       case PlayerEventType.progress:
         final progress = event.parameters?['progress'];
         final total = event.parameters?['duration'];
@@ -228,13 +264,58 @@ class VideoPlayerService extends GetxService {
     }
   }
 
-  PlayerDataSource _buildDataSource(
+  void _onSeekCompleted() {
+    final player = controller.value;
+    if (player == null) return;
+
+    // Kicks BetterPlayer's internal PlayerEngineController to restart the
+    // position polling timer canceled by seekTo().
+    try {
+      if (isPlaying.value || player.isPlaying() == true) {
+        unawaited(player.play());
+        _startPositionHeartbeat();
+      }
+    } catch (_) {}
+
+    // Re-assert audio volume to prevent ExoPlayer AudioTrack buffer starvation silence.
+    try {
+      unawaited(player.setVolume(_volume / 100.0));
+    } catch (_) {}
+  }
+
+  void _startPositionHeartbeat() {
+    _positionHeartbeatTimer?.cancel();
+    _positionHeartbeatTimer = Timer.periodic(
+      const Duration(milliseconds: 250),
+      (_) async {
+        final player = controller.value;
+        if (player == null || !isPlaying.value) {
+          _stopPositionHeartbeat();
+          return;
+        }
+        final current = await player.position;
+        if (current != null && isPlaying.value) {
+          position.value = current;
+        }
+      },
+    );
+  }
+
+  void _stopPositionHeartbeat() {
+    _positionHeartbeatTimer?.cancel();
+    _positionHeartbeatTimer = null;
+  }
+
+  @visibleForTesting
+  PlayerDataSource buildDataSource(
     String url, {
+    String? cacheKey,
     List<PlayerSubtitlesSource> subtitles = const [],
   }) {
     final isFile = url.startsWith('file:') || !url.contains('://');
-    final resolvedUrl =
-        isFile ? _filePathFromUrl(url) : UrlHelper.normalize(url);
+    final resolvedUrl = isFile
+        ? _filePathFromUrl(url)
+        : UrlHelper.normalize(url);
 
     // Dynamic playback URLs from GET /playback are presigned specifically for the client host
     // (e.g. 10.0.2.2:3100 on Android). Overriding the Host header causes AWS SigV4 / Garage
@@ -246,6 +327,25 @@ class VideoPlayerService extends GetxService {
       subtitles: subtitles.isEmpty ? null : subtitles,
       // Offline decrypted files may keep a non-media extension (.enc).
       videoExtension: isFile ? 'mp4' : null,
+      cacheConfiguration: isFile
+          ? null
+          : CacheConfiguration(
+              useCache: true,
+              maxCacheSize: MediaPlaybackConstants.videoMaxCacheSizeBytes,
+              maxCacheFileSize:
+                  MediaPlaybackConstants.videoMaxCacheFileSizeBytes,
+              key: cacheKey,
+            ),
+      bufferingConfiguration: isFile
+          ? const BufferingConfiguration()
+          : const BufferingConfiguration(
+              minBufferMs: MediaPlaybackConstants.videoMinBufferMs,
+              maxBufferMs: MediaPlaybackConstants.videoMaxBufferMs,
+              bufferForPlaybackMs:
+                  MediaPlaybackConstants.videoBufferForPlaybackMs,
+              bufferForPlaybackAfterRebufferMs:
+                  MediaPlaybackConstants.videoBufferForPlaybackAfterRebufferMs,
+            ),
     );
   }
 
@@ -263,16 +363,16 @@ class VideoPlayerService extends GetxService {
 
   void _syncSubtitlesFromPlayer() {
     final source = controller.value?.betterPlayerSubtitlesSource;
-    if (source == null ||
-        source.type == PlayerSubtitlesSourceType.none) {
+    if (source == null || source.type == PlayerSubtitlesSourceType.none) {
       subtitlesEnabled.value = false;
       selectedSubtitleIndex.value = -1;
       return;
     }
 
     final tracks = effectiveSubtitles;
-    final index =
-        tracks.indexWhere((track) => track.displayLabel == source.name);
+    final index = tracks.indexWhere(
+      (track) => track.displayLabel == source.name,
+    );
     subtitlesEnabled.value = true;
     selectedSubtitleIndex.value = index;
   }
@@ -290,10 +390,11 @@ class VideoPlayerService extends GetxService {
           );
           return null;
         }
+        final optimizedBody = SrtHelper.bridgeSmallGaps(body);
         return PlayerSubtitlesSource(
           type: PlayerSubtitlesSourceType.memory,
           name: track.displayLabel,
-          content: body,
+          content: optimizedBody,
         );
       }),
     );
@@ -330,8 +431,8 @@ class VideoPlayerService extends GetxService {
       final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
       debugPrint('🔍 [VideoPlayerService] Local path: $localPath');
       if (localPath != null && localPath.isNotEmpty) {
-        _offlineSubtitlesByAssetId[asset.id] =
-            await downloads.resolveOfflineSubtitleTracks(asset);
+        _offlineSubtitlesByAssetId[asset.id] = await downloads
+            .resolveOfflineSubtitleTracks(asset);
         debugPrint(
           '🔍 [VideoPlayerService] Offline subtitles: '
           '${_offlineSubtitlesByAssetId[asset.id]}',
@@ -379,9 +480,7 @@ class VideoPlayerService extends GetxService {
 
     final current = audio.queueIndex.value >= 0
         ? audio.queueIndex.value
-        : audio.queue.indexWhere(
-            (item) => item.id == currentAsset?.id,
-          );
+        : audio.queue.indexWhere((item) => item.id == currentAsset?.id);
     if (current < 0) return false;
 
     final target = forward
@@ -401,5 +500,9 @@ class VideoPlayerService extends GetxService {
         await audio.pause();
       }
     }
+    try {
+      final session = await AudioSession.instance;
+      await session.setActive(false);
+    } catch (_) {}
   }
 }

@@ -14,6 +14,7 @@ export 'pages/playlist.page.dart';
 export 'audio/services/audio_player.service.dart';
 export 'audio/services/now_playing.bridge.dart';
 export 'audio/controllers/audio_player.controller.dart';
+export 'audio/controllers/mini_player.controller.dart';
 export 'audio/pages/audio_player.page.dart';
 export 'audio/components/mini_player.dart';
 export 'audio/components/app_mini_player_host.dart';

@@ -3,10 +3,8 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/models/models.dart';
-import 'package:rexone_mobile/services/media_download.service.dart';
 
 import '../../components/media_asset_tile.dart';
-import '../../controllers/playlist.controller.dart';
 
 /// Scrollable asset list shown below the inline video player.
 class VideoPlaylistPanel extends StatelessWidget {
@@ -18,6 +16,11 @@ class VideoPlaylistPanel extends StatelessWidget {
     required this.isPlaying,
     required this.isLoading,
     required this.onPlayAt,
+    required this.downloadStateFor,
+    required this.downloadProgressFor,
+    required this.onDownloadTap,
+    this.onDownloadPauseTap,
+    this.onDownloadLongPress,
   });
 
   final List<AssetModel> assets;
@@ -26,6 +29,11 @@ class VideoPlaylistPanel extends StatelessWidget {
   final bool isPlaying;
   final bool isLoading;
   final ValueChanged<int> onPlayAt;
+  final EMediaDownloadState Function(AssetModel asset) downloadStateFor;
+  final double Function(AssetModel asset) downloadProgressFor;
+  final ValueChanged<AssetModel> onDownloadTap;
+  final ValueChanged<AssetModel>? onDownloadPauseTap;
+  final ValueChanged<AssetModel>? onDownloadLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -50,51 +58,35 @@ class VideoPlaylistPanel extends StatelessWidget {
                     ),
                   ),
                 )
-              : Obx(() {
-                  final downloads = Get.find<MediaDownloadService>();
-                  downloads.entries.length;
+              : ListView.separated(
+                  itemCount: assets.length,
+                  separatorBuilder: (_, _) =>
+                      SizedBox(height: Design.spacing.sm),
+                  itemBuilder: (context, index) {
+                    final item = assets[index];
+                    final isCurrent = currentIndex == index && hasSession;
+                    final downloadState = downloadStateFor(item);
+                    final downloadProgress = downloadProgressFor(item);
 
-                  final playlist = Get.isRegistered<MediaPlaylistController>()
-                      ? Get.find<MediaPlaylistController>()
-                      : null;
-
-                  return ListView.separated(
-                    itemCount: assets.length,
-                    separatorBuilder: (_, _) =>
-                        SizedBox(height: Design.spacing.sm),
-                    itemBuilder: (context, index) {
-                      final item = assets[index];
-                      final isCurrent =
-                          currentIndex == index && hasSession;
-                      final downloadState = playlist != null
-                          ? playlist.downloadStateFor(item)
-                          : downloads.stateFor(item.id);
-                      final downloadProgress = playlist != null
-                          ? playlist.downloadProgressFor(item)
-                          : downloads.progressFor(item.id);
-
-                      return MediaAssetTile(
-                        asset: item,
-                        isCurrent: isCurrent,
-                        isPlaying: isPlaying,
-                        isLoading: isLoading,
-                        showLoadingTrailing: false,
-                        downloadState: downloadState,
-                        downloadProgress: downloadProgress,
-                        onDownloadTap: playlist == null
-                            ? () {}
-                            : () => playlist.onDownloadTap(item),
-                        onDownloadPauseTap: playlist == null
-                            ? null
-                            : () => playlist.onDownloadPauseTap(item),
-                        onDownloadLongPress: playlist == null
-                            ? null
-                            : () => playlist.onDownloadLongPress(item),
-                        onTap: () => onPlayAt(index),
-                      );
-                    },
-                  );
-                }),
+                    return MediaAssetTile(
+                      asset: item,
+                      isCurrent: isCurrent,
+                      isPlaying: isPlaying,
+                      isLoading: isLoading,
+                      showLoadingTrailing: false,
+                      downloadState: downloadState,
+                      downloadProgress: downloadProgress,
+                      onDownloadTap: () => onDownloadTap(item),
+                      onDownloadPauseTap: onDownloadPauseTap != null
+                          ? () => onDownloadPauseTap!(item)
+                          : null,
+                      onDownloadLongPress: onDownloadLongPress != null
+                          ? () => onDownloadLongPress!(item)
+                          : null,
+                      onTap: () => onPlayAt(index),
+                    );
+                  },
+                ),
         ),
       ],
     );

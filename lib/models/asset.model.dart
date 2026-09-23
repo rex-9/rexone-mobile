@@ -40,7 +40,9 @@ class ChildAssetModel {
   bool get isPlayableSubtitle {
     if (url.isEmpty) return false;
     if (status.isNotEmpty && status != AssetKeys.statusReady) return false;
-    if (extension != null && extension!.isNotEmpty && extension != 'srt') {
+    if (extension != null &&
+        extension!.isNotEmpty &&
+        extension != AssetKeys.extensionSrt) {
       return false;
     }
     return true;
@@ -168,8 +170,7 @@ class AssetModel {
       type == AssetKeys.typeAvatar || format == AssetKeys.formatImage;
 
   bool get isAttachment =>
-      type == AssetKeys.typeAttachment ||
-      format == AssetKeys.formatAttachment;
+      type == AssetKeys.typeAttachment || format == AssetKeys.formatAttachment;
 
   /// Best-effort file extension for offline open / MIME (e.g. `pdf`, `docx`).
   String? get resolvedFileExtension {
@@ -177,7 +178,7 @@ class AssetModel {
     if (direct != null &&
         direct.isNotEmpty &&
         !direct.contains('/') &&
-        direct != 'enc') {
+        direct != AssetKeys.extensionEnc) {
       return direct.startsWith('.') ? direct.substring(1) : direct;
     }
 
@@ -187,7 +188,9 @@ class AssetModel {
       final dot = cleaned.lastIndexOf('.');
       if (dot < 0 || dot == cleaned.length - 1) continue;
       final ext = cleaned.substring(dot + 1);
-      if (ext.isEmpty || ext == 'enc' || ext.contains('/')) continue;
+      if (ext.isEmpty || ext == AssetKeys.extensionEnc || ext.contains('/')) {
+        continue;
+      }
       return ext;
     }
     return null;
@@ -225,12 +228,14 @@ class AssetModel {
     if (raw is! List) return const [];
     return raw
         .whereType<Map>()
-        .map((item) => ChildAssetModel.fromJson(Map<String, dynamic>.from(item)))
+        .map(
+          (item) => ChildAssetModel.fromJson(Map<String, dynamic>.from(item)),
+        )
         .toList();
   }
 
   static ({ChildAssetModel? thumbnail, List<ChildAssetModel> subtitles})
-      _parseChildAssets(Map<String, dynamic> json) {
+  _parseChildAssets(Map<String, dynamic> json) {
     final children = json[AssetKeys.children];
     if (children is Map) {
       final map = Map<String, dynamic>.from(children);

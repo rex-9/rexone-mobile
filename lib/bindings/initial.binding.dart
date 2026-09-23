@@ -91,5 +91,8 @@ class InitialBinding extends Bindings {
 
     // Global socket event router (snackbars + controller dispatch)
     Get.put(SocketController(), permanent: true);
+
+    // Audio mini player
+    Get.put(MiniPlayerController(), permanent: true);
   }
 }

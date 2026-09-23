@@ -12,9 +12,9 @@ extension LocalAssetExtension on LocalAssetsTableData {
     final subs = children
         .where(
           (c) =>
-              c.extension == 'srt' ||
-              c.format == 'srt' ||
-              c.type == 'subtitle',
+              c.extension == AssetKeys.extensionSrt ||
+              c.format == AssetKeys.extensionSrt ||
+              c.type == AssetKeys.typeSubtitle,
         )
         .map(
           (c) => ChildAssetModel(
@@ -27,7 +27,7 @@ extension LocalAssetExtension on LocalAssetsTableData {
                 : c.url,
             type: c.type,
             format: c.format,
-            extension: c.extension ?? 'srt',
+            extension: c.extension ?? AssetKeys.extensionSrt,
             sizeBytes: c.sizeBytes?.toInt(),
             status: AssetKeys.statusReady,
           ),
@@ -37,11 +37,11 @@ extension LocalAssetExtension on LocalAssetsTableData {
     final thumbData = children
         .where(
           (c) =>
-              c.type == 'image' ||
-              c.format == 'jpg' ||
-              c.format == 'png' ||
-              c.extension == 'jpg' ||
-              c.extension == 'png',
+              c.type == AssetKeys.formatImage ||
+              (c.format != null &&
+                  AssetKeys.imageExtensions.contains(c.format)) ||
+              (c.extension != null &&
+                  AssetKeys.imageExtensions.contains(c.extension)),
         )
         .firstOrNull;
     final thumb = thumbData != null
@@ -49,7 +49,8 @@ extension LocalAssetExtension on LocalAssetsTableData {
             id: thumbData.id,
             name: thumbData.name,
             title: thumbData.title,
-            url: thumbData.localFilePath != null &&
+            url:
+                thumbData.localFilePath != null &&
                     thumbData.localFilePath!.isNotEmpty
                 ? Uri.file(thumbData.localFilePath!).toString()
                 : thumbData.url,
@@ -99,7 +100,7 @@ extension LocalAssetExtension on LocalAssetsTableData {
 extension AssetModelToLocalExtension on AssetModel {
   /// Converts an [AssetModel] into a [LocalAssetsTableCompanion] for SQLite persistence.
   LocalAssetsTableCompanion toCompanion({
-    String downloadState = 'none',
+    String downloadState = EMediaDownloadState.defaultStorageValue,
     double downloadProgress = 0.0,
     String? localFilePath,
     DateTime? downloadedAt,

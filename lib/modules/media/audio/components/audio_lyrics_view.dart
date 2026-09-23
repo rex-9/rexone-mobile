@@ -127,7 +127,6 @@ class _AudioLyricsViewState extends State<AudioLyricsView> {
         );
       }
 
-      player.position.value;
       final activeIndex = player.activeLyricsIndex;
       _scheduleScrollIfNeeded(activeIndex);
 

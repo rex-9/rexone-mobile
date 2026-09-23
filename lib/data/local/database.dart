@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 
 import 'tables/asset_playback_progress.table.dart';
 import 'tables/local_assets.table.dart';
@@ -45,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   /// Returns all assets that have been successfully downloaded.
   Future<List<LocalAssetsTableData>> getDownloadedAssets() {
     return (select(localAssetsTable)
-          ..where((tbl) => tbl.downloadState.equals('ready'))
+          ..where((tbl) => tbl.downloadState.equals(EMediaDownloadState.ready.storageValue))
           ..orderBy([(tbl) => OrderingTerm.desc(tbl.downloadedAt)]))
         .get();
   }
@@ -53,7 +54,7 @@ class AppDatabase extends _$AppDatabase {
   /// Watches all downloaded assets reactively.
   Stream<List<LocalAssetsTableData>> watchDownloadedAssets() {
     return (select(localAssetsTable)
-          ..where((tbl) => tbl.downloadState.equals('ready'))
+          ..where((tbl) => tbl.downloadState.equals(EMediaDownloadState.ready.storageValue))
           ..orderBy([(tbl) => OrderingTerm.desc(tbl.downloadedAt)]))
         .watch();
   }
@@ -103,7 +104,7 @@ class AppDatabase extends _$AppDatabase {
   }) {
     final query = select(localAssetsTable)
       ..where((tbl) =>
-          tbl.downloadState.equals('ready') &
+          tbl.downloadState.equals(EMediaDownloadState.ready.storageValue) &
           tbl.assetableType.equals(assetableType));
     if (assetableId != null && assetableId.isNotEmpty) {
       query.where((tbl) => tbl.assetableId.equals(assetableId));
@@ -115,7 +116,7 @@ class AppDatabase extends _$AppDatabase {
   Future<Set<String>> getDownloadedAssetIds() async {
     final list = await (selectOnly(localAssetsTable)
           ..addColumns([localAssetsTable.id])
-          ..where(localAssetsTable.downloadState.equals('ready')))
+          ..where(localAssetsTable.downloadState.equals(EMediaDownloadState.ready.storageValue)))
         .get();
     return list.map((row) => row.read(localAssetsTable.id)!).toSet();
   }

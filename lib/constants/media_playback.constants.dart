@@ -16,4 +16,14 @@ class MediaPlaybackConstants {
 
   static const String lyricsErrorFetchFailed = 'fetch_failed';
   static const String lyricsErrorEmpty = 'empty';
+
+  /// Network video cache configuration (bytes)
+  static const int videoMaxCacheSizeBytes = 100 * 1024 * 1024;
+  static const int videoMaxCacheFileSizeBytes = 20 * 1024 * 1024;
+
+  /// Network video buffering configuration (milliseconds)
+  static const int videoMinBufferMs = 15000;
+  static const int videoMaxBufferMs = 60000;
+  static const int videoBufferForPlaybackMs = 2000;
+  static const int videoBufferForPlaybackAfterRebufferMs = 4000;
 }
