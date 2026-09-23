@@ -93,22 +93,33 @@ class MediaAssetTile extends StatelessWidget {
     );
   }
 
+  String _typeLabel() {
+    if (asset.isAudioMedia) return AppLocales.media.typeAudio.tr;
+    if (asset.isVideoMedia) return AppLocales.media.typeVideo.tr;
+    if (asset.isImageMedia) return AppLocales.media.typeImage.tr;
+    if (asset.isAttachment) return AppLocales.media.typeAttachment.tr;
+    return '';
+  }
+
   Widget? _subtitle(BuildContext context) {
     final typo = context.typo;
     final colors = context.colors;
     final duration = asset.displayDuration;
     final size = downloadEntry?.formattedSize ?? asset.displaySize;
+    final typeLabel = _typeLabel();
 
     String? text;
     switch (downloadState) {
       case EMediaDownloadState.none:
         final parts = [
+          if (typeLabel.isNotEmpty) typeLabel,
           if (duration.isNotEmpty) duration,
           if (size.isNotEmpty) size,
         ];
         if (parts.isNotEmpty) text = parts.join(' · ');
       case EMediaDownloadState.queued:
         final parts = [
+          if (typeLabel.isNotEmpty) typeLabel,
           if (duration.isNotEmpty) duration,
           if (size.isNotEmpty) size,
           AppLocales.media.downloadQueued.tr,
@@ -134,6 +145,7 @@ class MediaAssetTile extends StatelessWidget {
         text = AppLocales.media.processing.tr;
       case EMediaDownloadState.ready:
         final parts = [
+          if (typeLabel.isNotEmpty) typeLabel,
           if (duration.isNotEmpty) duration,
           if (size.isNotEmpty) size,
           AppLocales.media.downloaded.tr,

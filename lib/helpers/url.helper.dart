@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:rexone_mobile/config/app.config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -19,6 +20,8 @@ class UrlHelper {
   /// [isAndroid] can be provided to override platform detection for testing.
   static String normalize(String url, {bool? isAndroid}) {
     if (url.isEmpty) return url;
+
+    debugPrint('normalize: $url');
 
     final uri = Uri.tryParse(url);
     if (uri == null || !uri.hasScheme) return url;
@@ -41,6 +44,7 @@ class UrlHelper {
       return url;
     }
 
+ 
     String targetHost = '10.0.2.2';
     try {
       if (dotenv.isInitialized) {

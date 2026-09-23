@@ -232,9 +232,9 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Media playback
 
 - Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
-- **Playlist**: Single mixed list from `GET /v1/assets` (no type filter); playable items (`attributes.format` `audio` / `video`) shown together. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
-- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]`. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`.
-- **Mixed queue**: Next/previous follow the full playlist order via `AudioPlayerService.playQueueAt()` — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
+- **Playlist**: Mixed library from `GET /v1/assets` (no type filter) showing audio, video, avatar/image, and attachment rows (subtitle/thumbnail sidecars excluded). Tap plays A/V, previews images, or opens attachments externally. Header **Play All** starts the first playable item; **Download all missing** bulk-enqueues offline saves. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
+- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]` for audio/video. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`. Image/attachment downloads use the list/signed `asset.url`.
+- **Mixed queue**: Next/previous follow the playlist via `AudioPlayerService.playQueueAt()`, skipping non-playable rows — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
 - **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
 - **Video**: Inline 16:9 player via `better_player`, with built-in playback-speed controls and closed captions from the same subtitle tracks (prefetched SRT URLs into better_player’s subtitle menu).
 - **Offline downloads & Drift SQLite**: Per-item download from the playlist stores media and sidecars in the app sandbox (`ApplicationSupport/media_offline/`). Fully backed by a local **Drift (SQLite)** database (`rexone_offline`, documented in [`docs/CLIENT_DATABASE.md`](docs/CLIENT_DATABASE.md)) strictly mirroring the backend polymorphic `assets` schema.
@@ -569,12 +569,12 @@ rexone_mobile/
 │   │   ├── profile/          # Account profile, avatar upload
 │   │   ├── setting/          # Theme, language, and account row
 │   │   ├── ai/               # Assistant chat, rooms, history
-│   │   └── media/            # Audio & video playback (shared + audio/ + video/)
+│   │   └── media/            # Mixed media library (shared + audio/ + video/)
 │   │       ├── components/   # TrackArtwork, playlist tile/header/empty/load-more
-│   │       ├── controllers/  # MediaPlaylistController (mixed audio/video playlist)
+│   │       ├── controllers/  # MediaPlaylistController (library + bulk download)
 │   │       ├── pages/        # MediaPlaylistPage
 │   │       ├── audio/        # Full player, mini player, synced lyrics
-│   │       └── video/        # Inline player, settings & subtitle sheets
+│   │       └── video/        # Inline better_player + viewport
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/

@@ -330,6 +330,17 @@ class _MediaLocales {
   final playlistSubtitle = 'media.playlist_subtitle';
   final playlistEmpty = 'media.playlist_empty';
   final playAll = 'media.play_all';
+  final downloadAll = 'media.download_all';
+  final downloadAllStarted = 'media.download_all_started';
+  final downloadAllNone = 'media.download_all_none';
+  final typeAudio = 'media.type_audio';
+  final typeVideo = 'media.type_video';
+  final typeImage = 'media.type_image';
+  final typeAttachment = 'media.type_attachment';
+  final noPlayableMedia = 'media.no_playable_media';
+  final openUnsupported = 'media.open_unsupported';
+  final openFailed = 'media.open_failed';
+  final openNoViewer = 'media.open_no_viewer';
   final download = 'media.download';
   final downloading = 'media.downloading';
   final downloadProgress = 'media.download_progress';

@@ -4,7 +4,7 @@ import 'package:rexone_mobile/design/design.dart';
 
 import 'track_artwork.dart';
 
-/// Hero artwork, title, subtitle, and play-all button for playlist pages.
+/// Hero artwork, title, subtitle, play-all and download-all for the media library.
 class MediaPlaylistHeader extends StatelessWidget {
   const MediaPlaylistHeader({
     super.key,
@@ -12,18 +12,26 @@ class MediaPlaylistHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.playAllLabel,
+    required this.downloadAllLabel,
     required this.canPlay,
+    required this.canDownloadAll,
     required this.isPlayAllLoading,
+    required this.isDownloadAllLoading,
     required this.onPlayAll,
+    required this.onDownloadAll,
   });
 
   final String thumbnailUrl;
   final String title;
   final String subtitle;
   final String playAllLabel;
+  final String downloadAllLabel;
   final bool canPlay;
+  final bool canDownloadAll;
   final bool isPlayAllLoading;
+  final bool isDownloadAllLoading;
   final VoidCallback? onPlayAll;
+  final VoidCallback? onDownloadAll;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +65,14 @@ class MediaPlaylistHeader extends StatelessWidget {
           text: playAllLabel,
           icon: isPlayAllLoading ? null : Design.icons.play,
           onPressed: canPlay ? onPlayAll : null,
+          isExpanded: true,
+        ),
+        SizedBox(height: Design.spacing.sm),
+        AppButton(
+          type: EButtonType.secondary,
+          text: downloadAllLabel,
+          icon: isDownloadAllLoading ? null : Design.icons.download,
+          onPressed: canDownloadAll ? onDownloadAll : null,
           isExpanded: true,
         ),
         SizedBox(height: Design.spacing.xxl),

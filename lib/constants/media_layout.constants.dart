@@ -20,4 +20,7 @@ class MediaLayoutConstants {
 
   /// Max height fraction for video settings / subtitle bottom sheets.
   static const double videoSheetMaxHeightFraction = 0.55;
+
+  /// Max height fraction for in-app text attachment preview dialog.
+  static const double textPreviewMaxHeightFraction = 0.75;
 }

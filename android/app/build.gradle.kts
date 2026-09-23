@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     // AGP 9.0+ has built-in Kotlin compilation. The Flutter Gradle Plugin must be applied after the Android plugin.
     id("dev.flutter.flutter-gradle-plugin")
     // Firebase
@@ -31,8 +32,9 @@ dependencies {
 
 android {
     namespace = "com.rex9.rexone" // $APPLICATION_ID
+    // permission_handler_android requires API 37. Platform is installed
+    // (or symlinked) as android-37.
     compileSdk = 37
-    // compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -41,10 +43,6 @@ android {
 
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
     }
 
     defaultConfig {
@@ -65,6 +63,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
 }
 

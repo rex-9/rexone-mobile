@@ -4,7 +4,12 @@
 class MediaDownloadConstants {
   const MediaDownloadConstants._();
 
+  /// Encrypted audio/video (+ decrypted cache + download temp).
   static const offlineRootDirName = 'media_offline';
+
+  /// Plaintext images, attachments, and other non-A/V offline files.
+  static const plaintextRootDirName = 'hysanejunior';
+
   static const decryptedCacheDirName = 'decrypted_cache';
   static const mediaFileSuffix = '.enc';
   static const subtitleFileSuffix = '.sub.enc';

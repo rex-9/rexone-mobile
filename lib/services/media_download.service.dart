@@ -35,14 +35,16 @@ class _PendingDownloadPlan {
   });
 }
 
-/// Encrypted offline media downloads with background transfer support.
+/// Offline media downloads: AES-GCM for audio/video; plaintext for images/attachments.
 class MediaDownloadService extends GetxService {
   late final StorageService _storage;
   late final MediaService _media;
   late final MediaDownloadNotificationService _notifications;
   AppDatabase? get _db =>
       Get.isRegistered<AppDatabase>() ? Get.find<AppDatabase>() : null;
+  late Directory _supportRoot;
   late Directory _offlineRoot;
+  late Directory _plaintextRoot;
   late Directory _decryptedCacheDir;
   late Directory _tempDir;
 
@@ -187,7 +189,8 @@ class MediaDownloadService extends GetxService {
     if (asset.id.isEmpty) {
       throw StateError('Invalid asset id');
     }
-    if (AppConfig.offlineEncryptionKey.isEmpty) {
+    final encrypt = _shouldEncryptAsset(asset);
+    if (encrypt && AppConfig.offlineEncryptionKey.isEmpty) {
       throw StateError('MEDIA_OFFLINE_ENCRYPTION_KEY is not configured');
     }
     if (isDownloaded(asset.id) || isBusy(asset.id) || isPaused(asset.id)) {
@@ -206,6 +209,7 @@ class MediaDownloadService extends GetxService {
         title: asset.displayTitle,
         mediaFormat: asset.format,
         sizeBytes: asset.sizeBytes,
+        isEncrypted: encrypt,
       ),
     );
 
@@ -234,22 +238,14 @@ class MediaDownloadService extends GetxService {
     }
 
     try {
-      final playback = await _media.getAssetPlayback(asset.id);
-      if (!playback.success || playback.data == null) {
-        throw StateError(playback.message);
-      }
-
-      final url = playback.data!.delivery.url;
-      if (url.isEmpty) {
-        throw StateError('Playback URL is empty');
-      }
+      final resolved = await _resolveDownloadSource(asset);
 
       _pendingPlans[asset.id] = _PendingDownloadPlan(
         assetId: asset.id,
         asset: asset,
         title: asset.displayTitle,
         mediaFormat: asset.format,
-        subtitles: playback.data!.media.playableSubtitles,
+        subtitles: resolved.subtitles,
         thumbnail: asset.thumbnail,
       );
       _completedSubtitleIds[asset.id] = {};
@@ -278,7 +274,7 @@ class MediaDownloadService extends GetxService {
 
       final task = _buildMediaTask(
         assetId: asset.id,
-        url: url,
+        url: resolved.url,
         title: asset.displayTitle,
         mediaFormat: asset.format,
       );
@@ -290,6 +286,63 @@ class MediaDownloadService extends GetxService {
       await _failDownload(asset.id, error.toString());
       rethrow;
     }
+  }
+
+  /// Enqueues every downloadable asset that is not already ready/in-flight.
+  /// Respects [MediaDownloadConstants.maxConcurrentDownloads] by waiting for slots.
+  Future<int> downloadMissing(List<AssetModel> targets) async {
+    var started = 0;
+    for (final asset in targets) {
+      if (!asset.isDownloadableAsset) continue;
+      final state = stateFor(asset.id);
+      if (state == EMediaDownloadState.ready ||
+          state == EMediaDownloadState.queued ||
+          state == EMediaDownloadState.downloading ||
+          state == EMediaDownloadState.processing ||
+          state == EMediaDownloadState.paused) {
+        continue;
+      }
+
+      while (_activeAssetIds.length >=
+          MediaDownloadConstants.maxConcurrentDownloads) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      }
+
+      try {
+        await downloadAsset(asset);
+        started++;
+      } catch (error) {
+        debugPrint(
+          '❌ [MediaDownloadService] Bulk download skip ${asset.id}: $error',
+        );
+      }
+    }
+    return started;
+  }
+
+  Future<({String url, List<ChildAssetModel> subtitles})> _resolveDownloadSource(
+    AssetModel asset,
+  ) async {
+    if (asset.isPlayableMedia) {
+      final playback = await _media.getAssetPlayback(asset.id);
+      if (!playback.success || playback.data == null) {
+        throw StateError(playback.message);
+      }
+      final url = playback.data!.delivery.url;
+      if (url.isEmpty) {
+        throw StateError('Playback URL is empty');
+      }
+      return (
+        url: url,
+        subtitles: playback.data!.media.playableSubtitles,
+      );
+    }
+
+    final url = asset.url;
+    if (url.isEmpty) {
+      throw StateError('Asset URL is empty');
+    }
+    return (url: url, subtitles: const <ChildAssetModel>[]);
   }
 
   /// Encrypts plaintext bytes into the offline sandbox and marks the entry ready.
@@ -324,7 +377,7 @@ class MediaDownloadService extends GetxService {
         plaintext: plaintext,
         encryptionKey: key,
       );
-      final mediaFile = _mediaFile(assetId);
+      final mediaFile = _encryptedMediaFile(assetId);
       await mediaFile.writeAsBytes(encrypted, flush: true);
 
       final subtitlePaths = <String, String>{};
@@ -333,7 +386,7 @@ class MediaDownloadService extends GetxService {
           plaintext: item.value,
           encryptionKey: key,
         );
-        final subtitleFile = _subtitleFile(assetId, item.key);
+        final subtitleFile = _encryptedSubtitleFile(assetId, item.key);
         await subtitleFile.writeAsBytes(encryptedSubtitle, flush: true);
         subtitlePaths[item.key] = subtitleFileName(assetId, item.key);
       }
@@ -408,12 +461,12 @@ class MediaDownloadService extends GetxService {
 
     final entry = entries[assetId];
     if (entry != null) {
-      final media = _mediaFile(assetId);
+      final media = _mediaFileForEntry(entry);
       if (await media.exists()) {
         await media.delete();
       }
-      for (final subtitleId in entry.subtitlePaths.keys) {
-        final subtitle = _subtitleFile(assetId, subtitleId);
+      for (final relative in entry.subtitlePaths.values) {
+        final subtitle = _fileFromRelativePath(relative);
         if (await subtitle.exists()) {
           await subtitle.delete();
         }
@@ -423,6 +476,11 @@ class MediaDownloadService extends GetxService {
         if (await thumb.exists()) {
           await thumb.delete();
         }
+      }
+      // Legacy plaintext stored under media_offline with .enc name.
+      final legacy = File('${_offlineRoot.path}/${mediaFileName(assetId)}');
+      if (legacy.path != media.path && await legacy.exists()) {
+        await legacy.delete();
       }
     }
 
@@ -442,8 +500,11 @@ class MediaDownloadService extends GetxService {
     await _ensureDirectories();
     if (await _offlineRoot.exists()) {
       await _offlineRoot.delete(recursive: true);
-      await _ensureDirectories();
     }
+    if (await _plaintextRoot.exists()) {
+      await _plaintextRoot.delete(recursive: true);
+    }
+    await _ensureDirectories();
 
     entries.clear();
     entries.refresh();
@@ -456,17 +517,22 @@ class MediaDownloadService extends GetxService {
   Future<int> getOccupiedDiskSizeBytes(String assetId) async {
     int total = 0;
     try {
-      final media = _mediaFile(assetId);
-      if (await media.exists()) {
-        total += await media.length();
-      }
       final entry = entries[assetId];
       if (entry != null) {
-        for (final subtitleId in entry.subtitlePaths.keys) {
-          final sub = _subtitleFile(assetId, subtitleId);
+        final media = _mediaFileForEntry(entry);
+        if (await media.exists()) {
+          total += await media.length();
+        }
+        for (final relative in entry.subtitlePaths.values) {
+          final sub = _fileFromRelativePath(relative);
           if (await sub.exists()) {
             total += await sub.length();
           }
+        }
+      } else {
+        final media = _encryptedMediaFile(assetId);
+        if (await media.exists()) {
+          total += await media.length();
         }
       }
       for (final ext in ['jpg', 'png', 'webp', 'jpeg']) {
@@ -512,10 +578,9 @@ class MediaDownloadService extends GetxService {
     final entry = entries[assetId];
     if (entry == null || !entry.isReady) return null;
 
-    final mediaFile = _mediaFile(assetId);
+    final mediaFile = _mediaFileForEntry(entry);
     if (!await mediaFile.exists()) return null;
 
-    // Direct sandboxed download: return path directly without duplicate cache copy
     if (!entry.isEncrypted) {
       return mediaFile.path;
     }
@@ -537,6 +602,62 @@ class MediaDownloadService extends GetxService {
     return cacheFile.path;
   }
 
+  /// Path suitable for an external viewer (correct extension; FileProvider-friendly).
+  ///
+  /// Plaintext downloads under [MediaDownloadConstants.plaintextRootDirName] are
+  /// returned as-is when the extension already matches. Encrypted A/V is decrypted
+  /// to cache when needed for non-player open flows.
+  Future<String?> resolveOpenableMediaPath(
+    String assetId, {
+    String? fileExtension,
+  }) async {
+    final entry = entries[assetId];
+    if (entry == null || !entry.isReady) return null;
+
+    final ext = _sanitizeFileExtension(fileExtension);
+    if (!entry.isEncrypted) {
+      final mediaFile = _mediaFileForEntry(entry);
+      if (!await mediaFile.exists()) return null;
+      if (ext == null || mediaFile.path.toLowerCase().endsWith('.$ext')) {
+        return mediaFile.path;
+      }
+    }
+
+    final sourcePath = await resolveDecryptedMediaPath(assetId);
+    if (sourcePath == null || sourcePath.isEmpty) return null;
+
+    final openExt = ext ?? 'bin';
+    final openable = File('${_decryptedCacheDir.path}/$assetId.$openExt');
+    final source = File(sourcePath);
+
+    if (source.path == openable.path) return openable.path;
+
+    final sourceModified = await source.lastModified();
+    if (await openable.exists()) {
+      final openableModified = await openable.lastModified();
+      if (!openableModified.isBefore(sourceModified)) {
+        return openable.path;
+      }
+    }
+
+    await _ensureDirectories();
+    await source.copy(openable.path);
+    return openable.path;
+  }
+
+  String? _sanitizeFileExtension(String? raw) {
+    if (raw == null) return null;
+    var value = raw.trim().toLowerCase();
+    if (value.startsWith('.')) value = value.substring(1);
+    if (value.isEmpty ||
+        value == 'enc' ||
+        value.contains('/') ||
+        value.contains('\\')) {
+      return null;
+    }
+    return value;
+  }
+
   Future<String?> resolveDecryptedSubtitlePath(
     String assetId,
     String subtitleId,
@@ -547,10 +668,9 @@ class MediaDownloadService extends GetxService {
     final relativePath = entry.subtitlePaths[subtitleId];
     if (relativePath == null || relativePath.isEmpty) return null;
 
-    final file = File('${_offlineRoot.path}/$relativePath');
+    final file = _fileFromRelativePath(relativePath);
     if (!await file.exists()) return null;
 
-    // Direct sandboxed download: return path directly
     if (!entry.isEncrypted) {
       return file.path;
     }
@@ -626,8 +746,12 @@ class MediaDownloadService extends GetxService {
 
   Future<void> _ensureDirectories() async {
     final supportDir = await getApplicationSupportDirectory();
+    _supportRoot = supportDir;
     _offlineRoot = Directory(
       '${supportDir.path}/${MediaDownloadConstants.offlineRootDirName}',
+    );
+    _plaintextRoot = Directory(
+      '${supportDir.path}/${MediaDownloadConstants.plaintextRootDirName}',
     );
     _decryptedCacheDir = Directory(
       '${_offlineRoot.path}/${MediaDownloadConstants.decryptedCacheDirName}',
@@ -635,7 +759,12 @@ class MediaDownloadService extends GetxService {
     _tempDir = Directory(
       '${_offlineRoot.path}/${MediaDownloadConstants.tempDirName}',
     );
-    for (final dir in [_offlineRoot, _decryptedCacheDir, _tempDir]) {
+    for (final dir in [
+      _offlineRoot,
+      _plaintextRoot,
+      _decryptedCacheDir,
+      _tempDir,
+    ]) {
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
@@ -648,6 +777,7 @@ class MediaDownloadService extends GetxService {
       try {
         final localAssets = await db.getAllLocalAssets();
         if (localAssets.isNotEmpty) {
+          final storedIndex = _storage.getMediaDownloadsIndex() ?? const {};
           final loaded = <String, MediaDownloadEntry>{};
           for (final a in localAssets) {
             final state = EMediaDownloadState.fromStorage(a.downloadState);
@@ -655,18 +785,45 @@ class MediaDownloadService extends GetxService {
             final subtitlePaths = <String, String>{};
             for (final c in children) {
               if (c.isDownloaded && c.localFilePath != null) {
-                subtitlePaths[c.id] = c.localFilePath!;
+                final path = c.localFilePath!;
+                subtitlePaths[c.id] = path.contains('/')
+                    ? path.split('/').last
+                    : path;
               }
             }
+            final mediaName = a.localFilePath != null
+                ? (a.localFilePath!.contains('/')
+                    ? a.localFilePath!.split('/').last
+                    : a.localFilePath!)
+                : '';
+
+            final stored = storedIndex[a.id];
+            if (stored is Map) {
+              final fromStorage = MediaDownloadEntry.fromJson(
+                Map<String, dynamic>.from(stored),
+              );
+              loaded[a.id] = fromStorage.copyWith(
+                state: state,
+                progress: a.downloadProgress,
+                downloadedAt: a.downloadedAt ?? fromStorage.downloadedAt,
+                title: fromStorage.title ?? a.title ?? a.name,
+                mediaFormat: fromStorage.mediaFormat ?? a.format,
+                mediaPath: fromStorage.mediaPath.isNotEmpty
+                    ? fromStorage.mediaPath
+                    : mediaName,
+                subtitlePaths: fromStorage.subtitlePaths.isNotEmpty
+                    ? fromStorage.subtitlePaths
+                    : subtitlePaths,
+              );
+              continue;
+            }
+
+            // Legacy Drift-only rows: treat as plaintext (pre-encryption finalize).
             loaded[a.id] = MediaDownloadEntry(
               assetId: a.id,
               state: state,
               progress: a.downloadProgress,
-              mediaPath: a.localFilePath != null
-                  ? (a.localFilePath!.contains('/')
-                      ? a.localFilePath!.split('/').last
-                      : a.localFilePath!)
-                  : '',
+              mediaPath: mediaName,
               subtitlePaths: subtitlePaths,
               downloadedAt: a.downloadedAt,
               errorMessage: a.errorMessage,
@@ -942,17 +1099,54 @@ class MediaDownloadService extends GetxService {
         throw StateError('Downloaded media file is missing');
       }
 
-      final mediaFile = _mediaFile(assetId);
-      await _moveFile(mediaTemp, mediaFile);
+      final encrypt = _shouldEncryptPlan(plan, entry);
+      final plaintextExt = plan?.asset?.resolvedFileExtension ?? 'bin';
+
+      late final File mediaFile;
+      late final String mediaPathName;
+
+      if (encrypt) {
+        if (AppConfig.offlineEncryptionKey.isEmpty) {
+          throw StateError('MEDIA_OFFLINE_ENCRYPTION_KEY is not configured');
+        }
+        final encrypted = await MediaEncryptionHelper.encrypt(
+          plaintext: await mediaTemp.readAsBytes(),
+          encryptionKey: AppConfig.offlineEncryptionKey,
+        );
+        mediaFile = _encryptedMediaFile(assetId);
+        await mediaFile.writeAsBytes(encrypted, flush: true);
+        await mediaTemp.delete();
+        mediaPathName = mediaFileName(assetId);
+      } else {
+        mediaFile = _plaintextMediaFile(assetId, plaintextExt);
+        await _moveFile(mediaTemp, mediaFile);
+        mediaPathName = plaintextMediaFileName(assetId, plaintextExt);
+      }
 
       final subtitlePaths = <String, String>{};
       for (final subtitle in plan?.subtitles ?? const <ChildAssetModel>[]) {
         if (subtitle.id.isEmpty) continue;
         final tempFile = _subtitleTempFile(assetId, subtitle.id);
-        if (await tempFile.exists()) {
-          final targetFile = _subtitleFile(assetId, subtitle.id);
-          await _moveFile(tempFile, targetFile);
+        if (!await tempFile.exists()) continue;
+
+        if (encrypt) {
+          final encryptedSubtitle = await MediaEncryptionHelper.encrypt(
+            plaintext: await tempFile.readAsBytes(),
+            encryptionKey: AppConfig.offlineEncryptionKey,
+          );
+          final targetFile = _encryptedSubtitleFile(assetId, subtitle.id);
+          await targetFile.writeAsBytes(encryptedSubtitle, flush: true);
+          await tempFile.delete();
           subtitlePaths[subtitle.id] = subtitleFileName(assetId, subtitle.id);
+          await _db?.markChildAssetDownloaded(
+            childId: subtitle.id,
+            localFilePath: targetFile.path,
+          );
+        } else {
+          final targetFile = _plaintextSubtitleFile(assetId, subtitle.id);
+          await _moveFile(tempFile, targetFile);
+          subtitlePaths[subtitle.id] =
+              plaintextSubtitleFileName(assetId, subtitle.id);
           await _db?.markChildAssetDownloaded(
             childId: subtitle.id,
             localFilePath: targetFile.path,
@@ -970,8 +1164,8 @@ class MediaDownloadService extends GetxService {
       if (await mediaFile.exists()) {
         diskSizeBytes += await mediaFile.length();
       }
-      for (final subtitleId in subtitlePaths.keys) {
-        final subFile = _subtitleFile(assetId, subtitleId);
+      for (final relative in subtitlePaths.values) {
+        final subFile = _fileFromRelativePath(relative);
         if (await subFile.exists()) {
           diskSizeBytes += await subFile.length();
         }
@@ -991,12 +1185,12 @@ class MediaDownloadService extends GetxService {
         (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
           state: EMediaDownloadState.ready,
           progress: 1,
-          mediaPath: mediaFileName(assetId),
+          mediaPath: mediaPathName,
           subtitlePaths: subtitlePaths,
           downloadedAt: now,
           title: plan?.title ?? entry.title,
           mediaFormat: plan?.mediaFormat ?? entry.mediaFormat,
-          isEncrypted: false,
+          isEncrypted: encrypt,
           diskSizeBytes: diskSizeBytes > 0 ? diskSizeBytes : null,
           sizeBytes: effectiveSize,
           downloadedBytes: effectiveSize,
@@ -1221,11 +1415,69 @@ class MediaDownloadService extends GetxService {
   String subtitleFileName(String assetId, String subtitleId) =>
       '${assetId}_$subtitleId${MediaDownloadConstants.subtitleFileSuffix}';
 
-  File _mediaFile(String assetId) =>
+  String plaintextMediaFileName(String assetId, String extension) =>
+      '$assetId.$extension';
+
+  String plaintextSubtitleFileName(String assetId, String subtitleId) =>
+      '${assetId}_$subtitleId.srt';
+
+  bool _shouldEncryptAsset(AssetModel asset) => asset.isPlayableMedia;
+
+  bool _shouldEncryptPlan(
+    _PendingDownloadPlan? plan,
+    MediaDownloadEntry entry,
+  ) {
+    final asset = plan?.asset;
+    if (asset != null) return _shouldEncryptAsset(asset);
+    return _isPlayableFormat(plan?.mediaFormat ?? entry.mediaFormat);
+  }
+
+  bool _isPlayableFormat(String? formatOrType) {
+    final value = formatOrType?.trim().toLowerCase() ?? '';
+    return value == AssetKeys.formatAudio ||
+        value == AssetKeys.formatVideo ||
+        value == AssetKeys.typeAudio ||
+        value == AssetKeys.typeVideo;
+  }
+
+  File _encryptedMediaFile(String assetId) =>
       File('${_offlineRoot.path}/${mediaFileName(assetId)}');
 
-  File _subtitleFile(String assetId, String subtitleId) =>
+  File _encryptedSubtitleFile(String assetId, String subtitleId) =>
       File('${_offlineRoot.path}/${subtitleFileName(assetId, subtitleId)}');
+
+  File _plaintextMediaFile(String assetId, String extension) =>
+      File('${_plaintextRoot.path}/${plaintextMediaFileName(assetId, extension)}');
+
+  File _plaintextSubtitleFile(String assetId, String subtitleId) => File(
+        '${_plaintextRoot.path}/${plaintextSubtitleFileName(assetId, subtitleId)}',
+      );
+
+  File _mediaFileForEntry(MediaDownloadEntry entry) {
+    final name = entry.mediaPath.isNotEmpty
+        ? entry.mediaPath
+        : mediaFileName(entry.assetId);
+    if (name.contains('/') || name.contains('\\')) {
+      return File('${_supportRoot.path}/$name');
+    }
+    if (entry.isEncrypted) {
+      return File('${_offlineRoot.path}/$name');
+    }
+    final plain = File('${_plaintextRoot.path}/$name');
+    if (plain.existsSync()) return plain;
+    // Legacy unencrypted files lived under media_offline as *.enc
+    return File('${_offlineRoot.path}/$name');
+  }
+
+  File _fileFromRelativePath(String relativePath) {
+    if (relativePath.contains('/') || relativePath.contains('\\')) {
+      if (relativePath.startsWith('/')) return File(relativePath);
+      return File('${_supportRoot.path}/$relativePath');
+    }
+    final plain = File('${_plaintextRoot.path}/$relativePath');
+    if (plain.existsSync()) return plain;
+    return File('${_offlineRoot.path}/$relativePath');
+  }
 
   File _mediaTempFile(String assetId) =>
       File('${_tempDir.path}/$assetId${MediaDownloadConstants.tempMediaSuffix}');
@@ -1284,17 +1536,17 @@ class MediaDownloadService extends GetxService {
   }
 
   Future<void> _clearDecryptedCacheFor(String assetId) async {
-    final mediaCache = _decryptedMediaCacheFile(assetId);
-    if (await mediaCache.exists()) {
-      await mediaCache.delete();
-    }
-
-    final entry = entries[assetId];
-    if (entry == null) return;
-    for (final subtitleId in entry.subtitlePaths.keys) {
-      final subtitleCache = _decryptedSubtitleCacheFile(assetId, subtitleId);
-      if (await subtitleCache.exists()) {
-        await subtitleCache.delete();
+    await _ensureDirectories();
+    final cacheDir = _decryptedCacheDir;
+    if (await cacheDir.exists()) {
+      await for (final entity in cacheDir.list()) {
+        if (entity is! File) continue;
+        final name = entity.uri.pathSegments.last;
+        if (name == assetId ||
+            name.startsWith('$assetId.') ||
+            name.startsWith('${assetId}_')) {
+          await entity.delete();
+        }
       }
     }
   }

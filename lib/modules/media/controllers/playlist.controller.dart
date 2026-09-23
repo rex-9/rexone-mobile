@@ -1,19 +1,22 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/data/local/local.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/app.routes.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/network.service.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../media.dart';
 
-/// Paginated mixed audio/video playlist from `GET /v1/assets` (no type filter).
+/// Paginated mixed asset library from `GET /v1/assets` (audio, video, image, attachment).
 class MediaPlaylistController extends GetxController {
   late final MediaService _media;
   late final MediaDownloadService _downloads;
@@ -29,6 +32,7 @@ class MediaPlaylistController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = false.obs;
+  final RxBool isBulkDownloading = false.obs;
   final Rxn<PaginationMeta> pagination = Rxn<PaginationMeta>();
 
   static const int _pageLimit = MediaLayoutConstants.playlistPageLimit;
@@ -45,6 +49,15 @@ class MediaPlaylistController extends GetxController {
 
   List<AssetModel> get _videoAssets =>
       assets.where((item) => item.isVideoMedia).toList();
+
+  bool get hasMissingDownloads => assets.any((asset) {
+        if (!asset.isDownloadableAsset) return false;
+        final state = downloadStateFor(asset);
+        return state != EMediaDownloadState.ready &&
+            state != EMediaDownloadState.queued &&
+            state != EMediaDownloadState.downloading &&
+            state != EMediaDownloadState.processing;
+      });
 
   AssetModel? get heroAsset {
     if (_audioPlayer.hasSession.value) {
@@ -125,6 +138,28 @@ class MediaPlaylistController extends GetxController {
         state == EMediaDownloadState.downloading ||
         state == EMediaDownloadState.paused) {
       await _cancelDownload(asset);
+    }
+  }
+
+  Future<void> downloadAllMissing() async {
+    if (isBulkDownloading.value || !hasMissingDownloads) return;
+    isBulkDownloading.value = true;
+    try {
+      final started = await _downloads.downloadMissing(assets.toList());
+      if (started == 0) {
+        AppSnackbar.info(AppLocales.media.downloadAllNone.tr);
+      } else {
+        AppSnackbar.success(
+          AppLocales.media.downloadAllStarted.trParams({
+            'count': '$started',
+          }),
+        );
+      }
+    } catch (error) {
+      debugPrint('❌ [MediaPlaylistController] Bulk download error: $error');
+      AppSnackbar.error(AppLocales.media.downloadFailed.tr);
+    } finally {
+      isBulkDownloading.value = false;
     }
   }
 
@@ -285,7 +320,7 @@ class MediaPlaylistController extends GetxController {
         ..clear()
         ..addAll(models);
       hasMore.value = false;
-      _applyPlayableFilter();
+      _applyLibraryFilter();
     } catch (e) {
       debugPrint('⚠️ [MediaPlaylistController] Failed to load offline assets: $e');
     }
@@ -328,7 +363,7 @@ class MediaPlaylistController extends GetxController {
     pagination.value = res.pagination;
     hasMore.value = res.pagination?.hasNextPage ?? false;
     _currentPage = page;
-    _applyPlayableFilter();
+    _applyLibraryFilter();
   }
 
   Future<void> _prefetchUntilScrollable() async {
@@ -343,8 +378,8 @@ class MediaPlaylistController extends GetxController {
     }
   }
 
-  void _applyPlayableFilter() {
-    assets.assignAll(_allFetched.where((item) => item.isPlayableMedia));
+  void _applyLibraryFilter() {
+    assets.assignAll(_allFetched.where((item) => item.isLibraryAsset));
     unawaited(_syncPlayerAssets());
   }
 
@@ -355,14 +390,219 @@ class MediaPlaylistController extends GetxController {
   }
 
   Future<void> playAll() async {
-    if (assets.isEmpty) return;
-    await playAt(0);
+    final index = assets.indexWhere((item) => item.isPlayableMedia);
+    if (index < 0) {
+      AppSnackbar.info(AppLocales.media.noPlayableMedia.tr);
+      return;
+    }
+    await playAt(index);
+  }
+
+  Future<void> onAssetTap(int index) async {
+    if (index < 0 || index >= assets.length) return;
+    final asset = assets[index];
+    if (asset.isPlayableMedia) {
+      await playAt(index);
+      return;
+    }
+    await openNonPlayableAsset(asset);
+  }
+
+  Future<void> openNonPlayableAsset(AssetModel asset) async {
+    if (asset.isImageMedia) {
+      await _previewImage(asset);
+      return;
+    }
+    if (asset.isAttachment && asset.isTextAttachment) {
+      await _previewText(asset);
+      return;
+    }
+    if (asset.isAttachment) {
+      await _openExternal(asset);
+      return;
+    }
+    AppSnackbar.info(AppLocales.media.openUnsupported.tr);
+  }
+
+  Future<void> _previewImage(AssetModel asset) async {
+    final context = Get.context;
+    if (context == null || !context.mounted) return;
+    final dialogBg = context.colors.surface.withValues(alpha: 0);
+
+    var imageUrl = asset.displayThumbnailUrl;
+    if (imageUrl.isEmpty) {
+      imageUrl = asset.url;
+    }
+    if (_downloads.isDownloaded(asset.id)) {
+      final local = await _downloads.resolveDecryptedMediaPath(asset.id);
+      if (local != null && local.isNotEmpty) {
+        imageUrl = Uri.file(local).toString();
+      }
+    }
+    if (imageUrl.isEmpty) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+      return;
+    }
+
+    if (Get.context == null || !(Get.context?.mounted ?? false)) return;
+
+    await Get.dialog<void>(
+      Dialog(
+        backgroundColor: dialogBg,
+        insetPadding: Design.spacing.padding(Design.spacing.screenPadding),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              child: AppImage.network(
+                imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+            AppButton(
+              type: EButtonType.icon,
+              icon: Design.icons.close,
+              onPressed: () => Get.back(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _previewText(AssetModel asset) async {
+    var sourceUrl = asset.url;
+    if (_downloads.isDownloaded(asset.id)) {
+      final local = await _downloads.resolveDecryptedMediaPath(asset.id);
+      if (local != null && local.isNotEmpty) {
+        sourceUrl = Uri.file(local).toString();
+      }
+    }
+    if (sourceUrl.isEmpty) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+      return;
+    }
+
+    final body = await _media.fetchTextBody(sourceUrl);
+    if (body == null || body.trim().isEmpty) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+      return;
+    }
+
+    final context = Get.context;
+    if (context == null || !context.mounted) return;
+    final colors = context.colors;
+    final typo = context.typo;
+
+    await Get.dialog<void>(
+      Dialog(
+        backgroundColor: colors.surface,
+        insetPadding: Design.spacing.padding(Design.spacing.screenPadding),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height *
+                MediaLayoutConstants.textPreviewMaxHeightFraction,
+            maxWidth: MediaQuery.sizeOf(context).width,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: Design.spacing.paddingSymmetric(
+                  h: Design.spacing.md,
+                  v: Design.spacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        asset.displayTitle,
+                        style: typo.headline3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    AppButton(
+                      type: EButtonType.icon,
+                      icon: Design.icons.close,
+                      onPressed: () => Get.back(),
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: Design.spacing.padding(Design.spacing.md),
+                  child: SelectableText(
+                    body,
+                    style: typo.bodyMedium.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openExternal(AssetModel asset) async {
+    if (_downloads.isDownloaded(asset.id)) {
+      final path = await _downloads.resolveOpenableMediaPath(
+        asset.id,
+        fileExtension: asset.resolvedFileExtension,
+      );
+      if (path == null || path.isEmpty) {
+        AppSnackbar.error(AppLocales.media.openFailed.tr);
+        return;
+      }
+
+      final result = await OpenFilex.open(path);
+      if (result.type != ResultType.done) {
+        AppSnackbar.error(
+          result.message.isNotEmpty
+              ? result.message
+              : AppLocales.media.openNoViewer.tr,
+        );
+      }
+      return;
+    }
+
+    final pathOrUrl = UrlHelper.normalize(asset.url);
+    if (pathOrUrl.isEmpty) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+      return;
+    }
+
+    final uri = Uri.tryParse(pathOrUrl);
+    if (uri == null) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+      return;
+    }
+
+    final canLaunch = await canLaunchUrl(uri);
+    if (!canLaunch) {
+      AppSnackbar.error(AppLocales.media.openNoViewer.tr);
+      return;
+    }
+
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      AppSnackbar.error(AppLocales.media.openFailed.tr);
+    }
   }
 
   Future<void> playAt(int index) async {
     if (index < 0 || index >= assets.length) return;
     _audioPlayer.setQueue(assets.toList());
     final asset = assets[index];
+    if (!asset.isPlayableMedia) {
+      await openNonPlayableAsset(asset);
+      return;
+    }
 
     if (isCurrentAsset(asset)) {
       if (asset.isAudioMedia) {
