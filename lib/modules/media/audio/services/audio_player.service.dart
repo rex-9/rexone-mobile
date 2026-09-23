@@ -266,7 +266,8 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   Future<bool> next() async {
     if (queue.isNotEmpty) {
       final current = _resolvedQueueIndex();
-      final nextIdx = current >= 0 ? (current + 1) % queue.length : 0;
+      final nextIdx = _adjacentPlayableIndex(current, forward: true);
+      if (nextIdx == null) return false;
       return playQueueAt(nextIdx);
     }
     if (assets.isEmpty) return true;
@@ -279,9 +280,8 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   Future<bool> previous() async {
     if (queue.isNotEmpty) {
       final current = _resolvedQueueIndex();
-      final prevIdx = current >= 0
-          ? (current - 1 + queue.length) % queue.length
-          : 0;
+      final prevIdx = _adjacentPlayableIndex(current, forward: false);
+      if (prevIdx == null) return false;
       return playQueueAt(prevIdx);
     }
     if (assets.isEmpty) return true;
@@ -659,6 +659,19 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     final asset = currentAsset;
     if (asset == null) return -1;
     return queue.indexWhere((item) => item.id == asset.id);
+  }
+
+  /// Next/previous playable index in the mixed queue (skips images/attachments).
+  int? _adjacentPlayableIndex(int from, {required bool forward}) {
+    if (queue.isEmpty) return null;
+    final start = from >= 0 ? from : (forward ? -1 : 0);
+    for (var step = 1; step <= queue.length; step++) {
+      final index = forward
+          ? (start + step) % queue.length
+          : (start - step + queue.length) % queue.length;
+      if (queue[index].isPlayableMedia) return index;
+    }
+    return null;
   }
 
   Future<bool> _playQueueAudio(AssetModel asset) async {

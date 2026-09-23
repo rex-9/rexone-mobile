@@ -133,8 +133,13 @@ class AssetModel {
 
   String get displayThumbnailUrl {
     final thumb = thumbnail;
-    if (thumb == null || thumb.url.isEmpty) return '';
-    return UrlHelper.normalize(thumb.url);
+    if (thumb != null && thumb.url.isNotEmpty) {
+      return UrlHelper.normalize(thumb.url);
+    }
+    if (isImageMedia && url.isNotEmpty) {
+      return UrlHelper.normalize(url);
+    }
+    return '';
   }
 
   List<ChildAssetModel> get playableSubtitles =>
@@ -158,6 +163,55 @@ class AssetModel {
   bool get isVideoMedia => format == AssetKeys.formatVideo;
 
   bool get isPlayableMedia => isAudioMedia || isVideoMedia;
+
+  bool get isImageMedia =>
+      type == AssetKeys.typeAvatar || format == AssetKeys.formatImage;
+
+  bool get isAttachment =>
+      type == AssetKeys.typeAttachment ||
+      format == AssetKeys.formatAttachment;
+
+  /// Best-effort file extension for offline open / MIME (e.g. `pdf`, `docx`).
+  String? get resolvedFileExtension {
+    final direct = extension?.trim().toLowerCase();
+    if (direct != null &&
+        direct.isNotEmpty &&
+        !direct.contains('/') &&
+        direct != 'enc') {
+      return direct.startsWith('.') ? direct.substring(1) : direct;
+    }
+
+    for (final candidate in <String?>[name, url]) {
+      if (candidate == null || candidate.trim().isEmpty) continue;
+      final cleaned = candidate.trim().toLowerCase().split('?').first;
+      final dot = cleaned.lastIndexOf('.');
+      if (dot < 0 || dot == cleaned.length - 1) continue;
+      final ext = cleaned.substring(dot + 1);
+      if (ext.isEmpty || ext == 'enc' || ext.contains('/')) continue;
+      return ext;
+    }
+    return null;
+  }
+
+  /// Markdown / plain-text attachments previewed in-app (no external viewer needed).
+  bool get isTextAttachment {
+    final ext = resolvedFileExtension;
+    if (ext != null && AssetKeys.textAttachmentExtensions.contains(ext)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool get isSidecarOnly =>
+      type == AssetKeys.typeSubtitle ||
+      type == AssetKeys.typeThumbnail ||
+      format == AssetKeys.formatSubtitle;
+
+  /// Top-level library rows (A/V, images, attachments) — not subtitle/thumbnail children.
+  bool get isLibraryAsset =>
+      !isSidecarOnly && (isPlayableMedia || isImageMedia || isAttachment);
+
+  bool get isDownloadableAsset => isLibraryAsset;
 
   bool matchesMediaFormat(String mediaFormat) =>
       format?.toLowerCase() == mediaFormat.toLowerCase();

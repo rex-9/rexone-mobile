@@ -25,10 +25,15 @@ Built under the same creed as RexOne Core and RexOne Web: **Start from One. Not 
 
 ---
 
-> [!IMPORTANT]
-> **🏛️ Unified Ecosystem**: For the complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile, see the canonical **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)**.
->
-> **📜 Constitutional Law**: All development must strictly adhere to the architecture, design system, and state laws in **[LAW.md](LAW.md)**. Zero exceptions.
+### 🏛️ Unified Ecosystem & Constitutional Directives
+
+| Resource | Purpose & Canonical Specification |
+| :--- | :--- |
+| **🏛️ Unified Ecosystem** | Complete cross-platform architecture, feature parity matrix, and communication protocols between Core, Web, and Mobile: **[Ecosystem Architecture](https://github.com/rex-9/rexone-core/blob/dev/ECOSYSTEM.md)** and **[Visual Walkthrough](https://github.com/rex-9/rexone-core/blob/dev/docs/VISUAL_WALKTHROUGH.md)** |
+| **📜 Constitutional Law** | Non-negotiable architecture, design system, and state laws: **[LAW.md](LAW.md)** *(Zero exceptions)* |
+| **🌐 AI Discovery & GEO** | Generative Engine Optimization, crawler allowlists, and LLM context files: **[AI Discovery & GEO Guide](https://github.com/rex-9/rexone-web/blob/dev/docs/SEO_GEO.md)** |
+
+---
 
 ## Why RexOne Mobile?
 
@@ -226,9 +231,9 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 ### Media playback
 
 - Unified feature module at `lib/modules/media/` with a shared `MediaPlaylistPage` + `MediaPlaylistController`, separate audio and video player stacks, and routes declared in `AppRoutes` only (no module-level `*.routes.dart`).
-- **Playlist**: Single mixed list from `GET /v1/assets` (no type filter); playable items (`attributes.format` `audio` / `video`) shown together. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
-- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]`. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`.
-- **Mixed queue**: Next/previous follow the full playlist order via `AudioPlayerService.playQueueAt()` — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
+- **Playlist**: Mixed library from `GET /v1/assets` (no type filter) showing audio, video, avatar/image, and attachment rows (subtitle/thumbnail sidecars excluded). Tap plays A/V, previews images, or opens attachments externally. Header **Play All** starts the first playable item; **Download all missing** bulk-enqueues offline saves. Home exposes one **Playlist** button → `AppRoutes.toPlaylist()` (`/media-playlist`).
+- **Playback URLs**: At play time, `GET /v1/assets/:id/playback` returns a signed `delivery.url` and fresh `media.subtitles[]` for audio/video. `MediaService.getAssetPlayback()` caches responses until near `expires_at`; players do not fall back to list `asset.url`. Image/attachment downloads use the list/signed `asset.url`.
+- **Mixed queue**: Next/previous follow the playlist via `AudioPlayerService.playQueueAt()`, skipping non-playable rows — audio continues in the mini/full player; video opens the inline player and hands back to audio when the next item is audio.
 - **Audio**: Background playback via `just_audio` + `just_audio_background`, persistent mini player, lock-screen Now Playing on iOS, and Apple Music–style synced lyrics from playback- or list-resolved `children.subtitles[]` (SRT), with a track picker when multiple subtitle files exist.
 - **Video**: Inline 16:9 player via `better_player`, with built-in playback-speed controls and closed captions from the same subtitle tracks (prefetched SRT URLs into better_player’s subtitle menu).
 - **Offline downloads & Drift SQLite**: Per-item download from the playlist stores media and sidecars in the app sandbox (`ApplicationSupport/media_offline/`). Fully backed by a local **Drift (SQLite)** database (`rexone_offline`, documented in [`docs/CLIENT_DATABASE.md`](docs/CLIENT_DATABASE.md)) strictly mirroring the backend polymorphic `assets` schema.
@@ -406,8 +411,7 @@ IOS_APP_ID=com.rex9.rexone
 - **Android**: Copy `android/app/google-services.json.example` to `android/app/google-services.json` and configure your Firebase project values.
 - **iOS**: Copy `ios/Runner/GoogleService-Info.plist.example` to `ios/Runner/GoogleService-Info.plist` and configure your Firebase project values.
 
-> [!NOTE]
-> `google-services.json` and `GoogleService-Info.plist` are included in `.gitignore` to prevent credential exposure.
+**Note:** `google-services.json` and `GoogleService-Info.plist` are included in `.gitignore` to prevent credential exposure.
 
 ---
 
@@ -498,18 +502,16 @@ Configure in repository **Settings > Secrets and variables > Actions**:
 | `GOOGLE_SERVICES_JSON_BASE64` | Optional          | `uat` & `main` | Base64-encoded string of `android/app/google-services.json` (`base64 -i android/app/google-services.json`).                             |
 | `GOOGLE_SERVICE_INFO_PLIST`   | Recommended (iOS) | `uat` & `main` | Raw XML content of `ios/Runner/GoogleService-Info.plist` for iOS CI builds.                                                             |
 
-> [!NOTE]
-> **CI Fallback Safeguard**: If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
+### 🛡️ CI Fallback Safeguard
+If `GOOGLE_SERVICES_JSON*` is not yet configured in GitHub Secrets, the pipeline automatically falls back to [`android/app/google-services.json.example`](android/app/google-services.json.example) so the Gradle `:app:processReleaseGoogleServices` build step compiles cleanly without breaking the workflow. Live Firebase services (Analytics, Push Notifications) require the real secret.
 
-> [!TIP]
-> **Exporting for GitHub Secrets**:
->
-> - **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
-> - **Base64 format** (avoids whitespace or line break formatting issues):
->   ```sh
->   base64 -i android/app/google-services.json | pbcopy
->   # Paste directly into GOOGLE_SERVICES_JSON_BASE64
->   ```
+### 💡 Exporting for GitHub Secrets
+- **Direct JSON**: Open `android/app/google-services.json`, copy the JSON contents, and paste into `GOOGLE_SERVICES_JSON` (or `GOOGLE_SERVICES_JSON_UAT` / `GOOGLE_SERVICES_JSON_PROD`).
+- **Base64 format** (avoids whitespace or line break formatting issues):
+  ```sh
+  base64 -i android/app/google-services.json | pbcopy
+  # Paste directly into GOOGLE_SERVICES_JSON_BASE64
+  ```
 
 ---
 
@@ -566,12 +568,12 @@ rexone_mobile/
 │   │   ├── profile/          # Account profile, avatar upload
 │   │   ├── setting/          # Theme, language, and account row
 │   │   ├── ai/               # Assistant chat, rooms, history
-│   │   └── media/            # Audio & video playback (shared + audio/ + video/)
+│   │   └── media/            # Mixed media library (shared + audio/ + video/)
 │   │       ├── components/   # TrackArtwork, playlist tile/header/empty/load-more
-│   │       ├── controllers/  # MediaPlaylistController (mixed audio/video playlist)
+│   │       ├── controllers/  # MediaPlaylistController (library + bulk download)
 │   │       ├── pages/        # MediaPlaylistPage
 │   │       ├── audio/        # Full player, mini player, synced lyrics
-│   │       └── video/        # Inline player, settings & subtitle sheets
+│   │       └── video/        # Inline better_player + viewport
 │   ├── routes/               # GetX route declarations and auth route guards
 │   └── services/             # Shared transport (API, Socket, Log, Analytics, Push, Storage, Permissions)
 ├── scripts/
@@ -600,12 +602,12 @@ rexone_mobile/
 
 ## 🎨 Rebranding & Utility Scripts
 
-> [!TIP]
-> **Recommended**: For full, synchronized rebranding across all 3 platforms (Core Backend, Web SPA, and Mobile App), run the master rebrand engine from **`rexone-core`**:
->
-> ```bash
-> cd ../rexone-core && ./scripts/rebrand.sh
-> ```
+### 💡 Master Rebranding Engine
+For full, synchronized rebranding across all 3 platforms (Core Backend, Web SPA, and Mobile App), run the master rebrand engine from **`rexone-core`**:
+
+```bash
+cd ../rexone-core && ./scripts/rebrand.sh
+```
 
 For standalone mobile development or isolated updates, you can use the local scripts below:
 

@@ -139,6 +139,10 @@ class MediaService extends GetxService {
     return parsed;
   }
 
+  /// Loads SRT/VTT or other UTF-8 text from a local path or signed network URL.
+  /// Network responses are cached by normalized URL for the session.
+  Future<String?> fetchTextBody(String url) => fetchSubtitleBody(url);
+
   /// Loads SRT/VTT body from a local path or signed network URL.
   /// Network responses are cached by normalized URL for the session.
   Future<String?> fetchSubtitleBody(String url) async {

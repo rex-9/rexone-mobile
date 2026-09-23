@@ -279,6 +279,8 @@ class AppTranslations extends Translations {
       AppLocales.notification.externalMessage:
           'This link will leave RexOne and open in your browser.',
       AppLocales.notification.externalConfirm: 'Open website',
+      AppLocales.notification.openLink: 'Open Link',
+      AppLocales.notification.readMore: 'Read more',
 
       // Update
       AppLocales.update.title: 'Update App?',
@@ -289,9 +291,21 @@ class AppTranslations extends Translations {
 
       // Media
       AppLocales.media.playlistTitle: 'Playlist',
-      AppLocales.media.playlistSubtitle: 'Audio & video',
+      AppLocales.media.playlistSubtitle: 'Audio, video, images & files',
       AppLocales.media.playlistEmpty: 'No media yet',
       AppLocales.media.playAll: 'Play All',
+      AppLocales.media.downloadAll: 'Download all missing',
+      AppLocales.media.downloadAllStarted: 'Started @count download(s)',
+      AppLocales.media.downloadAllNone: 'Nothing new to download',
+      AppLocales.media.typeAudio: 'Audio',
+      AppLocales.media.typeVideo: 'Video',
+      AppLocales.media.typeImage: 'Image',
+      AppLocales.media.typeAttachment: 'Attachment',
+      AppLocales.media.noPlayableMedia: 'No audio or video to play',
+      AppLocales.media.openUnsupported: 'This file type cannot be opened here',
+      AppLocales.media.openFailed: 'Unable to open this file',
+      AppLocales.media.openNoViewer:
+          'No app on this device can open this file type',
       AppLocales.media.download: 'Download',
       AppLocales.media.downloading: 'Downloading…',
       AppLocales.media.downloadProgress: 'Downloading… @percent%',
@@ -636,6 +650,8 @@ class AppTranslations extends Translations {
       AppLocales.notification.externalMessage:
           'ဤလင့်ခ်သည် RexOne မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
       AppLocales.notification.externalConfirm: 'ဝဘ်ဆိုက် ဖွင့်မည်',
+      AppLocales.notification.openLink: 'လင့်ခ်ဖွင့်ရန်',
+      AppLocales.notification.readMore: 'ပိုမိုဖတ်ရှုရန်',
 
       // Update
       AppLocales.update.title: 'အက်ပ်ကို အပ်ဒိတ်လုပ်မလား?',
@@ -646,9 +662,20 @@ class AppTranslations extends Translations {
 
       // Media
       AppLocales.media.playlistTitle: 'စာရင်း',
-      AppLocales.media.playlistSubtitle: 'အသံနှင့် ဗီဒီယို',
+      AppLocales.media.playlistSubtitle: 'အသံ၊ ဗီဒီယို၊ ပုံနှင့် ဖိုင်များ',
       AppLocales.media.playlistEmpty: 'မီဒီယာ မရှိသေးပါ',
       AppLocales.media.playAll: 'အားလုံးဖွင့်မည်',
+      AppLocales.media.downloadAll: 'မရှိသေးသည်များကို ဒေါင်းလုဒ်',
+      AppLocales.media.downloadAllStarted: 'ဒေါင်းလုဒ် @count ခု စတင်ပြီး',
+      AppLocales.media.downloadAllNone: 'ဒေါင်းလုဒ်လုပ်ရန် အသစ်မရှိပါ',
+      AppLocales.media.typeAudio: 'အသံ',
+      AppLocales.media.typeVideo: 'ဗီဒီယို',
+      AppLocales.media.typeImage: 'ပုံ',
+      AppLocales.media.typeAttachment: 'ပူးတွဲဖိုင်',
+      AppLocales.media.noPlayableMedia: 'ဖွင့်ရန် အသံ/ဗီဒီယို မရှိပါ',
+      AppLocales.media.openUnsupported: 'ဤဖိုင်အမျိုးအစားကို ဤနေရာတွင် ဖွင့်မရပါ',
+      AppLocales.media.openFailed: 'ဖိုင်ကို ဖွင့်မရပါ',
+      AppLocales.media.openNoViewer: 'ဤဖိုင်အမျိုးအစားကို ဖွင့်မည့် အက်ပ် မရှိပါ',
       AppLocales.media.download: 'ဒေါင်းလုဒ်',
       AppLocales.media.downloading: 'ဒေါင်းလုဒ်လုပ်နေသည်…',
       AppLocales.media.downloadProgress: 'ဒေါင်းလုဒ်လုပ်နေသည်… @percent%',

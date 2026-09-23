@@ -44,13 +44,35 @@ class AssetKeys {
   // ===== Asset type filters (legacy query param) =====
   static const typeAudio = 'audio';
   static const typeVideo = 'video';
+  static const typeAvatar = 'avatar';
+  static const typeAttachment = 'attachment';
+  static const typeThumbnail = 'thumbnail';
+  static const typeSubtitle = 'subtitle';
+  static const typeGeneral = 'general';
 
   // ===== Asset format values (attributes.format) =====
   static const formatAudio = 'audio';
   static const formatVideo = 'video';
+  static const formatImage = 'image';
+  static const formatAttachment = 'attachment';
+  static const formatSubtitle = 'subtitle';
+
+  /// Extensions opened with the in-app text preview (no external app).
+  static const textAttachmentExtensions = {
+    'md',
+    'markdown',
+    'txt',
+    'json',
+    'csv',
+    'xml',
+    'html',
+    'htm',
+    'log',
+    'yaml',
+    'yml',
+  };
 
   // ===== Upload constants (FormData values) =====
-  static const typeAvatar = 'avatar';
   static const assetableUser = 'User';
   static const sourceUpload = 'upload';
 }
