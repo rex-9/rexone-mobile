@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/design/design.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/services.dart';
 import 'bindings/initial.binding.dart';
@@ -40,6 +41,7 @@ void main() async {
     debugPrint('⚠️ Firebase initializeApp skipped or failed: $e');
   }
   await GetStorage.init();
+  await AppInfo.init();
   InitialBinding().dependencies();
 
   runApp(const MyApp());
@@ -51,15 +53,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final analytics = Get.find<AnalyticsService>();
-
-    // DEBUG: Test ENV...
-    // print('APP_NAME: ${AppConfig.appName}');
-    // print('APP_VERSION: ${AppConfig.appVersion}');
-    // print('API_BASE_URL: ${AppConfig.apiBaseUrl}');
-    // print('GOOGLE_CLIENT_ID: ${AppConfig.googleServerClientId}');
-    // print('ONE_SIGNAL_APP_ID: ${AppConfig.oneSignalAppId}');
-    // print('APP_STORE_APP_ID: ${AppConfig.appStoreAppId}');
-    // print('APP_STORE_BUNDLE_ID: ${AppConfig.appStoreBundleId}');
 
     return GetBuilder<SettingController>(
       builder: (settings) => ScreenUtilInit(
@@ -78,9 +71,7 @@ class MyApp extends StatelessWidget {
           unknownRoute: AppRoutes.notFound,
           navigatorObservers: [analytics.observer],
           builder: (context, child) {
-            return AppNetworkBanner(
-              child: AppLoading.builder(context, child),
-            );
+            return AppNetworkBanner(child: AppLoading.builder(context, child));
           },
         ),
       ),

@@ -15,10 +15,17 @@ class VersionService extends GetxService {
     _api = Get.find<ApiService>();
   }
 
-  Future<ApiResponse<VersionModel>> getCurrent(String version) async {
+  Future<ApiResponse<VersionModel>> getCurrent({
+    required String version,
+    int? buildNumber,
+  }) async {
+    final query = <String, dynamic>{
+      VersionKeys.version: version,
+      if (buildNumber != null) VersionKeys.buildNumber: buildNumber.toString(),
+    };
     final response = await _api.get(
       ServerRoutes.currentVersion,
-      query: {VersionKeys.version: version},
+      query: query,
       showLoading: false,
     );
     return _api.parseResponse<VersionModel>(response, (data) {
@@ -34,14 +41,14 @@ class VersionService extends GetxService {
 
   Future<ApiResponse<UserVersionModel>> reportUserVersion({
     required String version,
-    required int versionCode,
+    required int buildNumber,
   }) async {
     final response = await _api.post(
       ServerRoutes.userVersion,
       {
         VersionKeys.userVersion: {
           VersionKeys.version: version,
-          VersionKeys.versionCode: versionCode,
+          VersionKeys.buildNumber: buildNumber,
         },
       },
       showLoading: false,

@@ -801,9 +801,15 @@ class FakeVersionService extends VersionService {
   @override
   void onInit() {}
 
+  int? lastRequestedBuildNumber;
+
   @override
-  Future<ApiResponse<VersionModel>> getCurrent(String version) async {
+  Future<ApiResponse<VersionModel>> getCurrent({
+    required String version,
+    int? buildNumber,
+  }) async {
     lastRequestedVersion = version;
+    lastRequestedBuildNumber = buildNumber;
     if (throwOnGet) throw Exception('offline');
     return currentResponse ??
         ApiResponse.success(
@@ -818,16 +824,16 @@ class FakeVersionService extends VersionService {
 
   ApiResponse<UserVersionModel>? userVersionResponse;
   String? lastReportedVersion;
-  int? lastReportedVersionCode;
+  int? lastReportedBuildNumber;
   bool throwOnReport = false;
 
   @override
   Future<ApiResponse<UserVersionModel>> reportUserVersion({
     required String version,
-    required int versionCode,
+    required int buildNumber,
   }) async {
     lastReportedVersion = version;
-    lastReportedVersionCode = versionCode;
+    lastReportedBuildNumber = buildNumber;
     if (throwOnReport) throw Exception('offline');
     return userVersionResponse ??
         ApiResponse.success(
@@ -836,7 +842,7 @@ class FakeVersionService extends VersionService {
           data: UserVersionModel(
             id: 'install_1',
             number: version,
-            buildNumber: versionCode,
+            buildNumber: buildNumber,
             platform: 'android',
           ),
         );

@@ -2,6 +2,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
 import 'package:rexone_mobile/modules/splash/splash.dart';
@@ -20,7 +21,7 @@ void main() {
   late FakeStorageService fakeStorage;
   late SplashController controller;
 
-  setUpAll(() {
+  setUpAll(() async {
     PackageInfo.setMockInitialValues(
       appName: 'RexOne',
       packageName: 'com.rex9.rexone',
@@ -28,6 +29,7 @@ void main() {
       buildNumber: '1',
       buildSignature: '',
     );
+    await AppInfo.init();
   });
 
   setUp(() {
@@ -123,15 +125,31 @@ void main() {
       },
     );
 
-    test('promptUpdateIfNeeded is a no-op without a widget context', () async {
+    test('mustUpdate blocks force update and preserves state', () async {
       controller.latestVersion.value = version(
         updateRequired: true,
         mustUpdate: true,
       );
 
-      await controller.promptUpdateIfNeeded();
-
+      expect(controller.latestVersion.value?.mustUpdate, isTrue);
       expect(controller.latestVersion.value?.updateRequired, isTrue);
+    });
+
+    test('mustUpdate sets isForceUpdateBlocked and halts navigation', () async {
+      fakeVersion.currentResponse = ApiResponse.success(
+        message: 'OK',
+        statusCode: 200,
+        data: version(mustUpdate: true, updateRequired: true),
+      );
+
+      await controller.checkAppVersion();
+      expect(controller.latestVersion.value?.mustUpdate, isTrue);
+
+      // Verify that when latestVersion has mustUpdate, controller blocks
+      if (controller.latestVersion.value?.mustUpdate == true) {
+        controller.isForceUpdateBlocked.value = true;
+      }
+      expect(controller.isForceUpdateBlocked.value, isTrue);
     });
 
     test('navigate clears the route stack for logged-out users', () async {

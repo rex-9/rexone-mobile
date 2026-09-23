@@ -23,4 +23,8 @@ class FeedbackKeys {
   static const String userEmail = 'user_email';
   static const String createdAt = 'created_at';
   static const String updatedAt = 'updated_at';
+  static const String currentRoute = 'current_route';
+  static const String timestamp = 'timestamp';
+  static const String buildNumber = 'build_number';
+  static const String fullVersion = 'full_version';
 }
