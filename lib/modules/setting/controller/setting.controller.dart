@@ -1,8 +1,7 @@
-// lib/modules/setting/controller/settings.controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import '../../../services/storage.service.dart';
 import '../../../locales/app_translations.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -49,13 +48,8 @@ class SettingController extends GetxController {
   }
 
   // ===== APP VERSION =====
-  Future<void> _loadAppVersion() async {
-    try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      appVersion.value = packageInfo.version;
-    } catch (e) {
-      appVersion.value = '1.0.0';
-    }
+  void _loadAppVersion() {
+    appVersion.value = AppInfo.version;
   }
 
   // ===== THEME METHODS =====

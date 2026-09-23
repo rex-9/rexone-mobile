@@ -3,11 +3,9 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
-import 'package:rexone_mobile/services/services.dart';
 import '../services/feedback.service.dart';
 
 class FeedbackController extends GetxController {
@@ -49,13 +47,7 @@ class FeedbackController extends GetxController {
     try {
       isSubmitting.value = true;
 
-      String? appVersion;
-      try {
-        final info = await PackageInfo.fromPlatform();
-        appVersion = info.version;
-      } catch (e, stack) {
-        LogService.reportPlatformError(e, stack);
-      }
+      final appVersion = AppInfo.version;
 
       String os = 'unknown';
       if (!kIsWeb) {
@@ -68,10 +60,12 @@ class FeedbackController extends GetxController {
         FeedbackKeys.rating: rating.value,
         FeedbackKeys.page: Get.currentRoute,
         FeedbackKeys.os: os,
-        ...?appVersion != null ? {FeedbackKeys.appVersion: appVersion} : null,
+        FeedbackKeys.appVersion: appVersion,
         FeedbackKeys.metadata: {
-          'current_route': Get.currentRoute,
-          'timestamp': AppDateTime.toUtcIso(DateTime.now()),
+          FeedbackKeys.currentRoute: Get.currentRoute,
+          FeedbackKeys.timestamp: AppDateTime.toUtcIso(DateTime.now()),
+          FeedbackKeys.buildNumber: AppInfo.versionCode,
+          FeedbackKeys.fullVersion: AppInfo.fullVersion,
         },
       };
 

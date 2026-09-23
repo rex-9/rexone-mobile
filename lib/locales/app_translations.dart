@@ -279,6 +279,8 @@ class AppTranslations extends Translations {
       AppLocales.notification.externalMessage:
           'This link will leave RexOne and open in your browser.',
       AppLocales.notification.externalConfirm: 'Open website',
+      AppLocales.notification.openLink: 'Open Link',
+      AppLocales.notification.readMore: 'Read more',
 
       // Update
       AppLocales.update.title: 'Update App?',
@@ -636,6 +638,8 @@ class AppTranslations extends Translations {
       AppLocales.notification.externalMessage:
           'ဤလင့်ခ်သည် RexOne မှထွက်ပြီး browser တွင် ဖွင့်ပါမည်။',
       AppLocales.notification.externalConfirm: 'ဝဘ်ဆိုက် ဖွင့်မည်',
+      AppLocales.notification.openLink: 'လင့်ခ်ဖွင့်ရန်',
+      AppLocales.notification.readMore: 'ပိုမိုဖတ်ရှုရန်',
 
       // Update
       AppLocales.update.title: 'အက်ပ်ကို အပ်ဒိတ်လုပ်မလား?',

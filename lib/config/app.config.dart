@@ -2,6 +2,7 @@
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 
 class AppEnvironment {
   const AppEnvironment._();
@@ -31,8 +32,7 @@ class AppConfig {
     _ => AppEnvironment.development,
   };
   static String get appName => dotenv.env[AppConstants.nameKey] ?? 'RexOne';
-  static String get appVersion =>
-      dotenv.env[AppConstants.versionKey] ?? '1.0.0';
+  static String get appVersion => AppInfo.version;
   static String get apiBaseUrl =>
       dotenv.env[AppConstants.apiBaseUrlKey] ?? 'api base url not found';
   static String get wsBaseUrl {

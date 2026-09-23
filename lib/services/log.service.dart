@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/api.service.dart';
@@ -135,6 +136,12 @@ class LogService extends GetxService {
 
       final storageKeys = _getStorageKeys();
 
+      final logContext = <String, dynamic>{
+        ...?context,
+        LogKeys.buildNumber: AppInfo.versionCode,
+        LogKeys.fullVersion: AppInfo.fullVersion,
+      };
+
       final log = LogModel(
         message: message,
         severity: severity,
@@ -142,7 +149,7 @@ class LogService extends GetxService {
             ? LogConstants.ios
             : (GetPlatform.isAndroid ? LogConstants.android : LogConstants.mobile),
         environment: AppConfig.environment,
-        appVersion: AppConfig.appVersion,
+        appVersion: AppInfo.version,
         os: Platform.operatingSystem,
         osVersion: Platform.operatingSystemVersion,
         device: GetPlatform.isIOS ? LogConstants.appleDevice : LogConstants.androidDevice,
@@ -150,12 +157,12 @@ class LogService extends GetxService {
         method: LogConstants.appEvent,
         stackTrace: stackList,
         localStorageKeys: storageKeys,
-        context: context ?? {},
+        context: logContext,
       );
 
       await _api.post(
         ServerRoutes.clientLogs,
-        {'log': log.toJson()},
+        {LogKeys.log: log.toJson()},
         showLoading: false,
       );
     } catch (e) {

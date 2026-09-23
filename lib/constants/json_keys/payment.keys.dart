@@ -1,5 +1,5 @@
 // lib/constants/json_keys/payment.keys.dart
-/// Request/response keys for payment, product, subscription, and transaction payloads.
+/// Request/response keys for payment, product, coupon, subscription, and transaction payloads.
 class PaymentKeys {
   const PaymentKeys._();
 
@@ -77,4 +77,5 @@ class PaymentKeys {
   static const originalAmount = 'original_amount';
   static const remainingAttempts = 'remaining_attempts';
   static const cooldownRemaining = 'cooldown_remaining';
+  static const metadata = 'metadata';
 }

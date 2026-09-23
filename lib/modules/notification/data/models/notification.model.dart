@@ -8,6 +8,7 @@ class NotificationModel {
   final String title;
   final String message;
   final String? link;
+  final String? ctaText;
   final List<String> clients;
   final Map<String, dynamic> metadata;
   final bool read;
@@ -25,6 +26,7 @@ class NotificationModel {
     required this.title,
     required this.message,
     this.link,
+    this.ctaText,
     this.clients = const [
       AppConstants.platformWeb,
       AppConstants.platformMobile,
@@ -54,6 +56,7 @@ class NotificationModel {
       title: attributes[NotificationKeys.title]?.toString() ?? '',
       message: attributes[NotificationKeys.message]?.toString() ?? '',
       link: attributes[NotificationKeys.link]?.toString(),
+      ctaText: attributes[NotificationKeys.ctaText]?.toString(),
       clients: attributes[NotificationKeys.clients] is List
           ? List<String>.from(attributes[NotificationKeys.clients] as List)
           : const [AppConstants.platformWeb, AppConstants.platformMobile],
@@ -80,6 +83,7 @@ class NotificationModel {
       NotificationKeys.title: title,
       NotificationKeys.message: message,
       NotificationKeys.link: link,
+      NotificationKeys.ctaText: ctaText,
       NotificationKeys.clients: clients,
       NotificationKeys.metadata: metadata,
       NotificationKeys.read: read,
@@ -96,6 +100,7 @@ class NotificationModel {
     String? title,
     String? message,
     String? link,
+    String? ctaText,
     List<String>? clients,
     Map<String, dynamic>? metadata,
     bool? read,
@@ -110,6 +115,7 @@ class NotificationModel {
       title: title ?? this.title,
       message: message ?? this.message,
       link: link ?? this.link,
+      ctaText: ctaText ?? this.ctaText,
       clients: clients ?? this.clients,
       metadata: metadata ?? this.metadata,
       read: read ?? this.read,

@@ -1,6 +1,5 @@
 // lib/constants/app.constants.dart
 import 'dart:io' show Platform;
-import 'package:package_info_plus/package_info_plus.dart';
 
 class AppConstants {
   const AppConstants._();
@@ -15,22 +14,6 @@ class AppConstants {
   static String get androidAppIdKey => 'ANDROID_APP_ID';
   static String get iosAppIdKey => 'IOS_APP_ID';
   static String get mediaOfflineEncryptionKey => 'MEDIA_OFFLINE_ENCRYPTION_KEY';
-
-  // ===== VERSIONS from pubspec.yaml (Runtime) =====
-  Future<String> getVersion() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.version;
-  }
-
-  Future<String> getBuildNumber() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.buildNumber;
-  }
-
-  Future<String> getFullVersion() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    return '${packageInfo.version}+${packageInfo.buildNumber}';
-  }
 
   // Validation Rules
   static const minPasswordLength = 6;
@@ -58,7 +41,6 @@ class AppConstants {
   static const platformWeb = 'web';
   static const platformMobile = 'mobile';
   static const bearerPrefix = 'Bearer ';
-
 
   // Chat voice
   static const chatVoiceLevelBarCount = 12;
