@@ -15,6 +15,7 @@ class VersionKeys {
   static const userVersion = 'user_version';
   static const versionCode = 'version_code';
   static const buildNumber = 'build_number';
+  static const fullVersion = 'full_version';
   static const platform = 'platform';
   static const lastSeenAt = 'last_seen_at';
   static const versionId = 'app_version_id';

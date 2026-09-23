@@ -19,6 +19,7 @@ class CouponModel {
   final bool active;
   final bool exhausted;
   final bool expired;
+  final Map<String, dynamic>? metadata;
 
   CouponModel({
     required this.id,
@@ -39,6 +40,7 @@ class CouponModel {
     required this.active,
     required this.exhausted,
     required this.expired,
+    this.metadata,
   });
 
   bool get isPercentage => couponType == CouponTypes.percentage;
@@ -81,6 +83,9 @@ class CouponModel {
       active: json[PaymentKeys.active] != false,
       exhausted: json[PaymentKeys.exhausted] == true,
       expired: json[PaymentKeys.expired] == true,
+      metadata: json[PaymentKeys.metadata] is Map
+          ? Map<String, dynamic>.from(json[PaymentKeys.metadata] as Map)
+          : null,
     );
   }
 
@@ -103,5 +108,6 @@ class CouponModel {
     PaymentKeys.active: active,
     PaymentKeys.exhausted: exhausted,
     PaymentKeys.expired: expired,
+    if (metadata != null) PaymentKeys.metadata: metadata,
   };
 }

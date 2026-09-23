@@ -7,3 +7,4 @@ export 'video_layout.helper.dart';
 export 'media_encryption.helper.dart';
 export 'url.helper.dart';
 export 'file_size.helper.dart';
+export 'app_info.helper.dart';

@@ -180,14 +180,14 @@ class VideoPlayerService extends GetxService {
     if (controller.value != null) return;
 
     final betterPlayerController = BetterPlayerController(
-      BetterPlayerConfiguration(
+      const PlayerConfiguration(
         autoPlay: false,
         aspectRatio: 16 / 9,
         fit: BoxFit.contain,
         autoDispose: false,
         handleLifecycle: true,
         allowedScreenSleep: false,
-        controlsConfiguration: const BetterPlayerControlsConfiguration(
+        controlsConfiguration: PlayerControlsConfiguration(
           enableSkips: false,
           enableQualities: false,
           enableAudioTracks: false,
@@ -199,26 +199,26 @@ class VideoPlayerService extends GetxService {
     controller.value = betterPlayerController;
   }
 
-  void _onPlayerEvent(BetterPlayerEvent event) {
+  void _onPlayerEvent(PlayerEvent event) {
     switch (event.betterPlayerEventType) {
-      case BetterPlayerEventType.play:
+      case PlayerEventType.play:
         isPlaying.value = true;
         isLoading.value = false;
-      case BetterPlayerEventType.pause:
+      case PlayerEventType.pause:
         isPlaying.value = false;
-      case BetterPlayerEventType.finished:
+      case PlayerEventType.finished:
         isPlaying.value = false;
-      case BetterPlayerEventType.progress:
+      case PlayerEventType.progress:
         final progress = event.parameters?['progress'];
         final total = event.parameters?['duration'];
         if (progress is Duration) position.value = progress;
         if (total is Duration) duration.value = total;
-      case BetterPlayerEventType.bufferingEnd:
-      case BetterPlayerEventType.initialized:
+      case PlayerEventType.bufferingEnd:
+      case PlayerEventType.initialized:
         isLoading.value = false;
-      case BetterPlayerEventType.changedSubtitles:
+      case PlayerEventType.changedSubtitles:
         _syncSubtitlesFromPlayer();
-      case BetterPlayerEventType.exception:
+      case PlayerEventType.exception:
         isLoading.value = false;
         debugPrint(
           '❌ [VideoPlayerService] Player exception: ${event.parameters}',
@@ -228,19 +228,17 @@ class VideoPlayerService extends GetxService {
     }
   }
 
-  BetterPlayerDataSource _buildDataSource(
+  PlayerDataSource _buildDataSource(
     String url, {
-    List<BetterPlayerSubtitlesSource> subtitles = const [],
+    List<PlayerSubtitlesSource> subtitles = const [],
   }) {
     final isFile = url.startsWith('file:') || !url.contains('://');
     final headers = UrlHelper.headersFor(url);
     final resolvedUrl =
         isFile ? _filePathFromUrl(url) : UrlHelper.normalize(url);
 
-    return BetterPlayerDataSource(
-      isFile
-          ? BetterPlayerDataSourceType.file
-          : BetterPlayerDataSourceType.network,
+    return PlayerDataSource(
+      isFile ? DataSourceType.file : DataSourceType.network,
       resolvedUrl,
       headers: headers.isEmpty ? null : headers,
       subtitles: subtitles.isEmpty ? null : subtitles,
@@ -264,7 +262,7 @@ class VideoPlayerService extends GetxService {
   void _syncSubtitlesFromPlayer() {
     final source = controller.value?.betterPlayerSubtitlesSource;
     if (source == null ||
-        source.type == BetterPlayerSubtitlesSourceType.none) {
+        source.type == PlayerSubtitlesSourceType.none) {
       subtitlesEnabled.value = false;
       selectedSubtitleIndex.value = -1;
       return;
@@ -277,7 +275,7 @@ class VideoPlayerService extends GetxService {
     selectedSubtitleIndex.value = index;
   }
 
-  Future<List<BetterPlayerSubtitlesSource>> _preloadSubtitleSources() async {
+  Future<List<PlayerSubtitlesSource>> _preloadSubtitleSources() async {
     final tracks = effectiveSubtitles;
     if (tracks.isEmpty) return const [];
 
@@ -290,15 +288,15 @@ class VideoPlayerService extends GetxService {
           );
           return null;
         }
-        return BetterPlayerSubtitlesSource(
-          type: BetterPlayerSubtitlesSourceType.memory,
+        return PlayerSubtitlesSource(
+          type: PlayerSubtitlesSourceType.memory,
           name: track.displayLabel,
           content: body,
         );
       }),
     );
 
-    return loaded.whereType<BetterPlayerSubtitlesSource>().toList();
+    return loaded.whereType<PlayerSubtitlesSource>().toList();
   }
 
   void _disposeController() {

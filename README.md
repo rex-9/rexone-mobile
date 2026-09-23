@@ -202,9 +202,10 @@ The mobile client enforces a synchronized three-tier administrative hierarchy:
 
 ### In-app version upgrader
 
-- Checked on splash via `VersionService` (`GET /v1/client/versions/current?version=`).
-- `update_required` shows `AppDialog.update`; `must_update` blocks Later and keeps the user on splash.
-- Update opens the API `store_url` in the system store.
+- Checked during app startup via `VersionService` (`GET /v1/client/versions/current?version=...&build_number=...`) using canonical `AppInfo` metadata.
+- `must_update`: Handled exclusively by the sovereign full-screen `SplashPage` blocking view with `PopScope(canPop: false)` and direct store handoff. If detected on app resume in `HomeController`, the app routes directly back to `SplashPage`.
+- `update_required` (optional): Prompted non-blockingly on `HomePage` via `AppDialog.update` with "Later" and "Update" options.
+- System store handoff opens API `store_url` via `url_launcher`.
 
 ### Payments & entitlements
 
