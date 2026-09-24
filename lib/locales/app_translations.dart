@@ -28,7 +28,7 @@ class AppTranslations extends Translations {
       AppLocales.common.exit: 'Exit',
       AppLocales.common.exitTitle: 'Exit App',
       AppLocales.common.exitConfirm: 'Are you sure you want to exit the app?',
-      AppLocales.common.connectionLost: 'Connection lost',
+      AppLocales.common.connectionLost: 'Offline mode',
       AppLocales.common.connectionRestored: 'Connection is safe and sound',
       AppLocales.common.noInternet: 'No internet connection',
 
@@ -398,7 +398,7 @@ class AppTranslations extends Translations {
       AppLocales.common.exit: 'ထွက်မည်',
       AppLocales.common.exitTitle: 'အက်ပ်မှ ထွက်မည်',
       AppLocales.common.exitConfirm: 'ထွက်ရန် သေချာပါသလား?',
-      AppLocales.common.connectionLost: 'အင်တာနက်လိုင်း ပြတ်တောက်သွားပါသည်',
+      AppLocales.common.connectionLost: 'အော့ဖ်လိုင်း မုဒ်',
       AppLocales.common.connectionRestored:
           'အင်တာနက်လိုင်း ပြန်လည်ကောင်းမွန်သွားပါပြီ',
       AppLocales.common.noInternet: 'အင်တာနက်လိုင်း မရှိပါ',

@@ -6,7 +6,7 @@ import '../../services/network.service.dart';
 import '../design.dart';
 
 /// Global overlay banner displaying offline / connectivity restored status.
-/// When offline: displays error banner ('Connection lost').
+/// When offline: displays error banner ('Offline mode').
 /// When back online: displays green success banner ('Connection is safe and sound') for 3s, then smoothly disappears.
 class AppNetworkBanner extends StatelessWidget {
   final Widget child;
