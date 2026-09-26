@@ -1,4 +1,5 @@
 export 'user.model.dart';
+export 'iam.model.dart';
 export 'asset.model.dart';
 export 'media.model.dart';
 export 'log.model.dart';

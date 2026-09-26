@@ -224,7 +224,7 @@ void main() {
       final refreshedUser = UserModel(
         id: 'u1',
         email: 'updated@example.com',
-        iam: const UserIamModel(isAdmin: true, isSuperAdmin: false),
+        iam: const IamModel(isAdmin: true, isSuperAdmin: false),
       );
       fakeAuthService.currentUserResponse = ApiResponse.success(
         message: 'OK',

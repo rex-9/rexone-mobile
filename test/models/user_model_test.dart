@@ -85,7 +85,7 @@ void main() {
         name: 'Test Guy',
         provider: 'google',
         photo: 'https://cdn.rexone.com/avatar.jpg',
-        iam: const UserIamModel(
+        iam: const IamModel(
           isAdmin: false,
           isSuperAdmin: false,
           roles: [],
@@ -132,8 +132,8 @@ void main() {
     });
   });
 
-  group('UserIamRoleModel & UserIamPermissionModel', () {
-    test('UserIamRoleModel flattens JSON:API envelope correctly', () {
+  group('IamRoleModel & IamPermissionModel', () {
+    test('IamRoleModel flattens JSON:API envelope correctly', () {
       final json = {
         ApiKeys.id: 'role_admin',
         'type': 'role',
@@ -144,7 +144,7 @@ void main() {
         },
       };
 
-      final role = UserIamRoleModel.fromJson(json);
+      final role = IamRoleModel.fromJson(json);
 
       expect(role.id, 'role_admin');
       expect(role.name, 'Administrator');
@@ -152,7 +152,7 @@ void main() {
       expect(role.system, isTrue);
     });
 
-    test('UserIamPermissionModel flattens JSON:API envelope correctly', () {
+    test('IamPermissionModel flattens JSON:API envelope correctly', () {
       final json = {
         ApiKeys.id: 'perm_delete',
         'type': 'permission',
@@ -163,7 +163,7 @@ void main() {
         },
       };
 
-      final perm = UserIamPermissionModel.fromJson(json);
+      final perm = IamPermissionModel.fromJson(json);
 
       expect(perm.id, 'perm_delete');
       expect(perm.name, 'Delete User');
