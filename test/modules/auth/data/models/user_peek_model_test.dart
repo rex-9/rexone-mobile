@@ -1,9 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rexone_mobile/models/user.model.dart';
-import 'package:rexone_mobile/modules/auth/data/responses/signin.response.dart';
-import 'package:rexone_mobile/modules/auth/data/responses/auth.response.dart';
-import 'package:rexone_mobile/modules/auth/data/responses/user.response.dart';
-import 'package:rexone_mobile/modules/auth/data/responses/google.response.dart';
+import 'package:rexone_mobile/modules/auth/data/models/user_peek.model.dart';
 
 void main() {
   group('Auth Responses', () {
@@ -113,70 +110,14 @@ void main() {
       );
     });
 
-    group('SignInResponse', () {
-      test('fromJson parses user, token, and other fields', () {
-        final json = {
-          'user': {'id': '1', 'email': 'test@example.com', 'name': 'Test'},
-          'token': 'abc.def.ghi',
-          'otp_sent': true,
-          'remaining_attempts': 3,
-          'cooldown_remaining': 60,
-        };
-
-        final response = SignInResponse.fromJson(json);
-
-        expect(response.user, isNotNull);
-        expect(response.user?.id, equals('1'));
-        expect(response.user?.name, equals('Test'));
-        expect(response.token, equals('abc.def.ghi'));
-        expect(response.otpSent, isTrue);
-        expect(response.remainingAttempts, equals(3));
-        expect(response.cooldownRemaining, equals(60));
-      });
-    });
-
-    group('AuthResponse', () {
-      test('fromJson parses user and token', () {
-        final json = {
-          'user': {'id': '2', 'email': 'auth@example.com', 'name': 'Auth'},
-          'token': 'token123',
-        };
-
-        final response = AuthResponse.fromJson(json);
-
-        expect(response.user, isNotNull);
-        expect(response.user.id, equals('2'));
-        expect(response.token, equals('token123'));
-      });
-    });
-
-    group('PeekUserResponse', () {
+    group('UserPeekModel', () {
       test('fromJson parses userExists and confirmed', () {
         final json = {'user_exists': true, 'confirmed': false};
 
-        final response = PeekUserResponse.fromJson(json);
+        final response = UserPeekModel.fromJson(json);
 
         expect(response.userExists, isTrue);
         expect(response.confirmed, isFalse);
-      });
-    });
-
-    group('GoogleResponse', () {
-      test('fromJson parses fields correctly', () {
-        final json = {
-          'password_required': true,
-          'challenge_token': 'challenge123',
-          'user': {'id': '3', 'email': 'google@example.com'},
-          'token': 'google_token',
-        };
-
-        final response = GoogleResponse.fromJson(json);
-
-        expect(response.passwordRequired, isTrue);
-        expect(response.challengeToken, equals('challenge123'));
-        expect(response.user, isNotNull);
-        expect(response.user?.email, equals('google@example.com'));
-        expect(response.token, equals('google_token'));
       });
     });
   });

@@ -95,10 +95,7 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
     final response = await _api.post(ServerRoutes.textToSpeech, {
       SpeechKeys.messageId: messageId,
     }, showLoading: showLoading);
-    return _api.parseResponse<Map<String, dynamic>>(
-      response,
-      (data) => data is Map ? Map<String, dynamic>.from(data) : {},
-    );
+    return _api.parseRecord<Map<String, dynamic>>(response);
   }
 
   // ============================================================
@@ -123,11 +120,9 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
       form,
       showLoading: showLoading,
     );
-    return _api.parseResponse<String>(
+    return _api.parseRecord<String>(
       response,
-      (data) => data is Map
-          ? data[SpeechKeys.text]?.toString() ?? ''
-          : data?.toString() ?? '',
+      (json) => json[SpeechKeys.text]?.toString() ?? '',
     );
   }
 
@@ -139,11 +134,9 @@ class SpeechService extends GetxService with WidgetsBindingObserver {
     final response = await _api.post(ServerRoutes.speechToText, {
       SpeechKeys.audioUrl: audioUrl,
     }, showLoading: showLoading);
-    return _api.parseResponse<String>(
+    return _api.parseRecord<String>(
       response,
-      (data) => data is Map
-          ? data[SpeechKeys.text]?.toString() ?? ''
-          : data?.toString() ?? '',
+      (json) => json[SpeechKeys.text]?.toString() ?? '',
     );
   }
 

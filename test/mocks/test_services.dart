@@ -265,79 +265,73 @@ class FakePushNotiService extends GetxService implements PushNotiService {
 
 /// Fake AuthService with configurable mock responses.
 class FakeAuthService extends GetxService implements AuthService {
-  ApiResponse<PeekUserResponse>? peekUserResponse;
-  ApiResponse<SignInResponse>? signInResponse;
+  ApiResponse<UserPeekModel>? peekUserResponse;
+  ApiResponse<UserModel>? signInResponse;
   ApiResponse<UserModel>? signUpResponse;
   ApiResponse<void>? sendOtpResponse;
-  ApiResponse<AuthResponse>? confirmOtpResponse;
-  ApiResponse<GoogleResponse>? googleSignInResponse;
-  ApiResponse<AuthResponse>? googleSignInCompleteResponse;
+  ApiResponse<UserModel>? confirmOtpResponse;
+  ApiResponse<UserModel>? googleSignInResponse;
+  ApiResponse<UserModel>? googleSignInCompleteResponse;
   ApiResponse<UserModel>? currentUserResponse;
-  ApiResponse<dynamic>? forgotPasswordResponse;
+  ApiResponse<void>? forgotPasswordResponse;
   ApiResponse<void>? signOutResponse;
 
   @override
-  Future<ApiResponse<PeekUserResponse>> peekUser(String email) async {
+  Future<ApiResponse<UserPeekModel>> peekUser(String email) async {
     return peekUserResponse ??
         ApiResponse.success(
           message: 'OK',
           statusCode: 200,
-          data: PeekUserResponse(userExists: true, confirmed: true),
+          data: UserPeekModel(userExists: true, confirmed: true),
         );
   }
 
   @override
-  Future<ApiResponse<SignInResponse>> signIn(SignInRequest request) async {
+  Future<ApiResponse<UserModel>> signIn(SignInRequest request) async {
     return signInResponse ??
         ApiResponse.success(
           message: 'OK',
           statusCode: 200,
-          data: SignInResponse(
-            user: UserModel(id: 'u1', email: 'test@example.com'),
-            token: 'jwt_test_token',
-          ),
+          data: UserModel(id: 'u1', email: 'test@example.com'),
+          meta: const {AuthKeys.token: 'jwt_test_token'},
         );
   }
 
   @override
-  Future<ApiResponse<AuthResponse>> signInWithToken(
+  Future<ApiResponse<UserModel>> signInWithToken(
       SignInTokenRequest request) async {
     return ApiResponse.success(
       message: 'OK',
       statusCode: 200,
-      data: AuthResponse(
-        user: UserModel(id: 'u1', email: 'test@example.com'),
-        token: 'token',
-      ),
+      data: UserModel(id: 'u1', email: 'test@example.com'),
+      meta: const {AuthKeys.token: 'token'},
     );
   }
 
   @override
-  Future<ApiResponse<GoogleResponse>> signInWithGoogle(
+  Future<ApiResponse<UserModel>> signInWithGoogle(
       SignInGoogleRequest request) async {
     return googleSignInResponse ??
         ApiResponse.success(
           message: 'OK',
           statusCode: 200,
-          data: GoogleResponse(
-            user: UserModel(id: 'u1', email: 'test@example.com'),
-            token: 'token',
-            passwordRequired: false,
-          ),
+          data: UserModel(id: 'u1', email: 'test@example.com'),
+          meta: const {
+            AuthKeys.token: 'token',
+            AuthKeys.passwordRequired: false,
+          },
         );
   }
 
   @override
-  Future<ApiResponse<AuthResponse>> googleSignInComplete(
+  Future<ApiResponse<UserModel>> googleSignInComplete(
       GoogleSignInCompleteRequest request) async {
     return googleSignInCompleteResponse ??
         ApiResponse.success(
           message: 'OK',
           statusCode: 200,
-          data: AuthResponse(
-            user: UserModel(id: 'u1', email: 'test@example.com'),
-            token: 'token',
-          ),
+          data: UserModel(id: 'u1', email: 'test@example.com'),
+          meta: const {AuthKeys.token: 'token'},
         );
   }
 
@@ -359,16 +353,14 @@ class FakeAuthService extends GetxService implements AuthService {
   }
 
   @override
-  Future<ApiResponse<AuthResponse>> confirmOTPCode(
+  Future<ApiResponse<UserModel>> confirmOTPCode(
       ConfirmOtpRequest request) async {
     return confirmOtpResponse ??
         ApiResponse.success(
           message: 'Verified',
           statusCode: 200,
-          data: AuthResponse(
-            user: UserModel(id: 'u1', email: 'test@example.com'),
-            token: 'valid_token',
-          ),
+          data: UserModel(id: 'u1', email: 'test@example.com'),
+          meta: const {AuthKeys.token: 'valid_token'},
         );
   }
 
@@ -383,7 +375,7 @@ class FakeAuthService extends GetxService implements AuthService {
   }
 
   @override
-  Future<ApiResponse<dynamic>> forgotPassword(
+  Future<ApiResponse<void>> forgotPassword(
       ForgotPasswordRequest request) async {
     return forgotPasswordResponse ??
         ApiResponse.success(message: 'Reset sent', statusCode: 200);
@@ -448,7 +440,7 @@ class FakeNotificationService extends NotificationService {
   }
 
   @override
-  Future<ApiResponse<dynamic>> deleteNotification(String id) async {
+  Future<ApiResponse<void>> deleteNotification(String id) async {
     deletedIds.add(id);
     return ApiResponse.success(message: 'Deleted', statusCode: 200);
   }
@@ -491,8 +483,8 @@ class FakePaymentService extends PaymentService {
   PaginatedResponse<TransactionModel>? transactionsResponse;
   PaginatedResponse<AccessModel>? accessesResponse;
   ApiResponse<Map<String, dynamic>>? checkoutResponse;
-  ApiResponse<dynamic>? cancelResponse;
-  ApiResponse<dynamic>? resumeResponse;
+  ApiResponse<SubscriptionModel>? cancelResponse;
+  ApiResponse<SubscriptionModel>? resumeResponse;
 
   @override
   void onInit() {}
@@ -568,15 +560,61 @@ class FakePaymentService extends PaymentService {
   }
 
   @override
-  Future<ApiResponse<dynamic>> cancelSubscription(String id) async {
+  Future<ApiResponse<SubscriptionModel>> cancelSubscription(String id) async {
     return cancelResponse ??
-        ApiResponse.success(message: 'Subscription canceled', statusCode: 200);
+        ApiResponse.success(
+          message: 'Subscription canceled',
+          statusCode: 200,
+          data: SubscriptionModel.fromJson({'id': id, 'status': 'canceled'}),
+        );
   }
 
   @override
-  Future<ApiResponse<dynamic>> resumeSubscription(String id) async {
+  Future<ApiResponse<SubscriptionModel>> resumeSubscription(String id) async {
     return resumeResponse ??
-        ApiResponse.success(message: 'Subscription resumed', statusCode: 200);
+        ApiResponse.success(
+          message: 'Subscription resumed',
+          statusCode: 200,
+          data: SubscriptionModel.fromJson({'id': id, 'status': 'active'}),
+        );
+  }
+
+  ApiResponse<CouponValidationModel>? validateCouponResponse;
+
+  @override
+  Future<ApiResponse<CouponValidationModel>> validateCoupon(
+    String code,
+    String productId,
+  ) async {
+    return validateCouponResponse ??
+        ApiResponse.success(
+          message: 'Coupon is valid',
+          statusCode: 200,
+          data: CouponValidationModel(
+            valid: true,
+            discountAmount: 200,
+            finalAmount: 800,
+            originalAmount: 1000,
+            currency: 'usd',
+            coupon: CouponModel(
+              id: 'c-test-1',
+              title: 'Test Coupon',
+              code: code,
+              couponType: CouponTypes.fixed,
+              amount: 200,
+              currency: 'usd',
+              maxUsage: 100,
+              maxUsagePerUser: 1,
+              usedCount: 0,
+              targetRoleIds: const [],
+              targetUserIds: const [],
+              targetProductIds: const [],
+              active: true,
+              exhausted: false,
+              expired: false,
+            ),
+          ),
+        );
   }
 }
 
@@ -584,11 +622,11 @@ class FakePaymentService extends PaymentService {
 class FakeAiService extends AiService {
   PaginatedResponse<AiRoomModel>? roomsResponse;
   PaginatedResponse<AiMessageModel>? historyResponse;
-  ApiResponse<AiChatResponse>? chatResponse;
+  ApiResponse<AiMessageModel>? chatResponse;
   ApiResponse<AiRoomModel>? createRoomResponse;
   ApiResponse<AiRoomModel>? renameRoomResponse;
-  ApiResponse<dynamic>? deleteRoomResponse;
-  ApiResponse<dynamic>? clearHistoryResponse;
+  ApiResponse<void>? deleteRoomResponse;
+  ApiResponse<void>? clearHistoryResponse;
 
   @override
   void onInit() {}
@@ -617,12 +655,21 @@ class FakeAiService extends AiService {
   }
 
   @override
-  Future<ApiResponse<AiChatResponse>> chat(AiChatRequest request) async {
+  Future<ApiResponse<AiMessageModel>> chat(AiChatRequest request) async {
     return chatResponse ??
         ApiResponse.success(
           message: 'Chat response queued',
           statusCode: 200,
-          data: AiChatResponse(roomId: request.roomId ?? 'default_room'),
+          data: AiMessageModel(
+            id: 'mock_msg_1',
+            role: 'assistant',
+            content: 'Mock response',
+            roomId: request.roomId ?? 'default_room',
+            createdAt: DateTime.now().toIso8601String(),
+          ),
+          meta: {
+            AiKeys.roomId: request.roomId ?? 'default_room',
+          },
         );
   }
 
@@ -661,13 +708,13 @@ class FakeAiService extends AiService {
   }
 
   @override
-  Future<ApiResponse<dynamic>> deleteRoom(String roomId) async {
+  Future<ApiResponse<void>> deleteRoom(String roomId) async {
     return deleteRoomResponse ??
         ApiResponse.success(message: 'Room deleted', statusCode: 200);
   }
 
   @override
-  Future<ApiResponse<dynamic>> clearHistory({String? roomId}) async {
+  Future<ApiResponse<void>> clearHistory({String? roomId}) async {
     return clearHistoryResponse ??
         ApiResponse.success(message: 'History cleared', statusCode: 200);
   }
@@ -929,9 +976,9 @@ class FakeVersionService extends VersionService {
 
 /// Fake Media Service.
 class FakeMediaService extends MediaService {
-  ApiResponse<AssetUploadResponse>? uploadResponse;
+  ApiResponse<AssetModel>? uploadResponse;
   PaginatedResponse<AssetModel>? assetsResponse;
-  final Map<String, ApiResponse<AssetPlaybackResponse>> playbackByAssetId = {};
+  final Map<String, ApiResponse<MediaPlaybackModel>> playbackByAssetId = {};
   String? lastPlaybackAssetId;
   String? lastUploadedFilePath;
   String? lastUploadedType;
@@ -945,7 +992,7 @@ class FakeMediaService extends MediaService {
   void onInit() {}
 
   @override
-  Future<ApiResponse<AssetPlaybackResponse>> getAssetPlayback(
+  Future<ApiResponse<MediaPlaybackModel>> getAssetPlayback(
     String assetId,
   ) async {
     lastPlaybackAssetId = assetId;
@@ -972,7 +1019,7 @@ class FakeMediaService extends MediaService {
   }
 
   @override
-  Future<ApiResponse<AssetUploadResponse>> uploadImage({
+  Future<ApiResponse<AssetModel>> uploadImage({
     required String filePath,
     String? filename,
     String? type,
@@ -990,24 +1037,24 @@ class FakeMediaService extends MediaService {
         ApiResponse.success(
           message: 'Uploaded',
           statusCode: 200,
-          data: AssetUploadResponse(
-            asset: AssetModel(
-              id: 'a1',
-              name: 'avatar.png',
-              url: 'https://example.com/avatar.png',
-              type: type ?? 'avatar',
-              source: AssetKeys.sourceUpload,
-              sizeBytes: 1024,
-              format: 'png',
-              assetableType: assetableType ?? 'User',
-              assetableId: assetableId ?? 'u1',
-            ),
-            storageDetails: StorageDetails(
-              storageKey: 'avatars/a1.png',
-              bytes: 1024,
-              format: 'png',
-            ),
+          data: AssetModel(
+            id: 'a1',
+            name: 'avatar.png',
+            url: 'https://example.com/avatar.png',
+            type: type ?? 'avatar',
+            source: AssetKeys.sourceUpload,
+            sizeBytes: 1024,
+            format: 'png',
+            assetableType: assetableType ?? 'User',
+            assetableId: assetableId ?? 'u1',
           ),
+          meta: const {
+            AssetKeys.storageDetails: {
+              AssetKeys.storageKey: 'avatars/a1.png',
+              AssetKeys.bytes: 1024,
+              AssetKeys.format: 'png',
+            },
+          },
         );
   }
 }
@@ -1026,7 +1073,7 @@ class FakeMediaDownloadService extends MediaDownloadService {
   @override
   Future<void> downloadAsset(AssetModel asset) async {
     if (downloadError != null) throw downloadError!;
-    entries[asset.id] = MediaDownloadEntry(
+    entries[asset.id] = MediaDownloadModel(
       assetId: asset.id,
       state: EMediaDownloadState.ready,
       progress: 1,

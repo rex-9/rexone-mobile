@@ -244,7 +244,7 @@ void main() {
       final controller = Get.put(MediaPlaylistController());
       final asset = _asset(id: 'a1', format: AssetKeys.formatAudio);
 
-      downloads.entries[asset.id] = MediaDownloadEntry(
+      downloads.entries[asset.id] = MediaDownloadModel(
         assetId: asset.id,
         state: EMediaDownloadState.downloading,
         progress: 0.3,
@@ -300,7 +300,7 @@ void main() {
       final controller = Get.put(MediaPlaylistController());
       final asset = _asset(id: 'a1', format: AssetKeys.formatAudio);
 
-      final entry = MediaDownloadEntry(
+      final entry = MediaDownloadModel(
         assetId: asset.id,
         state: EMediaDownloadState.ready,
         sizeBytes: 4194304,

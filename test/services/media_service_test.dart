@@ -30,17 +30,17 @@ class MockMediaApiService extends ApiService {
           body: {
             'status': {'code': 200, 'success': true, 'message': 'Upload successful'},
             'data': {
-              'asset': {
-                'id': 'ast_test_1',
-                'name': 'test.png',
-                'url': 'https://garage.example.com/test.png',
-                'type': 'avatar',
-                'source': 'upload',
-                'format': 'png',
-                'size_bytes': 1234,
-                'assetable_type': 'User',
-                'assetable_id': 'u_test_1',
-              },
+              'id': 'ast_test_1',
+              'name': 'test.png',
+              'url': 'https://garage.example.com/test.png',
+              'type': 'avatar',
+              'source': 'upload',
+              'format': 'png',
+              'size_bytes': 1234,
+              'assetable_type': 'User',
+              'assetable_id': 'u_test_1',
+            },
+            'meta': {
               'storage_details': {
                 'storage_key': 'avatars/test.png',
                 'bytes': 1234,
@@ -93,10 +93,10 @@ void main() {
       expect(mockApi.lastUrl, equals(ServerRoutes.uploadAsset));
       expect(mockApi.lastForm, isNotNull);
       expect(res.success, isTrue);
-      expect(res.data?.asset.id, equals('ast_test_1'));
-      expect(res.data?.asset.url, equals('https://garage.example.com/test.png'));
-      expect(res.data?.storageDetails.storageKey, equals('avatars/test.png'));
-      expect(res.data?.storageDetails.bytes, equals(1234));
+      expect(res.data?.id, equals('ast_test_1'));
+      expect(res.data?.url, equals('https://garage.example.com/test.png'));
+      expect(res.meta?[AssetKeys.storageDetails]['storage_key'], equals('avatars/test.png'));
+      expect(res.meta?[AssetKeys.storageDetails]['bytes'], equals(1234));
     });
 
     test('handles upload error response correctly', () async {

@@ -98,7 +98,9 @@ void main() {
       expect(validation.discountAmount, 2900);
       expect(validation.finalAmount, 0);
       expect(validation.isFree, true);
-      expect(validation.coupon?.code, 'FREEVIP');
+      expect(validation.code, 'FREEVIP');
+      expect(validation.coupon, isNotNull);
+      expect(validation.coupon!.id, 'coupon_free');
     });
 
     test('parses partial discount validation', () {
@@ -108,6 +110,22 @@ void main() {
         'final_amount': 2400,
         'original_amount': 2900,
         'currency': 'usd',
+        'coupon': {
+          'id': 'coupon_save500',
+          'title': 'Save 500',
+          'code': 'SAVE500',
+          'coupon_type': 'fixed',
+          'amount': 500,
+          'max_usage': 100,
+          'max_usage_per_user': 1,
+          'used_count': 10,
+          'target_role_ids': [],
+          'target_user_ids': [],
+          'target_product_ids': [],
+          'active': true,
+          'exhausted': false,
+          'expired': false,
+        },
       };
 
       final validation = CouponValidationModel.fromJson(json);
@@ -116,20 +134,43 @@ void main() {
       expect(validation.discountAmount, 500);
       expect(validation.finalAmount, 2400);
       expect(validation.isFree, false);
+      expect(validation.code, 'SAVE500');
     });
 
-    test('parses rate limited cooldown validation response', () {
-      final json = {
-        PaymentKeys.valid: false,
-        PaymentKeys.remainingAttempts: 0,
-        PaymentKeys.cooldownRemaining: 30,
-      };
+    test('serializes to json correctly including nested coupon', () {
+      final model = CouponValidationModel(
+        valid: true,
+        discountAmount: 500,
+        finalAmount: 2400,
+        originalAmount: 2900,
+        currency: 'usd',
+        coupon: const CouponModel(
+          id: 'c_val_1',
+          title: 'Discount',
+          code: 'DISCOUNT',
+          couponType: CouponTypes.fixed,
+          amount: 500,
+          currency: 'usd',
+          maxUsage: 10,
+          maxUsagePerUser: 1,
+          usedCount: 0,
+          targetRoleIds: [],
+          targetUserIds: [],
+          targetProductIds: [],
+          active: true,
+          exhausted: false,
+          expired: false,
+        ),
+      );
 
-      final validation = CouponValidationModel.fromJson(json);
+      final json = model.toJson();
 
-      expect(validation.valid, false);
-      expect(validation.remainingAttempts, 0);
-      expect(validation.cooldownRemaining, 30);
+      expect(json[PaymentKeys.valid], true);
+      expect(json[PaymentKeys.discountAmount], 500);
+      expect(json[PaymentKeys.finalAmount], 2400);
+      expect(json[PaymentKeys.originalAmount], 2900);
+      expect(json[PaymentKeys.currency], 'usd');
+      expect(json[PaymentKeys.coupon], isA<Map<String, dynamic>>());
     });
   });
 

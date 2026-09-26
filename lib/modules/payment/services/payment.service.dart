@@ -28,10 +28,7 @@ class PaymentService extends GetxService {
     if (page != null) query[ApiKeys.page] = page.toString();
     if (limit != null) query[ApiKeys.limit] = limit.toString();
     final response = await _api.get(ServerRoutes.paymentProducts, query: query);
-    return _api.parsePaginatedResponse<ProductModel>(
-      response,
-      (data) => ProductModel.fromJson(data),
-    );
+    return _api.parsePagyList<ProductModel>(response, ProductModel.fromJson);
   }
 
   // ============================================================
@@ -48,26 +45,36 @@ class PaymentService extends GetxService {
       ServerRoutes.paymentSubscriptions,
       query: query,
     );
-    return _api.parsePaginatedResponse<SubscriptionModel>(
+    return _api.parsePagyList<SubscriptionModel>(
       response,
-      (data) => SubscriptionModel.fromJson(data),
+      SubscriptionModel.fromJson,
     );
   }
 
-  Future<ApiResponse<dynamic>> cancelSubscription(String subscriptionId) async {
+  Future<ApiResponse<SubscriptionModel>> cancelSubscription(
+    String subscriptionId,
+  ) async {
     final response = await _api.post(
       ServerRoutes.paymentSubscriptionCancel(subscriptionId),
       {},
     );
-    return _api.parseResponse(response, (data) => data);
+    return _api.parseRecord<SubscriptionModel>(
+      response,
+      SubscriptionModel.fromJson,
+    );
   }
 
-  Future<ApiResponse<dynamic>> resumeSubscription(String subscriptionId) async {
+  Future<ApiResponse<SubscriptionModel>> resumeSubscription(
+    String subscriptionId,
+  ) async {
     final response = await _api.post(
       ServerRoutes.paymentSubscriptionResume(subscriptionId),
       {},
     );
-    return _api.parseResponse(response, (data) => data);
+    return _api.parseRecord<SubscriptionModel>(
+      response,
+      SubscriptionModel.fromJson,
+    );
   }
 
   // ============================================================
@@ -84,9 +91,9 @@ class PaymentService extends GetxService {
       ServerRoutes.paymentTransactions,
       query: query,
     );
-    return _api.parsePaginatedResponse<TransactionModel>(
+    return _api.parsePagyList<TransactionModel>(
       response,
-      (data) => TransactionModel.fromJson(data),
+      TransactionModel.fromJson,
     );
   }
 
@@ -100,14 +107,8 @@ class PaymentService extends GetxService {
     final query = <String, dynamic>{};
     if (page != null) query[ApiKeys.page] = page.toString();
     if (limit != null) query[ApiKeys.limit] = limit.toString();
-    final response = await _api.get(
-      ServerRoutes.activeAccesses,
-      query: query,
-    );
-    return _api.parsePaginatedResponse<AccessModel>(
-      response,
-      (data) => AccessModel.fromJson(data),
-    );
+    final response = await _api.get(ServerRoutes.activeAccesses, query: query);
+    return _api.parsePagyList<AccessModel>(response, AccessModel.fromJson);
   }
 
   Future<PaginatedResponse<AccessModel>> getAccesses({
@@ -117,14 +118,8 @@ class PaymentService extends GetxService {
     final query = <String, dynamic>{};
     if (page != null) query[ApiKeys.page] = page.toString();
     if (limit != null) query[ApiKeys.limit] = limit.toString();
-    final response = await _api.get(
-      ServerRoutes.accesses,
-      query: query,
-    );
-    return _api.parsePaginatedResponse<AccessModel>(
-      response,
-      (data) => AccessModel.fromJson(data),
-    );
+    final response = await _api.get(ServerRoutes.accesses, query: query);
+    return _api.parsePagyList<AccessModel>(response, AccessModel.fromJson);
   }
 
   // ============================================================
@@ -137,10 +132,7 @@ class PaymentService extends GetxService {
       ServerRoutes.paymentSession,
       request.toJson(),
     );
-    return _api.parseResponse<Map<String, dynamic>>(
-      response,
-      (data) => data is Map ? Map<String, dynamic>.from(data) : {},
-    );
+    return _api.parseRecord<Map<String, dynamic>>(response);
   }
 
   Future<ApiResponse<Map<String, dynamic>>> getSessionStatus(
@@ -149,10 +141,7 @@ class PaymentService extends GetxService {
     final response = await _api.get(
       ServerRoutes.paymentSessionStatus(sessionId),
     );
-    return _api.parseResponse<Map<String, dynamic>>(
-      response,
-      (data) => data is Map ? Map<String, dynamic>.from(data) : {},
-    );
+    return _api.parseRecord<Map<String, dynamic>>(response);
   }
 
   // ============================================================
@@ -162,20 +151,13 @@ class PaymentService extends GetxService {
     String code,
     String productId,
   ) async {
-    final response = await _api.post(
-      ServerRoutes.paymentCouponsValidate,
-      {
-        PaymentKeys.code: code,
-        PaymentKeys.productId: productId,
-      },
-    );
-    return _api.parseResponse<CouponValidationModel>(
+    final response = await _api.post(ServerRoutes.paymentCouponsValidate, {
+      PaymentKeys.code: code,
+      PaymentKeys.productId: productId,
+    });
+    return _api.parseRecord<CouponValidationModel>(
       response,
-      (data) => data is Map<String, dynamic>
-          ? CouponValidationModel.fromJson(data)
-          : CouponValidationModel.fromJson(
-              Map<String, dynamic>.from(data as Map),
-            ),
+      CouponValidationModel.fromJson,
     );
   }
 }

@@ -1,6 +1,6 @@
-// test/modules/notification/data/models/notification_model_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rexone_mobile/modules/notification/data/models/notification.model.dart';
+import 'package:rexone_mobile/services/services.dart';
 
 void main() {
   group('NotificationModel', () {
@@ -31,8 +31,8 @@ void main() {
       expect(model.createdAt, isNotNull);
     });
 
-    test('parses notification_id directly from JSON attributes', () {
-      final json = {
+    test('parses notification_id directly from JSON attributes with ApiService.flattenRecord', () {
+      final json = ApiService.flattenRecord({
         'id': 'notif-999',
         'attributes': {
           'title': 'New Feature',
@@ -41,7 +41,7 @@ void main() {
           'read': false,
           'created_at': '2026-09-05T10:00:00.000Z',
         },
-      };
+      });
 
       final model = NotificationModel.fromJson(json);
 
@@ -50,8 +50,8 @@ void main() {
       expect(model.templateId, 'notif-def-456');
     });
 
-    test('parses from JSONAPI style attributes correctly', () {
-      final json = {
+    test('parses from JSONAPI style attributes correctly with ApiService.flattenRecord', () {
+      final json = ApiService.flattenRecord({
         'id': 'notif-456',
         'type': 'user_notifications',
         'attributes': {
@@ -64,7 +64,7 @@ void main() {
           'notification_id': null,
           'created_at': '2026-09-05T10:00:00.000Z',
         },
-      };
+      });
 
       final model = NotificationModel.fromJson(json);
 

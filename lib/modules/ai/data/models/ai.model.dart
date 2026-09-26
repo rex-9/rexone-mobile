@@ -1,60 +1,5 @@
-// lib/modules/ai/data/models/ai.model.dart
 import 'package:rexone_mobile/constants/constants.dart';
-import 'package:rexone_mobile/helpers/helpers.dart';
-
-class AiAssetModel {
-  final String id;
-  final String name;
-  final String url;
-  final String type;
-  final String format;
-  final String extension;
-  final int? sizeBytes;
-  final int? durationSecs;
-  final String source;
-  final String assetableType;
-  final String assetableId;
-  final String createdAt;
-  final String updatedAt;
-
-  const AiAssetModel({
-    required this.id,
-    required this.name,
-    required this.url,
-    required this.type,
-    required this.format,
-    required this.extension,
-    this.sizeBytes,
-    this.durationSecs,
-    required this.source,
-    required this.assetableType,
-    required this.assetableId,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory AiAssetModel.fromJson(Map<String, dynamic> json) {
-    return AiAssetModel(
-      id: json[ApiKeys.id]?.toString() ?? '',
-      name: json[AiKeys.name]?.toString() ?? '',
-      url: json[AiKeys.url]?.toString() ?? '',
-      type: json[AiKeys.type]?.toString() ?? '',
-      format: json[AiKeys.format]?.toString() ?? '',
-      extension: json[AiKeys.extension]?.toString() ?? '',
-      sizeBytes: json[AiKeys.sizeBytes] is int
-          ? json[AiKeys.sizeBytes] as int
-          : int.tryParse(json[AiKeys.sizeBytes]?.toString() ?? ''),
-      durationSecs: json[AiKeys.durationSecs] is int
-          ? json[AiKeys.durationSecs] as int
-          : int.tryParse(json[AiKeys.durationSecs]?.toString() ?? ''),
-      source: json[AiKeys.source]?.toString() ?? '',
-      assetableType: json[AiKeys.assetableType]?.toString() ?? '',
-      assetableId: json[AiKeys.assetableId]?.toString() ?? '',
-      createdAt: json[AiKeys.createdAt]?.toString() ?? '',
-      updatedAt: json[AiKeys.updatedAt]?.toString() ?? '',
-    );
-  }
-}
+import 'package:rexone_mobile/models/asset.model.dart';
 
 class AiMessageModel {
   final String id;
@@ -64,7 +9,7 @@ class AiMessageModel {
   final String?
   status; // EAiMessageStatus.name //"queued" | "processing" | "completed" | "failed"
   final String? ttsStatus;
-  final List<AiAssetModel> assets;
+  final List<AssetModel> assets;
   final String createdAt;
 
   AiMessageModel({
@@ -79,54 +24,43 @@ class AiMessageModel {
   });
 
   factory AiMessageModel.fromJson(Map<String, dynamic> json) {
-    final attrs = json[ApiKeys.attributes] is Map
-        ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
+    final metadata = json[AiKeys.metadata] is Map
+        ? Map<String, dynamic>.from(json[AiKeys.metadata] as Map)
         : null;
-    final source = attrs ?? json;
-
-    final metadata = source[AiKeys.metadata] is Map
-        ? Map<String, dynamic>.from(source[AiKeys.metadata] as Map)
-        : null;
-    final rawAssets = source[AiKeys.assets];
+    final rawAssets = json[AiKeys.assets];
     final assets = rawAssets is List
         ? rawAssets
               .whereType<Map>()
               .map(
-                (item) =>
-                    AiAssetModel.fromJson(Map<String, dynamic>.from(item)),
+                (item) => AssetModel.fromJson(Map<String, dynamic>.from(item)),
               )
               .toList()
-        : const <AiAssetModel>[];
+        : const <AssetModel>[];
 
     return AiMessageModel(
-      id: json[ApiKeys.id]?.toString() ?? source[ApiKeys.id]?.toString() ?? '',
-      role: source[AiKeys.role]?.toString() ?? EChatRole.user.name,
-      content: source[AiKeys.content]?.toString() ?? '',
-      roomId: source[AiKeys.roomId]?.toString(),
+      id: json[ApiKeys.id]?.toString() ?? '',
+      role: json[AiKeys.role]?.toString() ?? EChatRole.user.name,
+      content: json[AiKeys.content]?.toString() ?? '',
+      roomId: json[AiKeys.roomId]?.toString(),
       status:
           metadata?[AiKeys.status]?.toString() ??
-          source[AiKeys.status]?.toString(),
+          json[AiKeys.status]?.toString(),
       ttsStatus: metadata?[AiKeys.ttsStatus]?.toString(),
       assets: assets,
-      createdAt:
-          source[AiKeys.createdAt]?.toString() ??
-          AppDateTime.toUtcIso(DateTime.now())!,
+      createdAt: json[AiKeys.createdAt]?.toString() ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    ApiKeys.id: id,
-    AiKeys.role: role,
-    AiKeys.content: content,
-    AiKeys.status: status,
-    AiKeys.createdAt: createdAt,
-  };
-
   bool get isUser => role == EChatRole.user.name;
-  bool get isFailed => status == EAiMessageStatus.failed.name;
+  bool get isAssistant => role == EChatRole.assistant.name;
+  bool get isSystem => role == EChatRole.system.name;
+
+  bool get isCompleted => status == EAiMessageStatus.completed.name;
   bool get isProcessing =>
       status == EAiMessageStatus.queued.name ||
       status == EAiMessageStatus.processing.name;
+  bool get isQueued => status == EAiMessageStatus.queued.name;
+  bool get isFailed => status == EAiMessageStatus.failed.name;
 
   String? get audioUrl {
     for (final asset in assets) {
@@ -138,6 +72,39 @@ class AiMessageModel {
   }
 
   bool get hasAudio => audioUrl != null;
+
+  AiMessageModel copyWith({
+    String? id,
+    String? role,
+    String? content,
+    String? roomId,
+    String? status,
+    String? ttsStatus,
+    List<AssetModel>? assets,
+    String? createdAt,
+  }) {
+    return AiMessageModel(
+      id: id ?? this.id,
+      role: role ?? this.role,
+      content: content ?? this.content,
+      roomId: roomId ?? this.roomId,
+      status: status ?? this.status,
+      ttsStatus: ttsStatus ?? this.ttsStatus,
+      assets: assets ?? this.assets,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    ApiKeys.id: id,
+    AiKeys.role: role,
+    AiKeys.content: content,
+    if (roomId != null) AiKeys.roomId: roomId,
+    if (status != null) AiKeys.status: status,
+    if (ttsStatus != null) AiKeys.ttsStatus: ttsStatus,
+    AiKeys.assets: assets.map((a) => a.toJson()).toList(),
+    AiKeys.createdAt: createdAt,
+  };
 }
 
 class AiRoomModel {
@@ -160,21 +127,16 @@ class AiRoomModel {
   });
 
   factory AiRoomModel.fromJson(Map<String, dynamic> json) {
-    final attrs = json[ApiKeys.attributes] is Map
-        ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
-        : null;
-    final source = attrs ?? json;
-
     return AiRoomModel(
-      id: json[ApiKeys.id]?.toString() ?? source[ApiKeys.id]?.toString() ?? '',
-      title: source[AiKeys.title]?.toString() ?? 'New Chat',
-      messageCount: source[AiKeys.messageCount] is int
-          ? source[AiKeys.messageCount] as int
-          : int.tryParse(source[AiKeys.messageCount]?.toString() ?? '0') ?? 0,
-      lastMessage: source[AiKeys.lastMessage]?.toString(),
-      createdAt: source[AiKeys.createdAt]?.toString() ?? '',
-      updatedAt: source[AiKeys.updatedAt]?.toString() ?? '',
-      processing: source[AiKeys.processing] == true,
+      id: json[ApiKeys.id]?.toString() ?? '',
+      title: json[AiKeys.title]?.toString() ?? 'New Chat',
+      messageCount: json[AiKeys.messageCount] is int
+          ? json[AiKeys.messageCount] as int
+          : int.tryParse(json[AiKeys.messageCount]?.toString() ?? '0') ?? 0,
+      lastMessage: json[AiKeys.lastMessage]?.toString(),
+      createdAt: json[AiKeys.createdAt]?.toString() ?? '',
+      updatedAt: json[AiKeys.updatedAt]?.toString() ?? '',
+      processing: json[AiKeys.processing] == true,
     );
   }
 

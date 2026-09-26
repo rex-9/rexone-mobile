@@ -32,7 +32,7 @@ class MediaAssetTile extends StatelessWidget {
   final VoidCallback onTap;
   final EMediaDownloadState downloadState;
   final double downloadProgress;
-  final MediaDownloadEntry? downloadEntry;
+  final MediaDownloadModel? downloadEntry;
   final VoidCallback onDownloadTap;
   final VoidCallback? onDownloadPauseTap;
   final VoidCallback? onDownloadLongPress;

@@ -39,6 +39,8 @@ class PaymentKeys {
   static const productName = 'product_name';
 
   // ===== Access =====
+  static const accesses = 'accesses';
+  static const productCode = 'product_code';
   static const grantedAt = 'granted_at';
   static const expiresAt = 'expires_at';
   static const revokedAt = 'revoked_at';

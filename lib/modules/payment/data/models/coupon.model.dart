@@ -21,7 +21,7 @@ class CouponModel {
   final bool expired;
   final Map<String, dynamic>? metadata;
 
-  CouponModel({
+  const CouponModel({
     required this.id,
     required this.title,
     this.description,
@@ -52,7 +52,8 @@ class CouponModel {
       title: json[PaymentKeys.title]?.toString() ?? '',
       description: json[PaymentKeys.description]?.toString(),
       code: json[PaymentKeys.code]?.toString() ?? '',
-      couponType: json[PaymentKeys.couponType]?.toString() ?? CouponTypes.percentage,
+      couponType:
+          json[PaymentKeys.couponType]?.toString() ?? CouponTypes.percentage,
       amount: json[PaymentKeys.amount] is int
           ? json[PaymentKeys.amount] as int
           : int.tryParse(json[PaymentKeys.amount]?.toString() ?? '0') ?? 0,
@@ -62,24 +63,30 @@ class CouponModel {
           : int.tryParse(json[PaymentKeys.maxUsage]?.toString() ?? '0') ?? 0,
       maxUsagePerUser: json[PaymentKeys.maxUsagePerUser] is int
           ? json[PaymentKeys.maxUsagePerUser] as int
-          : int.tryParse(json[PaymentKeys.maxUsagePerUser]?.toString() ?? '1') ?? 1,
+          : int.tryParse(
+                  json[PaymentKeys.maxUsagePerUser]?.toString() ?? '1',
+                ) ??
+                1,
       usedCount: json[PaymentKeys.usedCount] is int
           ? json[PaymentKeys.usedCount] as int
           : int.tryParse(json[PaymentKeys.usedCount]?.toString() ?? '0') ?? 0,
       expiresAt: json[PaymentKeys.expiresAt]?.toString(),
       referrerId: json[PaymentKeys.referrerId]?.toString(),
-      targetRoleIds: (json[PaymentKeys.targetRoleIds] as List?)
+      targetRoleIds:
+          (json[PaymentKeys.targetRoleIds] as List?)
               ?.map((e) => e.toString())
               .toList() ??
-          [],
-      targetUserIds: (json[PaymentKeys.targetUserIds] as List?)
+          const [],
+      targetUserIds:
+          (json[PaymentKeys.targetUserIds] as List?)
               ?.map((e) => e.toString())
               .toList() ??
-          [],
-      targetProductIds: (json[PaymentKeys.targetProductIds] as List?)
+          const [],
+      targetProductIds:
+          (json[PaymentKeys.targetProductIds] as List?)
               ?.map((e) => e.toString())
               .toList() ??
-          [],
+          const [],
       active: json[PaymentKeys.active] != false,
       exhausted: json[PaymentKeys.exhausted] == true,
       expired: json[PaymentKeys.expired] == true,

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
+import 'package:rexone_mobile/modules/payment/payment.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
 import 'package:rexone_mobile/services/push_noti.service.dart';
@@ -119,7 +120,7 @@ void main() {
       fakeAuth.peekUserResponse = ApiResponse.success(
         message: 'OK',
         statusCode: 200,
-        data: PeekUserResponse(userExists: true, confirmed: true),
+        data: UserPeekModel(userExists: true, confirmed: true),
       );
 
       final status = await authController.peekUser('rex@example.com');
@@ -130,7 +131,7 @@ void main() {
       fakeAuth.peekUserResponse = ApiResponse.success(
         message: 'OK',
         statusCode: 200,
-        data: PeekUserResponse(userExists: true, confirmed: false),
+        data: UserPeekModel(userExists: true, confirmed: false),
       );
 
       final status = await authController.peekUser('unconfirmed@example.com');
@@ -141,7 +142,7 @@ void main() {
       fakeAuth.peekUserResponse = ApiResponse.success(
         message: 'OK',
         statusCode: 200,
-        data: PeekUserResponse(userExists: false, confirmed: false),
+        data: UserPeekModel(userExists: false, confirmed: false),
       );
 
       final status = await authController.peekUser('new@example.com');
@@ -170,6 +171,105 @@ void main() {
       expect(authController.attemptsLeft.value, equals(AuthController.maxAttempts));
       expect(authController.hasFailureHistory.value, isFalse);
       expect(authController.cooldownSecondsLeft.value, equals(0));
+    });
+  });
+
+  group('AuthController - Product Entitlement & Access', () {
+    final activeLifetime = AccessModel(
+      id: 'acc_life',
+      status: 'active',
+      productId: 'prod_life_id',
+      productCode: 'PROD_LIFE',
+      productName: 'Lifetime Pass',
+      active: true,
+      expiresAt: null,
+    );
+
+    final activeSubscription = AccessModel(
+      id: 'acc_sub',
+      status: 'active',
+      productId: 'prod_sub_id',
+      productCode: 'PROD_SUB',
+      productName: 'Monthly Subscription',
+      active: true,
+      expiresAt: DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+    );
+
+    final expiredAccess = AccessModel(
+      id: 'acc_exp',
+      status: 'active',
+      productId: 'prod_exp_id',
+      productCode: 'PROD_EXP',
+      productName: 'Expired Pass',
+      active: true,
+      expiresAt: DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
+    );
+
+    test('returns false when currentUser is null or has no accesses', () {
+      authController.currentUser.value = null;
+      expect(authController.hasAccess('prod_life_id'), isFalse);
+      expect(authController.getAccess('prod_life_id'), isNull);
+      expect(authController.activeAccesses, isEmpty);
+
+      authController.currentUser.value = UserModel(id: 'u1', email: 'u1@test.com', accesses: []);
+      expect(authController.hasAccess('prod_life_id'), isFalse);
+      expect(authController.getAccess('prod_life_id'), isNull);
+      expect(authController.activeAccesses, isEmpty);
+    });
+
+    test('hasAccess correctly verifies active entitlements by productId and productCode', () {
+      authController.currentUser.value = UserModel(
+        id: 'u1',
+        email: 'u1@test.com',
+        accesses: [activeLifetime, activeSubscription, expiredAccess],
+      );
+
+      // Match by product ID
+      expect(authController.hasAccess('prod_life_id'), isTrue);
+      expect(authController.hasAccess('prod_sub_id'), isTrue);
+
+      // Match by product Code
+      expect(authController.hasAccess('PROD_LIFE'), isTrue);
+      expect(authController.hasAccess('PROD_SUB'), isTrue);
+
+      // Expired access returns false
+      expect(authController.hasAccess('prod_exp_id'), isFalse);
+      expect(authController.hasAccess('PROD_EXP'), isFalse);
+
+      // Unowned product returns false
+      expect(authController.hasAccess('non_existent'), isFalse);
+    });
+
+    test('getAccess returns active matching AccessModel or null when expired/absent', () {
+      authController.currentUser.value = UserModel(
+        id: 'u1',
+        email: 'u1@test.com',
+        accesses: [activeLifetime, activeSubscription, expiredAccess],
+      );
+
+      final lifeById = authController.getAccess('prod_life_id');
+      expect(lifeById, isNotNull);
+      expect(lifeById?.id, 'acc_life');
+
+      final subByCode = authController.getAccess('PROD_SUB');
+      expect(subByCode, isNotNull);
+      expect(subByCode?.id, 'acc_sub');
+
+      expect(authController.getAccess('prod_exp_id'), isNull);
+      expect(authController.getAccess('unknown_code'), isNull);
+    });
+
+    test('activeAccesses returns only currently active accesses', () {
+      authController.currentUser.value = UserModel(
+        id: 'u1',
+        email: 'u1@test.com',
+        accesses: [activeLifetime, activeSubscription, expiredAccess],
+      );
+
+      final activeList = authController.activeAccesses;
+      expect(activeList.length, 2);
+      expect(activeList.map((a) => a.id), containsAll(['acc_life', 'acc_sub']));
+      expect(activeList.map((a) => a.id), isNot(contains('acc_exp')));
     });
   });
 }

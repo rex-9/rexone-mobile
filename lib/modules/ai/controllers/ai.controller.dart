@@ -157,17 +157,37 @@ class AiController extends GetxController {
         AiChatRequest(message: clean, roomId: currentRoomId.value),
       );
       if (response.success && response.data != null) {
-        final chat = response.data!;
+        final message = response.data!;
+        final roomId = response.meta?[AiKeys.roomId]?.toString() ??
+            message.roomId;
 
-        if (chat.roomId.isNotEmpty) {
-          currentRoomId.value = chat.roomId;
+        if (roomId != null && roomId.isNotEmpty) {
+          currentRoomId.value = roomId;
         }
 
-        if (chat.messages.isNotEmpty) {
-          final idx = messages.indexOf(optimisticMessage);
+        final idx = messages.indexOf(optimisticMessage);
+        final rawMessages = response.meta?[AiKeys.messages];
+        if (rawMessages is List && rawMessages.isNotEmpty) {
+          final parsed = rawMessages
+              .whereType<Map>()
+              .map((m) =>
+                  AiMessageModel.fromJson(Map<String, dynamic>.from(m)))
+              .toList();
           if (idx != -1) {
             messages.removeAt(idx);
-            messages.insertAll(idx, chat.messages);
+            messages.insertAll(idx, parsed);
+          } else {
+            messages.addAll(parsed);
+          }
+        } else {
+          if (message.role == EChatRole.user.name) {
+            if (idx != -1) {
+              messages[idx] = message;
+            } else {
+              messages.add(message);
+            }
+          } else {
+            messages.add(message);
           }
         }
       } else {

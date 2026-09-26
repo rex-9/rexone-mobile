@@ -8,6 +8,7 @@ import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/components/components.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
+import 'package:rexone_mobile/modules/payment/payment.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../routes/app.routes.dart';
 import '../../../services/services.dart';
@@ -259,27 +260,27 @@ class AuthController extends GetxController {
     }
   }
 
-  void _storeSession(AuthResponse response) {
-    authToken.value = response.token;
-    _storage.setToken(response.token);
-    _storage.setUserEmail(response.user.email);
-    currentUser.value = response.user;
-    _storage.setUserData(response.user);
+  void _storeSession({required UserModel user, required String token}) {
+    authToken.value = token;
+    _storage.setToken(token);
+    _storage.setUserEmail(user.email);
+    currentUser.value = user;
+    _storage.setUserData(user);
     isLoggedIn.value = true;
 
     if (Get.isRegistered<SocketService>()) {
-      Get.find<SocketService>().connect(response.token);
+      Get.find<SocketService>().connect(token);
     }
     if (Get.isRegistered<PushNotiService>()) {
       // Sync user data with OneSignal
-      _pushNotiService.syncUser(response.user);
+      _pushNotiService.syncUser(user);
     }
     if (Get.isRegistered<AnalyticsService>()) {
       // Set user ID and properties
-      _analytics.setUserId(response.user.id);
+      _analytics.setUserId(user.id);
       _analytics.setUserProperty(
         'provider',
-        response.user.provider ?? EAuthProvider.email.name,
+        user.provider ?? EAuthProvider.email.name,
       );
     }
   }
@@ -298,31 +299,24 @@ class AuthController extends GetxController {
         SignInRequest(signinKey: email.value, password: password.value),
       );
 
-      if (response.success && response.data != null) {
-        final data = response.data!;
+      final token = response.meta?[AuthKeys.token]?.toString();
+      final otpSent = response.meta?[AuthKeys.otpSent] as bool? ?? false;
 
-        // Check if user is confirmed (has user + token)
-        if (data.user != null && data.token != null) {
-          _resetRetryState();
-          _analytics.logSignIn(method: EAuthProvider.email.name);
-          // Sync noti user & Request permission after Email signin
-          await _handleSuccessfulAuth(
-            AuthResponse(user: data.user!, token: data.token!),
-          );
-        } else if (data.otpSent) {
-          // Unconfirmed user - OTP sent
-          AppSnackbar.success(response.message);
-          _startResendCountdown(30);
-          AppRoutes.toConfirmEmail(email: email.value);
-        } else {
-          AppSnackbar.error(response.message);
-        }
+      if (response.success && response.data != null && token != null) {
+        _resetRetryState();
+        _analytics.logSignIn(method: EAuthProvider.email.name);
+        await _handleSuccessfulAuth(user: response.data!, token: token);
+      } else if (otpSent) {
+        AppSnackbar.success(response.message);
+        _startResendCountdown(30);
+        AppRoutes.toConfirmEmail(email: email.value);
       } else {
         signinPin.triggerError();
 
-        final data = response.data;
-        final remainingAttempts = data?.remainingAttempts ?? 0;
-        final cooldownRemaining = data?.cooldownRemaining ?? 0;
+        final remainingAttempts =
+            response.meta?[AuthKeys.remainingAttempts] as int? ?? 0;
+        final cooldownRemaining =
+            response.meta?[AuthKeys.cooldownRemaining] as int? ?? 0;
 
         _applySignInFailure(
           remainingAttempts: remainingAttempts,
@@ -369,10 +363,11 @@ class AuthController extends GetxController {
       final response = await _auth.confirmOTPCode(
         ConfirmOtpRequest(signinKey: email.value, confirmationCode: code),
       );
+      final token = response.meta?[AuthKeys.token]?.toString() ?? '';
       if (response.success && response.data != null) {
         _analytics.logCompleteOnboarding();
         // Sync noti user & Request permission after Email signup
-        await _handleSuccessfulAuth(response.data!);
+        await _handleSuccessfulAuth(user: response.data!, token: token);
       } else {
         confirmPin.triggerError();
         AppSnackbar.error(response.error ?? response.message);
@@ -446,11 +441,15 @@ class AuthController extends GetxController {
         SignInGoogleRequest(idToken: accessToken),
       );
 
-      if (response.success && response.data != null) {
+      final passwordRequired =
+          response.meta?[AuthKeys.passwordRequired] as bool? ?? false;
+      final challengeToken = response.meta?[AuthKeys.challengeToken] as String?;
+      final token = response.meta?[AuthKeys.token]?.toString();
+
+      if (response.success) {
         // New Google account: set a password to complete account creation.
-        final data = response.data!;
-        if (data.passwordRequired && data.challengeToken != null) {
-          googleChallengeToken.value = data.challengeToken!;
+        if (passwordRequired && challengeToken != null) {
+          googleChallengeToken.value = challengeToken;
           email.value = user.email;
           password.value = '';
           confirmPassword.value = '';
@@ -458,13 +457,11 @@ class AuthController extends GetxController {
           signupConfirmPin.clear();
           _analytics.logBeginOnboarding();
           AppRoutes.toSignUpPasswordCreate();
-        } else if (data.user != null && data.token != null) {
+        } else if (response.data != null && token != null) {
           email.value = user.email;
           _analytics.logSignIn(method: EAuthProvider.google.name);
           // Sync noti user & Request permission after Google signin
-          await _handleSuccessfulAuth(
-            AuthResponse(user: data.user!, token: data.token!),
-          );
+          await _handleSuccessfulAuth(user: response.data!, token: token);
         }
       } else {
         AppSnackbar.error(response.error ?? response.message);
@@ -501,11 +498,13 @@ class AuthController extends GetxController {
         ),
       );
 
+      final token = response.meta?[AuthKeys.token]?.toString() ?? '';
+
       if (response.success && response.data != null) {
         googleChallengeToken.value = '';
         _analytics.logSignUp(method: EAuthProvider.google.name);
         _analytics.logCompleteOnboarding();
-        await _handleSuccessfulAuth(response.data!);
+        await _handleSuccessfulAuth(user: response.data!, token: token);
       } else if (response.statusCode == 429) {
         AppSnackbar.error(AppLocales.auth.initial.googleTooManyAttempts.tr);
       } else {
@@ -541,6 +540,39 @@ class AuthController extends GetxController {
     _storage.setUserData(user);
   }
 
+  // ============================================================
+  // Product Entitlement & Access
+  // ============================================================
+
+  bool hasAccess(String productIdOrCode) {
+    final list = currentUser.value?.accesses ?? const [];
+    return list.any(
+      (a) =>
+          (a.productId == productIdOrCode ||
+              a.productCode == productIdOrCode) &&
+          a.isCurrentlyActive,
+    );
+  }
+
+  AccessModel? getAccess(String productIdOrCode) {
+    final list = currentUser.value?.accesses ?? const [];
+    try {
+      return list.firstWhere(
+        (a) =>
+            (a.productId == productIdOrCode ||
+                a.productCode == productIdOrCode) &&
+            a.isCurrentlyActive,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<AccessModel> get activeAccesses {
+    final list = currentUser.value?.accesses ?? const [];
+    return list.where((a) => a.isCurrentlyActive).toList();
+  }
+
   // Forgot password: email a reset link (60s resend countdown).
   Future<void> forgotPassword() async {
     if (!validateEmail()) return;
@@ -553,8 +585,7 @@ class AuthController extends GetxController {
         AppSnackbar.success(response.message);
       } else {
         if (response.statusCode == 429) {
-          final data = response.data;
-          final remaining = data is Map ? data['cooldown_remaining'] : null;
+          final remaining = response.meta?[AuthKeys.cooldownRemaining];
           final seconds = remaining is int
               ? remaining
               : (int.tryParse(remaining?.toString() ?? '') ?? 60);
@@ -647,9 +678,12 @@ class AuthController extends GetxController {
   }
 
   // handle push noti and redirect after successful auth
-  Future<void> _handleSuccessfulAuth(AuthResponse response) async {
+  Future<void> _handleSuccessfulAuth({
+    required UserModel user,
+    required String token,
+  }) async {
     // 1. Store session + sync user
-    _storeSession(response);
+    _storeSession(user: user, token: token);
 
     // 2. Request push permission (non-blocking)
     unawaited(_pushNotiService.requestPermission());

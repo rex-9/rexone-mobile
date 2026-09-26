@@ -24,13 +24,9 @@ class FeedbackService extends GetxService {
       showLoading: false,
     );
 
-    return _api.parseResponse<FeedbackModel>(
+    return _api.parseRecord<FeedbackModel>(
       response,
-      (item) => FeedbackModel.fromJson(
-        item is Map<String, dynamic>
-            ? item
-            : Map<String, dynamic>.from(item as Map),
-      ),
+      FeedbackModel.fromJson,
     );
   }
 
@@ -45,13 +41,9 @@ class FeedbackService extends GetxService {
 
     final response = await _api.get(ServerRoutes.feedbacks, query: query);
 
-    return _api.parsePaginatedResponse<FeedbackModel>(
+    return _api.parsePagyList<FeedbackModel>(
       response,
-      (item) => FeedbackModel.fromJson(
-        item is Map<String, dynamic>
-            ? item
-            : Map<String, dynamic>.from(item as Map),
-      ),
+      FeedbackModel.fromJson,
     );
   }
 }

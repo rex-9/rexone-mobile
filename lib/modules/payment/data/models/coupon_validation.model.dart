@@ -11,7 +11,7 @@ class CouponValidationModel {
   final int? remainingAttempts;
   final int? cooldownRemaining;
 
-  CouponValidationModel({
+  const CouponValidationModel({
     required this.valid,
     required this.discountAmount,
     required this.finalAmount,
@@ -23,6 +23,9 @@ class CouponValidationModel {
   });
 
   bool get isFree => finalAmount == 0;
+  String get code => coupon?.code ?? '';
+  bool get isPercentage => coupon?.isPercentage ?? false;
+  int get amount => coupon?.amount ?? 0;
 
   factory CouponValidationModel.fromJson(Map<String, dynamic> json) {
     return CouponValidationModel(
@@ -37,8 +40,10 @@ class CouponValidationModel {
           ? json[PaymentKeys.originalAmount] as int
           : int.tryParse(json[PaymentKeys.originalAmount]?.toString() ?? '0') ?? 0,
       currency: json[PaymentKeys.currency]?.toString() ?? 'usd',
-      coupon: json[PaymentKeys.coupon] is Map<String, dynamic>
-          ? CouponModel.fromJson(json[PaymentKeys.coupon] as Map<String, dynamic>)
+      coupon: json[PaymentKeys.coupon] is Map
+          ? CouponModel.fromJson(
+              Map<String, dynamic>.from(json[PaymentKeys.coupon] as Map),
+            )
           : null,
       remainingAttempts: json[PaymentKeys.remainingAttempts] is int
           ? json[PaymentKeys.remainingAttempts] as int

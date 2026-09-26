@@ -1,7 +1,6 @@
 
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
-import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/api.service.dart';
@@ -28,15 +27,10 @@ class VersionService extends GetxService {
       query: query,
       showLoading: false,
     );
-    return _api.parseResponse<VersionModel>(response, (data) {
-      final record = data is Map && data[VersionKeys.version] is Map
-          ? data[VersionKeys.version]
-          : data;
-      return ApiHelper.parseRecord<VersionModel>(
-        record,
-        VersionModel.fromJson,
-      );
-    });
+    return _api.parseRecord<VersionModel>(
+      response,
+      VersionModel.fromJson,
+    );
   }
 
   Future<ApiResponse<UserVersionModel>> reportUserVersion({
@@ -53,14 +47,9 @@ class VersionService extends GetxService {
       },
       showLoading: false,
     );
-    return _api.parseResponse<UserVersionModel>(response, (data) {
-      final record = data is Map && data[VersionKeys.userVersion] is Map
-          ? data[VersionKeys.userVersion]
-          : data;
-      return ApiHelper.parseRecord<UserVersionModel>(
-        record,
-        UserVersionModel.fromJson,
-      );
-    });
+    return _api.parseRecord<UserVersionModel>(
+      response,
+      UserVersionModel.fromJson,
+    );
   }
 }

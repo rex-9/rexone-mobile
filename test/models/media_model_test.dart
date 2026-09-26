@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rexone_mobile/constants/constants.dart';
-import 'package:rexone_mobile/models/responses/asset.response.dart';
+import 'package:rexone_mobile/models/media.model.dart';
 
 void main() {
-  group('AssetPlaybackResponse', () {
+  group('MediaPlaybackModel', () {
     test('fromJson parses delivery, media, and multiple subtitles', () {
-      final response = AssetPlaybackResponse.fromJson({
+      final response = MediaPlaybackModel.fromJson({
         AssetKeys.assetId: 'asset-1',
         AssetKeys.delivery: {
           AssetKeys.type: 'progressive',
@@ -51,7 +51,7 @@ void main() {
     });
 
     test('isNearExpiry is true within 60 seconds of expires_at', () {
-      final response = AssetPlaybackResponse.fromJson({
+      final response = MediaPlaybackModel.fromJson({
         AssetKeys.assetId: 'asset-1',
         AssetKeys.delivery: {
           AssetKeys.type: 'progressive',

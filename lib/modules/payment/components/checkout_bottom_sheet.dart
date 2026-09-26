@@ -50,8 +50,8 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
     final symbol = curr == PaymentCurrencies.mmk
         ? PaymentCurrencies.mmkSymbol
         : curr == PaymentCurrencies.sgd
-            ? PaymentCurrencies.sgdSymbol
-            : PaymentCurrencies.usdSymbol;
+        ? PaymentCurrencies.sgdSymbol
+        : PaymentCurrencies.usdSymbol;
     return '$symbol${value.toStringAsFixed(2)}';
   }
 
@@ -121,12 +121,13 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
               final isButtonDisabled = isLoading || isCooldown;
 
               if (applied != null && applied.valid) {
-                final coupon = applied.coupon;
                 return Container(
                   padding: EdgeInsets.all(Design.spacing.md),
                   decoration: BoxDecoration(
                     color: Design.colors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+                    borderRadius: BorderRadius.circular(
+                      Design.spacing.radiusMedium,
+                    ),
                     border: Border.all(
                       color: Design.colors.success.withValues(alpha: 0.3),
                     ),
@@ -144,7 +145,9 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              coupon?.code ?? AppLocales.payment.promoCode.tr,
+                              applied.code.isNotEmpty
+                                  ? applied.code
+                                  : AppLocales.payment.promoCode.tr,
                               style: context.typo.bodyMedium.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Design.colors.success,
@@ -152,9 +155,12 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
                             ),
                             Text(
                               AppLocales.payment.discountApplied.trParams({
-                                'discount': coupon?.isPercentage == true
-                                    ? '${coupon?.amount}%'
-                                    : _formatMoney(applied.discountAmount, applied.currency),
+                                'discount': applied.isPercentage
+                                    ? '${applied.amount}%'
+                                    : _formatMoney(
+                                        applied.discountAmount,
+                                        applied.currency,
+                                      ),
                               }),
                               style: context.typo.caption.copyWith(
                                 color: context.colors.textSecondary,
@@ -209,8 +215,8 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
                         text: isLoading
                             ? AppLocales.common.loading.tr
                             : isCooldown
-                                ? '${cooldownLeft}s'
-                                : AppLocales.payment.apply.tr,
+                            ? '${cooldownLeft}s'
+                            : AppLocales.payment.apply.tr,
                         type: EButtonType.secondary,
                         onPressed: isButtonDisabled
                             ? null
@@ -245,17 +251,16 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
               padding: EdgeInsets.all(Design.spacing.md),
               decoration: BoxDecoration(
                 color: context.colors.surface.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+                borderRadius: BorderRadius.circular(
+                  Design.spacing.radiusMedium,
+                ),
               ),
               child: Obx(() {
                 final applied = _controller.appliedCoupon.value;
-                final originalCents = applied != null
-                    ? applied.originalAmount
-                    : product.unitAmount;
-                final finalCents = applied != null
-                    ? applied.finalAmount
-                    : product.unitAmount;
-                final discountCents = applied != null ? applied.discountAmount : 0;
+                final originalCents =
+                    applied?.originalAmount ?? product.unitAmount;
+                final finalCents = applied?.finalAmount ?? product.unitAmount;
+                final discountCents = applied?.discountAmount ?? 0;
                 final currency = applied?.currency ?? product.currency;
 
                 return Column(
@@ -368,7 +373,7 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
                   Get.back();
                   _controller.startCheckout(
                     product.id,
-                    couponCode: applied?.coupon?.code,
+                    couponCode: applied?.code,
                   );
                 },
               );

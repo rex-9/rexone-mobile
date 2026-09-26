@@ -34,7 +34,7 @@ class VideoPlayerService extends GetxService {
   double _rate = 1.0;
   Timer? _positionHeartbeatTimer;
 
-  final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
+  final Map<String, MediaPlaybackModel> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
 
   MediaService get _media => Get.find<MediaService>();
@@ -410,7 +410,7 @@ class VideoPlayerService extends GetxService {
     controller.value = null;
   }
 
-  Future<AssetPlaybackResponse?> _resolvePlayback(AssetModel asset) async {
+  Future<MediaPlaybackModel?> _resolvePlayback(AssetModel asset) async {
     if (asset.id.isEmpty) return null;
 
     final cached = _playbackByAssetId[asset.id];

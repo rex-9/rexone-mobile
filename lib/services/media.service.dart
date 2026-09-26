@@ -11,7 +11,7 @@ import 'package:rexone_mobile/services/api.service.dart';
 /// Shared media client — upload, paginated asset listing, and playback URLs.
 class MediaService extends GetxService {
   late final ApiService _api;
-  final Map<String, AssetPlaybackResponse> _playbackCache = {};
+  final Map<String, MediaPlaybackModel> _playbackCache = {};
   final Map<String, String> _subtitleBodyCache = {};
   final GetConnect _subtitleClient = GetConnect();
 
@@ -31,7 +31,7 @@ class MediaService extends GetxService {
   }
 
   /// Uploads a local file to `POST /v1/assets/upload`.
-  Future<ApiResponse<AssetUploadResponse>> uploadImage({
+  Future<ApiResponse<AssetModel>> uploadImage({
     required String filePath,
     String? filename,
     String? type,
@@ -59,11 +59,9 @@ class MediaService extends GetxService {
       showLoading: true,
     );
 
-    return _api.parseResponse<AssetUploadResponse>(
+    return _api.parseRecord<AssetModel>(
       response,
-      (data) =>
-          ApiHelper.parseRecord(data, AssetUploadResponse.fromJson) ??
-          AssetUploadResponse.fromJson(const {}),
+      AssetModel.fromJson,
     );
   }
 
@@ -88,19 +86,15 @@ class MediaService extends GetxService {
       showLoading: false,
     );
 
-    return _api.parsePaginatedResponse(
+    return _api.parsePagyList<AssetModel>(
       response,
-      (item) => AssetModel.fromJson(
-        item is Map<String, dynamic>
-            ? item
-            : Map<String, dynamic>.from(item as Map),
-      ),
+      AssetModel.fromJson,
     );
   }
 
   /// Resolves a signed playback URL from `GET /v1/assets/:id/playback`.
-  /// Results are cached until [AssetPlaybackResponse.isNearExpiry].
-  Future<ApiResponse<AssetPlaybackResponse>> getAssetPlayback(
+  /// Results are cached until [MediaPlaybackModel.isNearExpiry].
+  Future<ApiResponse<MediaPlaybackModel>> getAssetPlayback(
     String assetId,
   ) async {
     if (assetId.isEmpty) {
@@ -121,15 +115,15 @@ class MediaService extends GetxService {
       showLoading: false,
     );
 
-    final parsed = _api.parseResponse<AssetPlaybackResponse>(
+    final parsed = _api.parseRecord<MediaPlaybackModel>(
       response,
-      (data) => ApiHelper.parseRecord(data, AssetPlaybackResponse.fromJson),
+      MediaPlaybackModel.fromJson,
     );
 
     final playback = parsed.data;
     if (parsed.success &&
         playback != null &&
-        playback.delivery.url.isNotEmpty) {
+        playback.url.isNotEmpty) {
       _playbackCache[assetId] = playback;
     } else if (cached != null && cached.isNearExpiry) {
       // Refetch failed or returned unusable data — drop the stale entry.

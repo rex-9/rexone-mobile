@@ -92,7 +92,7 @@ class MediaPlaylistController extends GetxController {
     super.onClose();
   }
 
-  MediaDownloadEntry? downloadEntryFor(AssetModel asset) =>
+  MediaDownloadModel? downloadEntryFor(AssetModel asset) =>
       _downloads.entryFor(asset.id);
 
   EMediaDownloadState downloadStateFor(AssetModel asset) =>

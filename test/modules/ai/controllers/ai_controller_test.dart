@@ -84,7 +84,13 @@ void main() {
       fakeAi.chatResponse = ApiResponse.success(
         message: 'Queued',
         statusCode: 200,
-        data: const AiChatResponse(roomId: 'room_123'),
+        data: AiMessageModel(
+          id: 'msg_1',
+          role: EChatRole.assistant.name,
+          content: 'Hello',
+          roomId: 'room_123',
+          createdAt: DateTime.now().toIso8601String(),
+        ),
       );
 
       await controller.sendMessage('Test message');
@@ -216,10 +222,14 @@ void main() {
       fakeAi.chatResponse = ApiResponse.success(
         message: 'Queued',
         statusCode: 200,
-        data: AiChatResponse.fromJson(
-          const {},
-          meta: {AiKeys.roomId: 'room_from_meta'},
+        data: AiMessageModel(
+          id: 'msg_meta',
+          role: EChatRole.assistant.name,
+          content: 'Meta response',
+          roomId: '',
+          createdAt: DateTime.now().toIso8601String(),
         ),
+        meta: {AiKeys.roomId: 'room_from_meta'},
       );
 
       await controller.sendMessage('Check meta room id');
@@ -246,10 +256,11 @@ void main() {
       fakeAi.chatResponse = ApiResponse.success(
         message: 'Queued',
         statusCode: 200,
-        data: AiChatResponse(
-          roomId: 'room_chunks',
-          messages: [chunk1, chunk2],
-        ),
+        data: chunk1,
+        meta: {
+          AiKeys.roomId: 'room_chunks',
+          AiKeys.messages: [chunk1.toJson(), chunk2.toJson()],
+        },
       );
 
       await controller.sendMessage('Part 1 of long promptPart 2 of long prompt');

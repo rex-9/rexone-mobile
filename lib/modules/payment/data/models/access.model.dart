@@ -9,6 +9,7 @@ class AccessModel {
   final String? revokedAt;
   final String? expiredAt;
   final String productId;
+  final String? productCode;
   final String? productName;
   final int? daysRemaining;
   final bool active;
@@ -21,10 +22,19 @@ class AccessModel {
     this.revokedAt,
     this.expiredAt,
     required this.productId,
+    this.productCode,
     this.productName,
     this.daysRemaining,
     required this.active,
   });
+
+  bool get isCurrentlyActive {
+    if (!active || status != 'active') return false;
+    if (expiresAt == null || expiresAt!.isEmpty) return true;
+    final expiry = DateTime.tryParse(expiresAt!);
+    if (expiry == null) return true;
+    return expiry.isAfter(DateTime.now());
+  }
 
   factory AccessModel.fromJson(Map<String, dynamic> json) {
     return AccessModel(
@@ -35,6 +45,7 @@ class AccessModel {
       revokedAt: json[PaymentKeys.revokedAt]?.toString(),
       expiredAt: json[PaymentKeys.expiredAt]?.toString(),
       productId: json[PaymentKeys.productId]?.toString() ?? '',
+      productCode: json[PaymentKeys.productCode]?.toString(),
       productName: json[PaymentKeys.productName]?.toString(),
       daysRemaining: json[PaymentKeys.daysRemaining] as int?,
       active: json[PaymentKeys.active] == true,
@@ -49,6 +60,7 @@ class AccessModel {
     PaymentKeys.revokedAt: revokedAt,
     PaymentKeys.expiredAt: expiredAt,
     PaymentKeys.productId: productId,
+    PaymentKeys.productCode: productCode,
     PaymentKeys.productName: productName,
     PaymentKeys.daysRemaining: daysRemaining,
     PaymentKeys.active: active,

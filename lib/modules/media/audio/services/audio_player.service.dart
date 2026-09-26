@@ -46,7 +46,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   int _nowPlayingEpoch = 0;
   int _lyricsLoadEpoch = 0;
   final Map<String, List<SubtitleCue>> _lyricsCache = {};
-  final Map<String, AssetPlaybackResponse> _playbackByAssetId = {};
+  final Map<String, MediaPlaybackModel> _playbackByAssetId = {};
   final Map<String, List<ChildAssetModel>> _offlineSubtitlesByAssetId = {};
 
   MediaService get _media => Get.find<MediaService>();
@@ -608,7 +608,7 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
     return true;
   }
 
-  Future<AssetPlaybackResponse?> _resolvePlayback(AssetModel asset) async {
+  Future<MediaPlaybackModel?> _resolvePlayback(AssetModel asset) async {
     if (asset.id.isEmpty) return null;
 
     final cached = _playbackByAssetId[asset.id];

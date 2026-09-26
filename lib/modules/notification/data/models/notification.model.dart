@@ -41,39 +41,27 @@ class NotificationModel {
   }) : notificationId = notificationId ?? templateId;
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    // Handle JSONAPI style or flat map
-    final attributes = json[ApiKeys.attributes] is Map
-        ? Map<String, dynamic>.from(json[ApiKeys.attributes] as Map)
-        : json;
-
-    final id =
-        json[ApiKeys.id]?.toString() ??
-        attributes[ApiKeys.id]?.toString() ??
-        '';
-
     return NotificationModel(
-      id: id,
-      title: attributes[NotificationKeys.title]?.toString() ?? '',
-      message: attributes[NotificationKeys.message]?.toString() ?? '',
-      link: attributes[NotificationKeys.link]?.toString(),
-      ctaText: attributes[NotificationKeys.ctaText]?.toString(),
-      clients: attributes[NotificationKeys.clients] is List
-          ? List<String>.from(attributes[NotificationKeys.clients] as List)
+      id: json[ApiKeys.id]?.toString() ?? '',
+      title: json[NotificationKeys.title]?.toString() ?? '',
+      message: json[NotificationKeys.message]?.toString() ?? '',
+      link: json[NotificationKeys.link]?.toString(),
+      ctaText: json[NotificationKeys.ctaText]?.toString(),
+      clients: json[NotificationKeys.clients] is List
+          ? List<String>.from(json[NotificationKeys.clients] as List)
           : const [AppConstants.platformWeb, AppConstants.platformMobile],
-      metadata: attributes[NotificationKeys.metadata] is Map
-          ? Map<String, dynamic>.from(
-              attributes[NotificationKeys.metadata] as Map,
-            )
+      metadata: json[NotificationKeys.metadata] is Map
+          ? Map<String, dynamic>.from(json[NotificationKeys.metadata] as Map)
           : const {},
-      read: attributes[NotificationKeys.read] as bool? ?? false,
-      readAt: AppDateTime.fromUtc(attributes[NotificationKeys.readAt]),
+      read: json[NotificationKeys.read] as bool? ?? false,
+      readAt: AppDateTime.fromUtc(json[NotificationKeys.readAt]),
       notificationId:
-          attributes[NotificationKeys.notificationId]?.toString() ??
-          attributes[NotificationKeys.templateId]?.toString(),
+          json[NotificationKeys.notificationId]?.toString() ??
+          json[NotificationKeys.templateId]?.toString(),
       createdAt:
-          AppDateTime.fromUtc(attributes[NotificationKeys.createdAt]) ??
+          AppDateTime.fromUtc(json[NotificationKeys.createdAt]) ??
           DateTime.now(),
-      updatedAt: AppDateTime.fromUtc(attributes[NotificationKeys.updatedAt]),
+      updatedAt: AppDateTime.fromUtc(json[NotificationKeys.updatedAt]),
     );
   }
 

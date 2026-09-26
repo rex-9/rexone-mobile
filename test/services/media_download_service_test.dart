@@ -90,9 +90,9 @@ void main() {
     Get.reset();
   });
 
-  group('MediaDownloadEntry', () {
+  group('MediaDownloadModel', () {
     test('toJson/fromJson round-trip preserves fields', () {
-      final original = MediaDownloadEntry(
+      final original = MediaDownloadModel(
         assetId: 'ast_1',
         state: EMediaDownloadState.ready,
         progress: 1,
@@ -103,7 +103,7 @@ void main() {
         mediaFormat: AssetKeys.formatAudio,
       );
 
-      final restored = MediaDownloadEntry.fromJson(original.toJson());
+      final restored = MediaDownloadModel.fromJson(original.toJson());
 
       expect(restored.assetId, original.assetId);
       expect(restored.state, EMediaDownloadState.ready);
@@ -121,13 +121,13 @@ void main() {
         EMediaDownloadState.paused,
       );
 
-      final entry = MediaDownloadEntry(
+      final entry = MediaDownloadModel(
         assetId: 'ast_paused',
         state: EMediaDownloadState.paused,
         progress: 0.42,
         title: 'Halfway',
       );
-      final restored = MediaDownloadEntry.fromJson(entry.toJson());
+      final restored = MediaDownloadModel.fromJson(entry.toJson());
       expect(restored.state, EMediaDownloadState.paused);
       expect(restored.progress, 0.42);
     });

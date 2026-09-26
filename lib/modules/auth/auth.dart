@@ -1,6 +1,6 @@
 // lib/modules/auth/auth.dart
 export './data/requests/requests.dart';
-export './data/responses/responses.dart';
+export './data/models/user_peek.model.dart';
 export './controllers/auth.controller.dart';
 export './services/auth.service.dart';
 export 'pages/auth.page.dart';

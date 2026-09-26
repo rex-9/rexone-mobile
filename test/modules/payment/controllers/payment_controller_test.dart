@@ -164,4 +164,71 @@ void main() {
       expect(controller.products.any((p) => p.id == 'prod_premium'), isTrue);
     });
   });
+
+  group('PaymentController - Coupons', () {
+    test('applyCoupon succeeds with valid code', () async {
+      fakePayment.validateCouponResponse = ApiResponse.success(
+        message: 'Coupon is valid',
+        statusCode: 200,
+        data: const CouponValidationModel(
+          valid: true,
+          discountAmount: 200,
+          finalAmount: 800,
+          originalAmount: 1000,
+          currency: 'usd',
+          coupon: CouponModel(
+            id: 'c-test-1',
+            title: 'Test Coupon',
+            code: 'SAVE20',
+            couponType: CouponTypes.fixed,
+            amount: 200,
+            currency: 'usd',
+            maxUsage: 100,
+            maxUsagePerUser: 1,
+            usedCount: 0,
+            targetRoleIds: [],
+            targetUserIds: [],
+            targetProductIds: [],
+            active: true,
+            exhausted: false,
+            expired: false,
+          ),
+        ),
+      );
+
+      final result = await controller.applyCoupon('SAVE20', 'prod_1');
+      expect(result, isTrue);
+      expect(controller.appliedCoupon.value, isNotNull);
+      expect(controller.appliedCoupon.value!.discountAmount, equals(200));
+      expect(controller.couponError.value, isEmpty);
+    });
+
+    test('applyCoupon rejects code shorter than 6 characters', () async {
+      final result = await controller.applyCoupon('ABC', 'prod_1');
+      expect(result, isFalse);
+      expect(
+        controller.couponError.value,
+        equals('Coupon code must be at least 6 alphanumeric characters'),
+      );
+    });
+
+    test('applyCoupon handles failure and extracts cooldown from meta', () async {
+      fakePayment.validateCouponResponse = ApiResponse.error(
+        message: 'Too many attempts',
+        statusCode: 429,
+        error: 'Too many invalid coupon attempts. Please wait 30 seconds before trying again.',
+        meta: {
+          PaymentKeys.remainingAttempts: 0,
+          PaymentKeys.cooldownRemaining: 30,
+        },
+      );
+
+      final result = await controller.applyCoupon('BADCODE', 'prod_1');
+      expect(result, isFalse);
+      expect(controller.appliedCoupon.value, isNull);
+      expect(controller.couponError.value, contains('Too many invalid coupon attempts'));
+      expect(controller.couponCooldownSecondsLeft.value, equals(30));
+      expect(controller.couponCooldownSecondsLeft.value > 0, isTrue);
+    });
+  });
 }

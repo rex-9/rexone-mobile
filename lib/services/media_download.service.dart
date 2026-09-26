@@ -12,7 +12,7 @@ import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/data/local/local.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/asset.model.dart';
-import 'package:rexone_mobile/models/media_download_entry.model.dart';
+import 'package:rexone_mobile/models/media.model.dart';
 import 'package:rexone_mobile/services/media.service.dart';
 import 'package:rexone_mobile/services/media_download_notification.service.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
@@ -60,8 +60,8 @@ class MediaDownloadService extends GetxService {
   late Directory _decryptedCacheDir;
   late Directory _tempDir;
 
-  final RxMap<String, MediaDownloadEntry> entries =
-      <String, MediaDownloadEntry>{}.obs;
+  final RxMap<String, MediaDownloadModel> entries =
+      <String, MediaDownloadModel>{}.obs;
 
   final Map<String, _PendingDownloadPlan> _pendingPlans = {};
   final Map<String, Set<String>> _completedSubtitleIds = {};
@@ -100,7 +100,7 @@ class MediaDownloadService extends GetxService {
     await _reconcileInterruptedDownloads();
   }
 
-  MediaDownloadEntry? entryFor(String assetId) => entries[assetId];
+  MediaDownloadModel? entryFor(String assetId) => entries[assetId];
 
   EMediaDownloadState stateFor(String assetId) =>
       entries[assetId]?.state ?? EMediaDownloadState.none;
@@ -212,7 +212,7 @@ class MediaDownloadService extends GetxService {
     }
 
     _setEntry(
-      MediaDownloadEntry(
+      MediaDownloadModel(
         assetId: asset.id,
         state: EMediaDownloadState.queued,
         progress: 0,
@@ -264,7 +264,7 @@ class MediaDownloadService extends GetxService {
       _activeAssetIds.add(asset.id);
 
       _setEntry(
-        (entries[asset.id] ?? MediaDownloadEntry(assetId: asset.id)).copyWith(
+        (entries[asset.id] ?? MediaDownloadModel(assetId: asset.id)).copyWith(
           state: EMediaDownloadState.downloading,
           progress: 0,
           clearErrorMessage: true,
@@ -365,7 +365,7 @@ class MediaDownloadService extends GetxService {
     await _ensureDirectories();
     _setEntry(
       (entries[assetId] ??
-              MediaDownloadEntry(
+              MediaDownloadModel(
                 assetId: assetId,
                 title: title,
                 mediaFormat: mediaFormat,
@@ -402,7 +402,7 @@ class MediaDownloadService extends GetxService {
       await _clearDecryptedCacheFor(assetId);
 
       _setEntry(
-        (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+        (entries[assetId] ?? MediaDownloadModel(assetId: assetId)).copyWith(
           state: EMediaDownloadState.ready,
           progress: 1,
           mediaPath: mediaFileName(assetId),
@@ -434,7 +434,7 @@ class MediaDownloadService extends GetxService {
       }
     } catch (error) {
       _setEntry(
-        (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+        (entries[assetId] ?? MediaDownloadModel(assetId: assetId)).copyWith(
           state: EMediaDownloadState.failed,
           progress: 0,
           errorMessage: error.toString(),
@@ -788,7 +788,7 @@ class MediaDownloadService extends GetxService {
         final localAssets = await db.getAllLocalAssets();
         if (localAssets.isNotEmpty) {
           final storedIndex = _storage.getMediaDownloadsIndex() ?? const {};
-          final loaded = <String, MediaDownloadEntry>{};
+          final loaded = <String, MediaDownloadModel>{};
           for (final a in localAssets) {
             final state = EMediaDownloadState.fromStorage(a.downloadState);
             final children = await db.getChildAssets(a.id);
@@ -809,7 +809,7 @@ class MediaDownloadService extends GetxService {
 
             final stored = storedIndex[a.id];
             if (stored is Map) {
-              final fromStorage = MediaDownloadEntry.fromJson(
+              final fromStorage = MediaDownloadModel.fromJson(
                 Map<String, dynamic>.from(stored),
               );
               loaded[a.id] = fromStorage.copyWith(
@@ -829,7 +829,7 @@ class MediaDownloadService extends GetxService {
             }
 
             // Legacy Drift-only rows: treat as plaintext (pre-encryption finalize).
-            loaded[a.id] = MediaDownloadEntry(
+            loaded[a.id] = MediaDownloadModel(
               assetId: a.id,
               state: state,
               progress: a.downloadProgress,
@@ -861,10 +861,10 @@ class MediaDownloadService extends GetxService {
       return;
     }
 
-    final loaded = <String, MediaDownloadEntry>{};
+    final loaded = <String, MediaDownloadModel>{};
     raw.forEach((key, value) {
       if (value is! Map) return;
-      final entry = MediaDownloadEntry.fromJson(
+      final entry = MediaDownloadModel.fromJson(
         Map<String, dynamic>.from(value),
       );
       if (entry.assetId.isEmpty) return;
@@ -987,7 +987,7 @@ class MediaDownloadService extends GetxService {
       case TaskStatus.enqueued:
         if (stateFor(assetId) == EMediaDownloadState.paused) return;
         _setEntry(
-          (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+          (entries[assetId] ?? MediaDownloadModel(assetId: assetId)).copyWith(
             state: EMediaDownloadState.queued,
           ),
         );
@@ -1000,7 +1000,7 @@ class MediaDownloadService extends GetxService {
       case TaskStatus.running:
         if (stateFor(assetId) == EMediaDownloadState.paused) return;
         _setEntry(
-          (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+          (entries[assetId] ?? MediaDownloadModel(assetId: assetId)).copyWith(
             state: EMediaDownloadState.downloading,
           ),
         );
@@ -1199,7 +1199,7 @@ class MediaDownloadService extends GetxService {
           : (plan?.asset?.sizeBytes ?? entry.sizeBytes);
 
       _setEntry(
-        (entries[assetId] ?? MediaDownloadEntry(assetId: assetId)).copyWith(
+        (entries[assetId] ?? MediaDownloadModel(assetId: assetId)).copyWith(
           state: EMediaDownloadState.ready,
           progress: 1,
           mediaPath: mediaPathName,
@@ -1455,7 +1455,7 @@ class MediaDownloadService extends GetxService {
 
   bool _shouldEncryptPlan(
     _PendingDownloadPlan? plan,
-    MediaDownloadEntry entry,
+    MediaDownloadModel entry,
   ) {
     final asset = plan?.asset;
     if (asset != null) return _shouldEncryptAsset(asset);
@@ -1484,7 +1484,7 @@ class MediaDownloadService extends GetxService {
     '${_plaintextRoot.path}/${plaintextSubtitleFileName(assetId, subtitleId)}',
   );
 
-  File _mediaFileForEntry(MediaDownloadEntry entry) {
+  File _mediaFileForEntry(MediaDownloadModel entry) {
     final name = entry.mediaPath.isNotEmpty
         ? entry.mediaPath
         : mediaFileName(entry.assetId);
@@ -1583,7 +1583,7 @@ class MediaDownloadService extends GetxService {
     }
   }
 
-  void _setEntry(MediaDownloadEntry entry) {
+  void _setEntry(MediaDownloadModel entry) {
     entries[entry.assetId] = entry;
     entries.refresh();
     _persistIndex();

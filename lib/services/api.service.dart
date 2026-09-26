@@ -4,10 +4,9 @@ import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
-import 'package:rexone_mobile/models/responses/api.response.dart';
+import 'package:rexone_mobile/models/api_response.model.dart';
 import 'package:rexone_mobile/models/pagination.model.dart';
 import 'package:rexone_mobile/routes/routes.dart';
-import 'package:rexone_mobile/helpers/api.helper.dart';
 import 'package:rexone_mobile/services/storage.service.dart';
 
 import '../modules/auth/auth.dart';
@@ -34,13 +33,11 @@ class ApiService extends GetConnect {
       request.headers[AuthHeaders.accept] = AppConstants.contentTypeJson;
       final isMultipart = request.headers[AuthHeaders.multipart] == 'true';
       if (!isMultipart) {
-        request.headers[AuthHeaders.contentType] =
-            AppConstants.contentTypeJson;
+        request.headers[AuthHeaders.contentType] = AppConstants.contentTypeJson;
       } else {
         request.headers.remove(AuthHeaders.contentType);
       }
-      request.headers[AuthHeaders.platform] =
-          AppConstants.currentPlatform;
+      request.headers[AuthHeaders.platform] = AppConstants.currentPlatform;
       String apiLocale = 'en';
       if (Get.isRegistered<SettingController>()) {
         final code = Get.find<SettingController>().localeCode.value;
@@ -195,11 +192,30 @@ class ApiService extends GetConnect {
   void _showLoading() => AppLoading.show();
   void _hideLoading() => AppLoading.hide();
 
-  // ===== RESPONSE HANDLING =====
-  ApiResponse<T> parseResponse<T>(
-    Response response,
-    T? Function(dynamic data) fromJson,
-  ) {
+  // ===== RECORD & LIST PARSERS =====
+
+  /// Flattens a Rails JSON:API `{id, type, attributes}` map into a flat map.
+  static Map<String, dynamic> flattenRecord(dynamic data) {
+    if (data is! Map) return const {};
+    final map = Map<String, dynamic>.from(data);
+    if (map[ApiKeys.attributes] is Map) {
+      final attributes = Map<String, dynamic>.from(
+        map[ApiKeys.attributes] as Map,
+      );
+      if (map[ApiKeys.id] != null) {
+        attributes[ApiKeys.id] = map[ApiKeys.id].toString();
+      }
+      return attributes;
+    }
+    return map;
+  }
+
+  /// Parses a single record response into [ApiResponse<T>].
+  /// Deterministically flattens JSON:API `{id, type, attributes}` records.
+  ApiResponse<T> parseRecord<T>(
+    Response response, [
+    T Function(Map<String, dynamic> json)? fromJson,
+  ]) {
     final body = response.body is Map
         ? Map<String, dynamic>.from(response.body as Map)
         : <String, dynamic>{};
@@ -212,6 +228,10 @@ class ApiService extends GetConnect {
     final meta = body[ApiKeys.meta] is Map
         ? Map<String, dynamic>.from(body[ApiKeys.meta] as Map)
         : null;
+
+    final T? parsedData = (fromJson != null && data is Map)
+        ? fromJson(flattenRecord(data))
+        : (data is T ? data : null);
 
     if (response.hasError || !(status[ApiKeys.success] as bool? ?? false)) {
       // Optional: Log API errors to analytics
@@ -233,7 +253,7 @@ class ApiService extends GetConnect {
             response.statusText ??
             HttpStatusMap.getMessage(statusCode),
         statusCode: statusCode,
-        data: data != null ? fromJson(data) : null,
+        data: parsedData,
         error: status[ApiKeys.error] as String?,
         meta: meta,
       );
@@ -244,14 +264,16 @@ class ApiService extends GetConnect {
           status[ApiKeys.message] as String? ??
           HttpStatusMap.getMessage(statusCode),
       statusCode: statusCode,
-      data: data != null ? fromJson(data) : null,
+      data: parsedData,
       meta: meta,
     );
   }
 
-  PaginatedResponse<T> parsePaginatedResponse<T>(
+  /// Parses a paginated collection response into [PaginatedResponse<T>].
+  /// Automatically flattens each JSON:API record in `data`.
+  PaginatedResponse<T> parsePagyList<T>(
     Response response,
-    T Function(dynamic data) fromJson,
+    T Function(Map<String, dynamic> data) fromJson,
   ) {
     final body = response.body is Map
         ? Map<String, dynamic>.from(response.body as Map)
@@ -271,7 +293,14 @@ class ApiService extends GetConnect {
         response.statusText ??
         HttpStatusMap.getMessage(statusCode);
 
-    final List<T> records = ApiHelper.parseList(data, fromJson);
+    final List<T> records = [];
+    if (data is List) {
+      for (final item in data) {
+        if (item is Map) {
+          records.add(fromJson(flattenRecord(item)));
+        }
+      }
+    }
 
     PaginationMeta? pagination;
     if (meta is Map && meta[ApiKeys.pagination] is Map) {
@@ -313,8 +342,8 @@ class ApiService extends GetConnect {
 
   String? _bodyError(dynamic body) {
     if (body is Map) {
-      final status = body['status'];
-      if (status is Map) return status['error'] as String?;
+      final status = body[ApiKeys.status];
+      if (status is Map) return status[ApiKeys.error] as String?;
     }
     return null;
   }

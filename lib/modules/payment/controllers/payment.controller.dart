@@ -6,6 +6,7 @@ import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 
+import 'package:rexone_mobile/modules/auth/auth.dart';
 import '../payment.dart';
 
 class PaymentController extends GetxController {
@@ -19,8 +20,7 @@ class PaymentController extends GetxController {
   final RxList<AccessModel> accesses = <AccessModel>[].obs;
 
   // Coupon state
-  final Rx<CouponValidationModel?> appliedCoupon =
-      Rx<CouponValidationModel?>(null);
+  final Rx<CouponValidationModel?> appliedCoupon = Rx<CouponValidationModel?>(null);
   final RxBool isValidatingCoupon = false.obs;
   final RxString couponError = ''.obs;
   final RxInt couponCooldownSecondsLeft = 0.obs;
@@ -70,10 +70,16 @@ class PaymentController extends GetxController {
         if (Get.currentRoute == AppRoutes.checkout) {
           Get.back();
         }
+        if (Get.isRegistered<AuthController>()) {
+          unawaited(Get.find<AuthController>().getCurrentUser());
+        }
         await fetchData();
         break;
       case EWsEventType.subscriptionCanceled:
       case EWsEventType.subscriptionResumed:
+        if (Get.isRegistered<AuthController>()) {
+          unawaited(Get.find<AuthController>().getCurrentUser());
+        }
         await fetchData();
         break;
       default:
@@ -143,7 +149,7 @@ class PaymentController extends GetxController {
 
   Future<void> startCheckout(String productId, {String? couponCode}) async {
     try {
-      final effectiveCode = couponCode ?? appliedCoupon.value?.coupon?.code;
+      final effectiveCode = couponCode ?? appliedCoupon.value?.code;
       final response = await _payment.createCheckout(
         CreateCheckoutRequest(
           productId: productId,
@@ -157,6 +163,9 @@ class PaymentController extends GetxController {
         if (isFreeAccessGranted) {
           removeCoupon();
           AppSnackbar.success('Access granted successfully! 🎉');
+          if (Get.isRegistered<AuthController>()) {
+            unawaited(Get.find<AuthController>().getCurrentUser());
+          }
           await fetchData();
           return;
         }
@@ -207,7 +216,7 @@ class PaymentController extends GetxController {
       } else {
         appliedCoupon.value = null;
         couponError.value = res.error ?? res.message;
-        final cooldown = res.data?.cooldownRemaining ?? 0;
+        final cooldown = res.meta?[PaymentKeys.cooldownRemaining] as int? ?? 0;
         if (cooldown > 0) {
           _startCouponCooldown(cooldown);
         }
@@ -277,7 +286,12 @@ class PaymentController extends GetxController {
   // ============================================================
 
   bool hasActiveAccess(String productId) {
-    return accesses.any((a) => a.productId == productId && a.active);
+    if (Get.isRegistered<AuthController>()) {
+      if (Get.find<AuthController>().hasAccess(productId)) {
+        return true;
+      }
+    }
+    return accesses.any((a) => a.productId == productId && a.isCurrentlyActive);
   }
 
   SubscriptionModel? getActiveSubscription(String productId) {

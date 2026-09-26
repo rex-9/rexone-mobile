@@ -1,7 +1,146 @@
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
+import 'package:rexone_mobile/models/asset.model.dart';
 
-class MediaDownloadEntry {
+class StorageDetails {
+  final String storageKey;
+  final int bytes;
+  final String format;
+
+  const StorageDetails({
+    required this.storageKey,
+    required this.bytes,
+    required this.format,
+  });
+
+  factory StorageDetails.fromJson(Map<String, dynamic> json) {
+    return StorageDetails(
+      storageKey: json[AssetKeys.storageKey]?.toString() ?? '',
+      bytes: (json[AssetKeys.bytes] as num?)?.toInt() ?? 0,
+      format: json[AssetKeys.format]?.toString() ?? '',
+    );
+  }
+}
+
+class MediaDelivery {
+  final String type;
+  final String url;
+  final DateTime? expiresAt;
+
+  const MediaDelivery({
+    required this.type,
+    required this.url,
+    this.expiresAt,
+  });
+
+  factory MediaDelivery.fromJson(Map<String, dynamic> json) {
+    return MediaDelivery(
+      type: json[AssetKeys.type]?.toString() ?? '',
+      url: UrlHelper.normalize(json[AssetKeys.url]?.toString() ?? ''),
+      expiresAt: AppDateTime.fromUtc(json[AssetKeys.expiresAt]),
+    );
+  }
+}
+
+class MediaDetails {
+  final String contentType;
+  final String format;
+  final int? sizeBytes;
+  final int? durationSecs;
+  final ChildAssetModel? thumbnail;
+  final List<ChildAssetModel> subtitles;
+
+  const MediaDetails({
+    required this.contentType,
+    required this.format,
+    this.sizeBytes,
+    this.durationSecs,
+    this.thumbnail,
+    this.subtitles = const [],
+  });
+
+  List<ChildAssetModel> get playableSubtitles =>
+      subtitles.where((item) => item.isPlayableSubtitle).toList();
+
+  factory MediaDetails.fromJson(Map<String, dynamic> json) {
+    final thumbRaw = json[AssetKeys.thumbnail];
+    final subsRaw = json[AssetKeys.subtitles];
+
+    return MediaDetails(
+      contentType: json[AssetKeys.contentType]?.toString() ?? '',
+      format: json[AssetKeys.format]?.toString() ?? '',
+      sizeBytes: (json[AssetKeys.sizeBytes] as num?)?.toInt(),
+      durationSecs: (json[AssetKeys.durationSecs] as num?)?.toInt(),
+      thumbnail: thumbRaw is Map
+          ? ChildAssetModel.fromJson(Map<String, dynamic>.from(thumbRaw))
+          : null,
+      subtitles: subsRaw is List
+          ? subsRaw
+              .whereType<Map>()
+              .map(
+                (item) => ChildAssetModel.fromJson(
+                  Map<String, dynamic>.from(item),
+                ),
+              )
+              .toList()
+            : const [],
+    );
+  }
+}
+
+class MediaPlaybackModel {
+  final String assetId;
+  final MediaDelivery delivery;
+  final MediaDetails media;
+
+  const MediaPlaybackModel({
+    required this.assetId,
+    required this.delivery,
+    required this.media,
+  });
+
+  String get url => delivery.url;
+  String get type => delivery.type;
+  String get contentType => media.contentType;
+  String get format => media.format;
+  int? get sizeBytes => media.sizeBytes;
+  int? get durationSecs => media.durationSecs;
+  ChildAssetModel? get thumbnail => media.thumbnail;
+  List<ChildAssetModel> get subtitles => media.subtitles;
+  List<ChildAssetModel> get playableSubtitles => media.playableSubtitles;
+  DateTime? get expiresAt => delivery.expiresAt;
+
+  bool get isExpired {
+    final expiry = expiresAt;
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(expiry);
+  }
+
+  bool get isNearExpiry {
+    final expiry = expiresAt;
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(
+      expiry.subtract(const Duration(seconds: 60)),
+    );
+  }
+
+  factory MediaPlaybackModel.fromJson(Map<String, dynamic> json) {
+    final deliveryRaw = json[AssetKeys.delivery];
+    final mediaRaw = json[AssetKeys.media];
+
+    return MediaPlaybackModel(
+      assetId: json[AssetKeys.assetId]?.toString() ?? '',
+      delivery: deliveryRaw is Map
+          ? MediaDelivery.fromJson(Map<String, dynamic>.from(deliveryRaw))
+          : const MediaDelivery(type: '', url: ''),
+      media: mediaRaw is Map
+          ? MediaDetails.fromJson(Map<String, dynamic>.from(mediaRaw))
+          : const MediaDetails(contentType: '', format: ''),
+    );
+  }
+}
+
+class MediaDownloadModel {
   final String assetId;
   final EMediaDownloadState state;
   final double progress;
@@ -16,7 +155,7 @@ class MediaDownloadEntry {
   final int? downloadedBytes;
   final int? diskSizeBytes;
 
-  const MediaDownloadEntry({
+  const MediaDownloadModel({
     required this.assetId,
     this.state = EMediaDownloadState.none,
     this.progress = 0,
@@ -45,7 +184,7 @@ class MediaDownloadEntry {
         fallbackProgress: progress,
       );
 
-  MediaDownloadEntry copyWith({
+  MediaDownloadModel copyWith({
     EMediaDownloadState? state,
     double? progress,
     String? mediaPath,
@@ -60,7 +199,7 @@ class MediaDownloadEntry {
     int? diskSizeBytes,
     bool clearErrorMessage = false,
   }) {
-    return MediaDownloadEntry(
+    return MediaDownloadModel(
       assetId: assetId,
       state: state ?? this.state,
       progress: progress ?? this.progress,
@@ -101,7 +240,7 @@ class MediaDownloadEntry {
     };
   }
 
-  factory MediaDownloadEntry.fromJson(Map<String, dynamic> json) {
+  factory MediaDownloadModel.fromJson(Map<String, dynamic> json) {
     final subtitleRaw = json[MediaDownloadConstants.jsonSubtitlePaths];
     final subtitlePaths = subtitleRaw is Map
         ? subtitleRaw.map(
@@ -109,7 +248,7 @@ class MediaDownloadEntry {
           )
         : const <String, String>{};
 
-    return MediaDownloadEntry(
+    return MediaDownloadModel(
       assetId: json[MediaDownloadConstants.jsonAssetId]?.toString() ?? '',
       state: EMediaDownloadState.fromStorage(
         json[MediaDownloadConstants.jsonState]?.toString(),
