@@ -18,8 +18,6 @@ class NotificationModel {
   final DateTime? updatedAt;
 
   String? get templateId => notificationId;
-  bool get isIamUpdated =>
-      metadata[NotificationKeys.type] == NotificationConstants.iamUpdated;
 
   NotificationModel({
     required this.id,

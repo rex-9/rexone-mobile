@@ -63,8 +63,10 @@ class SettingPage extends GetView<SettingController> {
         leading: Icon(Icons.feedback_outlined, color: context.colors.primary),
         title: Text(AppLocales.feedback.title.tr),
         subtitle: Text(AppLocales.feedback.description.tr),
-        trailing:
-            Icon(Design.icons.rightArrow, color: context.colors.textSecondary),
+        trailing: Icon(
+          Design.icons.rightArrow,
+          color: context.colors.textSecondary,
+        ),
         onTap: () => FeedbackBottomSheet.show(),
       ),
     );
@@ -171,14 +173,13 @@ class SettingPage extends GetView<SettingController> {
         children: [
           Obx(
             () => AppListTile(
-              leading: CircleAvatar(
-                backgroundColor: context.colors.primary.withValues(alpha: 0.1),
-                backgroundImage: authController.currentUser.value?.photo != null
-                    ? NetworkImage(authController.currentUser.value!.photo!)
-                    : null,
-                child: authController.currentUser.value?.photo == null
-                    ? Icon(Design.icons.person, color: context.colors.primary)
-                    : null,
+              leading: AppAvatar(
+                url: authController.currentUser.value?.photo,
+                name:
+                    authController.currentUser.value?.name ??
+                    authController.currentUser.value?.username ??
+                    authController.currentUser.value?.email,
+                radius: Design.spacing.avatarRadius / 2,
               ),
               title: Text(
                 authController.currentUser.value?.name ??

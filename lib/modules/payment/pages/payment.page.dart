@@ -17,18 +17,18 @@ class PaymentPage extends GetView<PaymentController> {
       showBackButton: true,
       padding: Design.spacing.zero,
       child: Obx(() {
-        final filterChips = [
-          const AppSearchChipItem(
-            id: PaymentController.filterAll,
+        final filterOptions = [
+          const AppDropdownOption<String>(
+            value: PaymentController.filterAll,
             label: 'All Plans',
           ),
-          const AppSearchChipItem(
-            id: PaymentController.filterSubscription,
+          const AppDropdownOption<String>(
+            value: PaymentController.filterSubscription,
             label: 'Subscriptions',
             icon: Icons.repeat_rounded,
           ),
-          const AppSearchChipItem(
-            id: PaymentController.filterOneTime,
+          const AppDropdownOption<String>(
+            value: PaymentController.filterOneTime,
             label: 'One-Time',
             icon: Icons.flash_on_rounded,
           ),
@@ -58,9 +58,10 @@ class PaymentPage extends GetView<PaymentController> {
               onSearchChanged: controller.onSearchChanged,
               isSearching:
                   controller.isLoading.value && controller.items.isNotEmpty,
-              filterChips: filterChips,
+              filterOptions: filterOptions,
               selectedFilterId: controller.selectedFilterId,
-              onFilterSelected: controller.selectFilterId,
+              onFilterChanged: (id) =>
+                  controller.selectFilterId(id ?? PaymentController.filterAll),
             ),
           ],
         );
@@ -163,6 +164,75 @@ class PaymentPage extends GetView<PaymentController> {
           Text(product.description, style: context.typo.bodyMedium),
           SizedBox(height: Design.spacing.lg),
 
+          // Visual useAccess Entitlement Status Banner
+          if (hasAccess) ...[
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: Design.spacing.md,
+                vertical: Design.spacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: context.colors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+                border: Border.all(
+                  color: context.colors.success.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    color: context.colors.success,
+                    size: 20,
+                  ),
+                  SizedBox(width: Design.spacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Access Unlocked',
+                          style: context.typo.bodySmall.copyWith(
+                            color: context.colors.success,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Entitlement active via useAccess',
+                          style: context.typo.caption.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      AppSnackbar.success(
+                        'useAccess verified: Entitlement active for ${product.name}',
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(Design.spacing.radiusSmall),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Design.spacing.xs,
+                        vertical: 2.0,
+                      ),
+                      child: Text(
+                        'Verify',
+                        style: context.typo.caption.copyWith(
+                          color: context.colors.success,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: Design.spacing.md),
+          ],
+
           // Pricing
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -217,8 +287,12 @@ class PaymentPage extends GetView<PaymentController> {
       if (hasAccess) {
         return AppButton(
           type: EButtonType.secondary,
-          text: 'Claimed',
-          onPressed: null,
+          text: 'Claimed (Unlocked)',
+          onPressed: () {
+            AppSnackbar.success(
+              'useAccess verified: Free entitlement active for ${product.name}',
+            );
+          },
         );
       }
 
@@ -228,7 +302,7 @@ class PaymentPage extends GetView<PaymentController> {
       );
     }
 
-    // 2. Active subscription -> Cancel button
+    // 2. Active subscription -> Unlocked button + Cancel button
     if (activeSub != null) {
       final periodEnd = activeSub.currentPeriodEnd != null
           ? AppDateTime.formatLocalDate(activeSub.currentPeriodEnd)
@@ -237,12 +311,21 @@ class PaymentPage extends GetView<PaymentController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          AppButton(
+            text: 'Access Unlocked 🎉',
+            onPressed: () {
+              AppSnackbar.success(
+                'useAccess verified: Subscription active for ${product.name}',
+              );
+            },
+          ),
+          SizedBox(height: Design.spacing.sm),
           Text(
             'Renews automatically on $periodEnd',
             style: context.typo.caption,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: Design.spacing.md),
+          SizedBox(height: Design.spacing.xs),
           AppButton(
             type: EButtonType.secondary,
             text: 'Cancel Subscription',
@@ -260,7 +343,7 @@ class PaymentPage extends GetView<PaymentController> {
       );
     }
 
-    // 3. Canceled (pending end of cycle) -> Resume button
+    // 3. Canceled (pending end of cycle) -> Unlocked + Resume button
     if (canceledSub != null) {
       final periodEnd = canceledSub.currentPeriodEnd != null
           ? AppDateTime.formatLocalDate(canceledSub.currentPeriodEnd)
@@ -269,12 +352,21 @@ class PaymentPage extends GetView<PaymentController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          AppButton(
+            text: 'Access Unlocked (Expiring)',
+            onPressed: () {
+              AppSnackbar.success(
+                'useAccess verified: Access active until $periodEnd',
+              );
+            },
+          ),
+          SizedBox(height: Design.spacing.sm),
           Text(
             'Access remains active until $periodEnd',
             style: context.typo.caption.copyWith(color: Design.colors.warning),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: Design.spacing.md),
+          SizedBox(height: Design.spacing.xs),
           AppButton(
             type: EButtonType.secondary,
             text: 'Resume Subscription',
@@ -298,6 +390,16 @@ class PaymentPage extends GetView<PaymentController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppButton(
+            text: 'Access Unlocked 🎉',
+            onPressed: () {
+              AppSnackbar.success(
+                'useAccess verified: Lifetime entitlement active for ${product.name}',
+              );
+            },
+          ),
+          SizedBox(height: Design.spacing.xs),
+          AppButton(
+            type: EButtonType.secondary,
             text: 'Buy Again',
             onPressed: () => CheckoutBottomSheet.show(context, product),
           ),

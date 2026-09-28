@@ -229,22 +229,22 @@ class AppTranslations extends Translations {
       AppLocales.payment.couponApplied: 'Coupon applied',
       AppLocales.payment.discount: 'Discount',
       AppLocales.payment.totalDue: 'Total Due',
-      AppLocales.payment.claimFreeAccess: 'Claim Free Access 🎉',
+      AppLocales.payment.claimFreeAccess: 'Claim Free Access',
       AppLocales.payment.proceedToCheckout: 'Proceed to Checkout',
       AppLocales.payment.free: 'FREE',
       AppLocales.payment.orderSummary: 'Order Summary',
       AppLocales.payment.discountApplied: '@discount discount applied',
-      AppLocales.payment.accessGranted: 'Access granted successfully! 🎉',
+      AppLocales.payment.accessGranted: 'Access granted successfully!',
       AppLocales.payment.invalidCheckout: 'Invalid checkout response',
       AppLocales.payment.checkoutFailed: 'Checkout failed: @error',
       AppLocales.payment.cancelFailed: 'Failed to cancel subscription',
       AppLocales.payment.resumeFailed: 'Failed to resume subscription',
-      AppLocales.payment.couponValidationFailed: 'Failed to validate coupon: @error',
+      AppLocales.payment.couponValidationFailed:
+          'Failed to validate coupon: @error',
 
       // Payment - IAP
       AppLocales.payment.iap.failed: 'In-app purchase failed',
-      AppLocales.payment.iap.verifySuccess:
-          'Purchase verified successfully! 🎉',
+      AppLocales.payment.iap.verifySuccess: 'Purchase verified successfully!',
       AppLocales.payment.iap.verifyFailed:
           'Failed to verify in-app purchase with server',
       AppLocales.payment.iap.disabled:
@@ -627,23 +627,26 @@ class AppTranslations extends Translations {
       AppLocales.payment.couponApplied: 'ကူပွန် ထည့်သွင်းပြီးပါပြီ',
       AppLocales.payment.discount: 'လျှော့စျေး',
       AppLocales.payment.totalDue: 'ကျသင့်ငွေ',
-      AppLocales.payment.claimFreeAccess: 'အခမဲ့ ရယူမည် 🎉',
+      AppLocales.payment.claimFreeAccess: 'အခမဲ့ ရယူမည်',
       AppLocales.payment.proceedToCheckout: 'ငွေပေးချေမှုသို့ ဆက်သွားမည်',
       AppLocales.payment.free: 'အခမဲ့',
       AppLocales.payment.orderSummary: 'အော်ဒါ အကျဉ်းချုပ်',
       AppLocales.payment.discountApplied:
           '@discount လျှော့စျေး ထည့်သွင်းပြီးပါပြီ',
-      AppLocales.payment.accessGranted: 'အသုံးပြုခွင့် အောင်မြင်စွာ ပေးအပ်ပြီးပါပြီ! 🎉',
-      AppLocales.payment.invalidCheckout: 'ငွေပေးချေမှု တုံ့ပြန်ချက် မမှန်ကန်ပါ',
+      AppLocales.payment.accessGranted:
+          'အသုံးပြုခွင့် အောင်မြင်စွာ ပေးအပ်ပြီးပါပြီ!',
+      AppLocales.payment.invalidCheckout:
+          'ငွေပေးချေမှု တုံ့ပြန်ချက် မမှန်ကန်ပါ',
       AppLocales.payment.checkoutFailed: 'ငွေပေးချေမှု မအောင်မြင်ပါ: @error',
       AppLocales.payment.cancelFailed: 'စာရင်းသွင်းမှု ပယ်ဖျက်ရန် မအောင်မြင်ပါ',
       AppLocales.payment.resumeFailed: 'စာရင်းသွင်းမှု ပြန်စရန် မအောင်မြင်ပါ',
-      AppLocales.payment.couponValidationFailed: 'ကူပွန် စစ်ဆေးရန် မအောင်မြင်ပါ: @error',
+      AppLocales.payment.couponValidationFailed:
+          'ကူပွန် စစ်ဆေးရန် မအောင်မြင်ပါ: @error',
 
       // Payment - IAP
       AppLocales.payment.iap.failed: 'အက်ပ်တွင်း ဝယ်ယူမှု မအောင်မြင်ပါ',
       AppLocales.payment.iap.verifySuccess:
-          'ဝယ်ယူမှု အတည်ပြုခြင်း အောင်မြင်ပါသည်! 🎉',
+          'ဝယ်ယူမှု အတည်ပြုခြင်း အောင်မြင်ပါသည်!',
       AppLocales.payment.iap.verifyFailed:
           'ဆာဗာဖြင့် ဝယ်ယူမှု အတည်ပြုရန် မအောင်မြင်ပါ',
       AppLocales.payment.iap.disabled:

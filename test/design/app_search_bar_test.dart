@@ -99,7 +99,7 @@ void main() {
       },
     );
 
-    testWidgets('renders filter chips and triggers onFilterSelected', (
+    testWidgets('renders dropdown filter and triggers onFilterChanged', (
       tester,
     ) async {
       String? selectedId;
@@ -109,22 +109,25 @@ void main() {
           AppSearchBar(
             onSearchChanged: (_) {},
             selectedFilterId: 'monthly',
-            filterChips: const [
-              AppSearchChipItem(id: 'all', label: 'All'),
-              AppSearchChipItem(id: 'monthly', label: 'Monthly'),
-              AppSearchChipItem(id: 'yearly', label: 'Yearly'),
+            filterOptions: const [
+              AppDropdownOption(value: 'all', label: 'All Plans'),
+              AppDropdownOption(value: 'monthly', label: 'Monthly'),
+              AppDropdownOption(value: 'yearly', label: 'Yearly'),
             ],
-            onFilterSelected: (id) => selectedId = id,
+            onFilterChanged: (id) => selectedId = id,
           ),
         ),
       );
 
-      expect(find.text('All'), findsOneWidget);
+      expect(find.byType(AppDropdown<String>), findsOneWidget);
       expect(find.text('Monthly'), findsOneWidget);
-      expect(find.text('Yearly'), findsOneWidget);
 
-      await tester.tap(find.text('Yearly'));
-      await tester.pump();
+      await tester.tap(find.text('Monthly'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Yearly').last, findsOneWidget);
+      await tester.tap(find.text('Yearly').last);
+      await tester.pumpAndSettle();
 
       expect(selectedId, 'yearly');
     });

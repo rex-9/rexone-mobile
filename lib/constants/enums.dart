@@ -37,6 +37,12 @@ enum EWsEventType {
   assetCompressionFailed('asset_compression_failed'),
   signInAlert('sign_in_alert'),
 
+  iamUpdated('iam_updated'),
+  accessRevoked('access_revoked'),
+  accessUpdated('access_updated'),
+  sessionExpired('session_expired'),
+  sessionInvalidated('session_invalidated'),
+
   unknown('unknown');
 
   final String value;

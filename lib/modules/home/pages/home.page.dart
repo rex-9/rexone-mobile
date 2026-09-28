@@ -43,7 +43,9 @@ class HomePage extends GetView<AuthController> {
                     ),
                     decoration: BoxDecoration(
                       color: context.colors.error,
-                      borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        Design.spacing.radiusMedium,
+                      ),
                     ),
                     constraints: BoxConstraints(
                       minWidth: Design.spacing.lg,
@@ -85,13 +87,14 @@ class HomePage extends GetView<AuthController> {
               Obx(
                 () => Column(
                   children: [
-                    if (controller.currentUser.value?.photo != null)
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(
-                          controller.currentUser.value!.photo!,
-                        ),
-                      ),
+                    AppAvatar(
+                      url: controller.currentUser.value?.photo,
+                      name:
+                          controller.currentUser.value?.name ??
+                          controller.currentUser.value?.username ??
+                          controller.currentUser.value?.email,
+                      radius: Design.spacing.avatarRadius,
+                    ),
                     SizedBox(height: Design.spacing.md),
                     Text(
                       controller.currentUser.value?.name ??

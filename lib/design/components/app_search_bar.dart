@@ -1,16 +1,7 @@
-// lib/design/components/app_search_filter_bar.dart
+// lib/design/components/app_search_bar.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rexone_mobile/design/design.dart';
-
-/// Item model representing a quick filter chip in [AppSearchBar].
-class AppSearchChipItem {
-  final String id;
-  final String label;
-  final IconData? icon;
-
-  const AppSearchChipItem({required this.id, required this.label, this.icon});
-}
 
 /// Reusable search input and filter bar component.
 ///
@@ -18,7 +9,7 @@ class AppSearchChipItem {
 /// - Search input with search icon, clear button, and optional trailing loading indicator
 /// - Built-in debouncing timer (default 350ms) to avoid spamming the backend
 /// - Filter trigger button with optional active filter count badge
-/// - Optional horizontal quick-filter chip row
+/// - Universal dropdown filter selector powered by [AppDropdown]
 class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
     super.key,
@@ -27,9 +18,10 @@ class AppSearchBar extends StatefulWidget {
     required this.onSearchChanged,
     this.debounceDuration = const Duration(milliseconds: 350),
     this.isSearching = false,
-    this.filterChips = const [],
+    this.filterOptions = const [],
     this.selectedFilterId,
-    this.onFilterSelected,
+    this.onFilterChanged,
+    this.filterHint,
     this.onFilterTap,
     this.activeFilterCount = 0,
     this.searchController,
@@ -50,14 +42,17 @@ class AppSearchBar extends StatefulWidget {
   /// Whether a search request is actively in-flight (shows trailing spinner).
   final bool isSearching;
 
-  /// Optional list of filter chips to display underneath the search field.
-  final List<AppSearchChipItem> filterChips;
+  /// Optional list of dropdown options for filtering.
+  final List<AppDropdownOption<String>> filterOptions;
 
-  /// The currently selected filter chip id, if any.
+  /// The currently selected filter option id, if any.
   final String? selectedFilterId;
 
-  /// Callback invoked when a filter chip is tapped.
-  final Function(String id)? onFilterSelected;
+  /// Callback invoked when a filter option is selected from dropdown.
+  final ValueChanged<String?>? onFilterChanged;
+
+  /// Optional placeholder hint for the filter dropdown.
+  final String? filterHint;
 
   /// Optional callback to open a filter bottom sheet or dialog.
   final VoidCallback? onFilterTap;
@@ -121,7 +116,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final hasFilterButton = widget.onFilterTap != null;
-    final hasChips = widget.filterChips.isNotEmpty;
+    final hasDropdown = widget.filterOptions.isNotEmpty;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -167,31 +162,16 @@ class _AppSearchBarState extends State<AppSearchBar> {
           ],
         ),
 
-        // Optional Quick Filter Chips Row
-        if (hasChips) ...[
+        // Dropdown Filter Selector
+        if (hasDropdown) ...[
           SizedBox(height: Design.spacing.sm),
-          SizedBox(
-            height: 36,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.filterChips.length,
-              separatorBuilder: (_, _) => SizedBox(width: Design.spacing.xs),
-              itemBuilder: (context, index) {
-                final chip = widget.filterChips[index];
-                final isSelected = widget.selectedFilterId == chip.id;
-
-                return AppBadge(
-                  text: chip.label,
-                  icon: chip.icon,
-                  type: isSelected
-                      ? EBadgeVariant.primary
-                      : EBadgeVariant.secondary,
-                  onTap: () {
-                    widget.onFilterSelected?.call(chip.id);
-                  },
-                );
-              },
-            ),
+          AppDropdown<String>(
+            options: widget.filterOptions,
+            value: widget.selectedFilterId,
+            hint: widget.filterHint,
+            onChanged: widget.onFilterChanged,
+            size: AppDropdownSize.medium,
+            fullWidth: true,
           ),
         ],
       ],

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
@@ -63,8 +61,6 @@ class ProfilePage extends GetView<ProfileController> {
       final path = controller.pickedImagePath.value;
       final url = controller.photoUrl.value;
       final hasLocal = path != null && path.isNotEmpty;
-      final hasNetwork = url != null && url.isNotEmpty;
-      final hasPhoto = hasLocal || hasNetwork;
       return Semantics(
         button: true,
         label: AppLocales.user.changeAvatar.tr,
@@ -76,22 +72,13 @@ class ProfilePage extends GetView<ProfileController> {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                CircleAvatar(
+                AppAvatar(
                   key: ValueKey(path ?? url ?? ''),
+                  url: hasLocal ? path : url,
+                  name: controller.nameController.text.isNotEmpty
+                      ? controller.nameController.text
+                      : controller.usernameController.text,
                   radius: Design.spacing.avatarRadius,
-                  backgroundColor: context.colors.primary.withValues(alpha: 0.1),
-                  backgroundImage: hasLocal
-                      ? FileImage(File(path))
-                      : hasNetwork
-                          ? NetworkImage(url)
-                          : null,
-                  child: hasPhoto
-                      ? null
-                      : Icon(
-                          Design.icons.person,
-                          size: Design.spacing.iconXLarge,
-                          color: context.colors.primary,
-                        ),
                 ),
                 Positioned(
                   right: 0,

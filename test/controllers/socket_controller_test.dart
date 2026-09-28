@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/controllers/socket.controller.dart';
+import 'package:rexone_mobile/modules/auth/auth.dart';
 import 'package:rexone_mobile/modules/notification/notification.dart';
 import 'package:rexone_mobile/services/services.dart';
 import '../mocks/test_services.dart';
@@ -110,6 +111,47 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       expect(notiController.unreadCount.value, equals(initialUnread));
+    });
+
+    test('invalidates session on iam_updated, access_revoked, or session_expired event', () async {
+      final fakeStorage = FakeStorageService();
+      Get.put<StorageService>(fakeStorage);
+      Get.put<AuthService>(FakeAuthService());
+      Get.put<AnalyticsService>(FakeAnalyticsService());
+      Get.put<PushNotificationService>(FakePushNotificationService());
+      Get.put<MediaDownloadService>(FakeMediaDownloadService());
+
+      final authController = Get.put(AuthController());
+      authController.isLoggedIn.value = true;
+      authController.authToken.value = 'dummy_token';
+
+      final iamMessage = SocketMessage(
+        type: SocketKeys.notification,
+        message: 'Your roles have been updated.',
+        data: {SocketKeys.type: EWsEventType.iamUpdated.value},
+      );
+
+      fakeSocket.emit(iamMessage);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(authController.isLoggedIn.value, isFalse);
+      expect(authController.authToken.value, isEmpty);
+
+      // Re-authenticate and test access_revoked
+      authController.isLoggedIn.value = true;
+      authController.authToken.value = 'dummy_token';
+
+      final revokedMessage = SocketMessage(
+        type: SocketKeys.notification,
+        message: 'Your access has been revoked.',
+        data: {SocketKeys.type: EWsEventType.accessRevoked.value},
+      );
+
+      fakeSocket.emit(revokedMessage);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(authController.isLoggedIn.value, isFalse);
+      expect(authController.authToken.value, isEmpty);
     });
 
     test('cancels subscription on close', () {

@@ -25,6 +25,10 @@ class NotificationConstants {
   static const String assetCompressing = 'asset_compressing';
   static const String signInAlert = 'sign_in_alert';
   static const String iamUpdated = 'iam_updated';
+  static const String accessUpdated = 'access_updated';
+  static const String accessRevoked = 'access_revoked';
+  static const String sessionExpired = 'session_expired';
+  static const String sessionInvalidated = 'session_invalidated';
 
   static const String externalLinkScheme = 'https';
 

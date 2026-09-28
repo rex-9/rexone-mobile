@@ -95,9 +95,10 @@ class AppImage extends StatelessWidget {
         },
       );
     } else {
-      final headers = UrlHelper.headersFor(url!);
+      final normalizedUrl = UrlHelper.normalize(url!);
+      final headers = UrlHelper.headersFor(normalizedUrl);
       imageWidget = Image.network(
-        url!,
+        normalizedUrl,
         headers: headers.isEmpty ? null : headers,
         width: width,
         height: height,
