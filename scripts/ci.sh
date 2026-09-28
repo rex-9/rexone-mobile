@@ -8,5 +8,5 @@ cd "$PROJECT_ROOT"
 
 touch .env.dev .env.uat .env.prod
 ./scripts/check_locales.sh
-flutter analyze
+dart analyze lib test
 flutter test test/

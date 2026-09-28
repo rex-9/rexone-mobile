@@ -18,7 +18,6 @@ void main() {
   late FakeNotificationService fakeService;
   late FakeAuthService fakeAuthService;
   late FakeStorageService fakeStorageService;
-  late AuthController authController;
   late NotificationController controller;
 
   setUp(() {
@@ -32,7 +31,7 @@ void main() {
     Get.put<AnalyticsService>(FakeAnalyticsService());
     Get.put<PushNotificationService>(FakePushNotificationService());
     Get.put<SocketService>(FakeSocketService());
-    authController = Get.put(AuthController());
+    Get.put(AuthController());
     controller = Get.put(NotificationController());
   });
 

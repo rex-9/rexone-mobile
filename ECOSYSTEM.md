@@ -247,6 +247,7 @@ Permissions follow a clean, four-level administrative model:
 ### 🎨 Mobile Design System (`lib/design/`)
 
 - **Design System Tokens**: `AppColors`, `AppTypography`, `AppSpacing`, `AppStyles`, `AppIcons`, `AppMedia`, `AppTheme` (Material 3 Light/Dark).
+- **Theme Extensions**: Reactive styling via `context.colors.*` and `context.typo.*`.
 - **UI Components**: `AppAccessGate`, `AppButton`, `AppDropdown` (universal select dropdown with custom options, prefix icons, and small/medium/large sizes matching Web's `Dropdown`), `AppInputField`, `AppPasswordField`, `AppLoading` (dual-mode: modal blocking overlay & non-blocking top linear progress), `AppPagyListView` (infinite scroll lazy loading with automatic next-page trigger, pull-to-refresh, empty/error fallbacks), `AppSearchBar` (debounced search with clear trigger, filter badge, and integrated `AppDropdown` filter selection), `AppSnackbar`, `AppDialog` (with `AppDialog.confirm()` for destructive flows), `AppPage`, `AppListTile`, `AppToggle`, `AppNetworkBanner` ("Offline mode" banner).
 
 ### 🧩 Domain Capabilities
@@ -402,26 +403,26 @@ Permissions follow a clean, four-level administrative model:
 
 Broadcasts async processing events, payment confirmations, and in-app inbox items:
 
-| Event Type                                      | Payload Attributes                                                                               | Description                                        |
-| :---------------------------------------------- | :----------------------------------------------------------------------------------------------- | :------------------------------------------------- |
-| `ai_response_ready`                             | `room_id`, `message_id`                                                                          | AI message generation finished.                    |
-| `ai_response_failed`                            | `room_id`, `error`                                                                               | AI generation failed.                              |
-| `tts_ready`                                     | `message_id`, `asset_id`                                                                         | TTS audio synthesis completed.                     |
-| `tts_failed`                                    | `message_id`, `error`                                                                            | TTS audio synthesis failed.                        |
-| `asset_updated`                                 | `id`, `status`, `size_bytes`, `compressed_size_bytes`, `compression_ratio`, `compression_passes` | Real-time compression status updates.              |
-| `asset_thumbnail_generated`                     | `asset_id`, `thumbnail`                                                                          | Video thumbnail generated in background.           |
-| `payment_success`                               | `product_name`, `amount`                                                                         | Successful payment confirmation.                   |
-| `payment_failed`                                | `product_name`, `amount`                                                                         | Failed payment alert.                              |
-| `subscription_created`                          | `product_name`, `active_until`                                                                   | Subscription activated.                            |
-| `subscription_canceled`                         | `product_name`, `active_until`                                                                   | Subscription canceled.                             |
-| `subscription_resumed`                          | `product_name`, `active_until`                                                                   | Subscription resumed.                              |
-| `in_app_notification`                           | `id`, `title`, `message`, `link`, `read_at`, `created_at`, `metadata`                            | New persistent notification received.              |
-| `iam_updated`                                   | `roles`                                                                                          | Roles/permissions updated; JWT invalidated, client signs out. |
-| `access_updated`                                | `product_id`                                                                                     | Manual admin entitlement grant/extension; JWT invalidated, client signs out. |
-| `access_revoked`                                | `product_id`                                                                                     | Manual admin entitlement revocation; JWT invalidated, client signs out. |
-| `session_expired`                               | `{}`                                                                                             | Server session expired; client signs out.          |
-| `session_invalidated`                           | `{}`                                                                                             | Server session invalidated; client signs out.      |
-| `welcome`                                       | `{}`                                                                                             | Emitted upon successful Action Cable subscription. |
+| Event Type                  | Payload Attributes                                                                               | Description                                                                  |
+| :-------------------------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| `ai_response_ready`         | `room_id`, `message_id`                                                                          | AI message generation finished.                                              |
+| `ai_response_failed`        | `room_id`, `error`                                                                               | AI generation failed.                                                        |
+| `tts_ready`                 | `message_id`, `asset_id`                                                                         | TTS audio synthesis completed.                                               |
+| `tts_failed`                | `message_id`, `error`                                                                            | TTS audio synthesis failed.                                                  |
+| `asset_updated`             | `id`, `status`, `size_bytes`, `compressed_size_bytes`, `compression_ratio`, `compression_passes` | Real-time compression status updates.                                        |
+| `asset_thumbnail_generated` | `asset_id`, `thumbnail`                                                                          | Video thumbnail generated in background.                                     |
+| `payment_success`           | `product_name`, `amount`                                                                         | Successful payment confirmation.                                             |
+| `payment_failed`            | `product_name`, `amount`                                                                         | Failed payment alert.                                                        |
+| `subscription_created`      | `product_name`, `active_until`                                                                   | Subscription activated.                                                      |
+| `subscription_canceled`     | `product_name`, `active_until`                                                                   | Subscription canceled.                                                       |
+| `subscription_resumed`      | `product_name`, `active_until`                                                                   | Subscription resumed.                                                        |
+| `in_app_notification`       | `id`, `title`, `message`, `link`, `read_at`, `created_at`, `metadata`                            | New persistent notification received.                                        |
+| `iam_updated`               | `roles`                                                                                          | Roles/permissions updated; JWT invalidated, client signs out.                |
+| `access_updated`            | `product_id`                                                                                     | Manual admin entitlement grant/extension; JWT invalidated, client signs out. |
+| `access_revoked`            | `product_id`                                                                                     | Manual admin entitlement revocation; JWT invalidated, client signs out.      |
+| `session_expired`           | `{}`                                                                                             | Server session expired; client signs out.                                    |
+| `session_invalidated`       | `{}`                                                                                             | Server session invalidated; client signs out.                                |
+| `welcome`                   | `{}`                                                                                             | Emitted upon successful Action Cable subscription.                           |
 
 _Navigation targets_: `link` represents the destination. Common internal destinations: `/home`, `/profile`, `/payment`, `/ai`. External URLs (`https://`) open in a new tab on Web and request user confirmation before opening the system browser on Mobile.
 
@@ -617,10 +618,10 @@ _Version resolution_: Core maps `app_version` to a matching `Client::Version` re
       "provider": "google_play", // or "app_store"
       "product_id": "UUID",
       "transaction_id": "STORE_TX_ID",
-      "purchase_token": "TOKEN",      // Google Play
-      "package_name": "BUNDLE_ID",    // Google Play
-      "receipt_data": "BASE64_JWS",   // Apple App Store
-      "coupon_code": "SUMMER50"       // Optional server-side promo coupon
+      "purchase_token": "TOKEN", // Google Play
+      "package_name": "BUNDLE_ID", // Google Play
+      "receipt_data": "BASE64_JWS", // Apple App Store
+      "coupon_code": "SUMMER50" // Optional server-side promo coupon
     }
     ```
   - **With or Without Coupon**:
