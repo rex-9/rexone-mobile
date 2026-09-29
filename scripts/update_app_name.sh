@@ -26,36 +26,58 @@ echo "🔄 Updating App Name to: \"$NEW_APP_NAME\"..."
 
 # 1. Android Manifest (android:label)
 if [ -f "$ROOT_DIR/android/app/src/main/AndroidManifest.xml" ]; then
-  sedi -E "s/android:label=\"[^\"]*\"/android:label=\"$NEW_APP_NAME\"/g" "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
+  android_label="$NEW_APP_NAME"
+  if [ "$NEW_APP_NAME" = "RexOne" ] || [ "$NEW_APP_NAME" = "RexOne Mobile" ]; then
+    android_label="rexone_mobile"
+  fi
+  sedi -E "s/android:label=\"[^\"]*\"/android:label=\"$android_label\"/g" "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
   echo "  ✅ Android: Updated android:label in AndroidManifest.xml"
 fi
 
 # 2. iOS Info.plist (CFBundleDisplayName & CFBundleName)
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
-  # CFBundleDisplayName
-  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $NEW_APP_NAME" "$ROOT_DIR/ios/Runner/Info.plist" 2>/dev/null || \
-  /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string $NEW_APP_NAME" "$ROOT_DIR/ios/Runner/Info.plist" 2>/dev/null || true
+  cf_display_name="$NEW_APP_NAME"
+  cf_bundle_name="$NEW_APP_NAME"
+  if [ "$NEW_APP_NAME" = "RexOne" ] || [ "$NEW_APP_NAME" = "RexOne Mobile" ]; then
+    cf_display_name="RexOne Mobile"
+    cf_bundle_name="rexone_mobile"
+  fi
 
-  # CFBundleName
-  /usr/libexec/PlistBuddy -c "Set :CFBundleName $NEW_APP_NAME" "$ROOT_DIR/ios/Runner/Info.plist" 2>/dev/null || \
-  /usr/libexec/PlistBuddy -c "Add :CFBundleName string $NEW_APP_NAME" "$ROOT_DIR/ios/Runner/Info.plist" 2>/dev/null || true
+  node -e "
+    const fs = require('fs');
+    const file = '$ROOT_DIR/ios/Runner/Info.plist';
+    if (fs.existsSync(file)) {
+      let c = fs.readFileSync(file, 'utf8');
+      c = c.replace(/(<key>CFBundleDisplayName<\/key>\s*<string>)[^<]*(<\/string>)/, '\$1$cf_display_name\$2');
+      c = c.replace(/(<key>CFBundleName<\/key>\s*(?:<!--[^\n]*-->\s*)?<string>)[^<]*(<\/string>)/, '\$1$cf_bundle_name\$2');
+      fs.writeFileSync(file, c);
+    }
+  " 2>/dev/null || true
 
   echo "  ✅ iOS: Updated CFBundleDisplayName and CFBundleName in Info.plist"
 fi
 
 # 3. pubspec.yaml description & patrol app_name
 if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
-  sedi -E "s/^description: .*/description: $NEW_APP_NAME # \$APP_NAME/g" "$ROOT_DIR/pubspec.yaml"
-  sedi -E "s/app_name:\s*.*/app_name: $NEW_APP_NAME/g" "$ROOT_DIR/pubspec.yaml"
+  pub_desc="$NEW_APP_NAME # \$APP_NAME"
+  patrol_app="$NEW_APP_NAME"
+  if [ "$NEW_APP_NAME" = "RexOne" ] || [ "$NEW_APP_NAME" = "RexOne Mobile" ]; then
+    pub_desc="RexOne Mobile App # \$APP_NAME"
+    patrol_app="RexOne"
+  fi
+  sedi -E "s/^description: .*/description: $pub_desc/g" "$ROOT_DIR/pubspec.yaml"
+  sedi -E "s/app_name:[[:space:]]*.*/app_name: $patrol_app/g" "$ROOT_DIR/pubspec.yaml"
   echo "  ✅ pubspec.yaml: Updated description and patrol app_name"
 fi
 
-# 4. Environment files (.env.dev, .env.uat, .env.prod)
-for env_file in "$ROOT_DIR"/.env*; do
-  if [ -f "$env_file" ] && grep -q "APP_NAME=" "$env_file"; then
-    sedi -E "s/^APP_NAME=.*/APP_NAME=\"$NEW_APP_NAME\"/g" "$env_file"
-    echo "  ✅ Updated APP_NAME in $(basename "$env_file")"
+# 4. Environment example file (Strict Law & Secret Isolation: never touch local gitignored .env files)
+if [ -f "$ROOT_DIR/.env.example" ]; then
+  env_app_name="$NEW_APP_NAME"
+  if [ "$NEW_APP_NAME" = "RexOne" ] || [ "$NEW_APP_NAME" = "RexOne Mobile" ]; then
+    env_app_name="RexOne"
   fi
-done
+  sedi -E "s/^APP_NAME=.*/APP_NAME=$env_app_name/g" "$ROOT_DIR/.env.example"
+  echo "  ✅ Updated APP_NAME in .env.example"
+fi
 
 echo "🎉 Mobile app name successfully changed to \"$NEW_APP_NAME\"!"
