@@ -98,16 +98,11 @@ if [ -f "$ROOT_DIR/.env.example" ]; then
   echo "  ✅ Mobile: Updated .env.example"
 fi
 
-# 6. Synchronize default fallback package IDs in lib/constants/app.constants.dart
-if [ -n "$PACKAGE_NAME" ] && [ -f "$ROOT_DIR/lib/constants/app.constants.dart" ]; then
-  sedi -E "s/'com\.rex9\.[a-zA-Z0-9_.]+'/'$PACKAGE_NAME'/g" "$ROOT_DIR/lib/constants/app.constants.dart"
-  echo "  ✅ app.constants.dart: Updated default app ID fallbacks ($PACKAGE_NAME)"
-fi
-
-# 7. Synchronize default fallbacks in lib/config/app.config.dart
+# 6. Synchronize default fallbacks in lib/config/app.config.dart
 if [ -f "$ROOT_DIR/lib/config/app.config.dart" ]; then
   if [ -n "$PACKAGE_NAME" ]; then
-    sedi -E "s/'com\.rex9\.[a-zA-Z0-9_.]+'/'$PACKAGE_NAME'/g" "$ROOT_DIR/lib/config/app.config.dart"
+    sedi -E "s/(androidAppIdKey\] \?\? ')[^']+'/\1$PACKAGE_NAME'/g" "$ROOT_DIR/lib/config/app.config.dart"
+    sedi -E "s/(iosAppIdKey\] \?\? ')[^']+'/\1$PACKAGE_NAME'/g" "$ROOT_DIR/lib/config/app.config.dart"
   fi
   app_name_fallback="$APP_NAME"
   if [ "$BRAND_NAME" = "RexOne" ]; then
@@ -115,10 +110,10 @@ if [ -f "$ROOT_DIR/lib/config/app.config.dart" ]; then
   fi
   sedi -E "s/dotenv\.env\[AppConstants\.nameKey\] \?\? '[^']+'/dotenv.env[AppConstants.nameKey] ?? '$app_name_fallback'/g" "$ROOT_DIR/lib/config/app.config.dart"
   sedi -E "s/dotenv\.env\[AppConstants\.fromEmailKey\] \?\? '[^']+'/dotenv.env[AppConstants.fromEmailKey] ?? '$FROM_EMAIL'/g" "$ROOT_DIR/lib/config/app.config.dart"
-  echo "  ✅ app.config.dart: Updated default app name and ID fallbacks ($app_name_fallback / $PACKAGE_NAME)"
+  echo "  ✅ app.config.dart: Updated default app name, email, and ID fallbacks ($app_name_fallback / $PACKAGE_NAME)"
 fi
 
-# 8. Synchronize app info helper fallbacks in lib/helpers/app_info.helper.dart
+# 7. Synchronize app info helper fallbacks in lib/helpers/app_info.helper.dart
 if [ -f "$ROOT_DIR/lib/helpers/app_info.helper.dart" ]; then
   app_name_fallback="$APP_NAME"
   if [ "$BRAND_NAME" = "RexOne" ]; then
@@ -131,24 +126,25 @@ if [ -f "$ROOT_DIR/lib/helpers/app_info.helper.dart" ]; then
   echo "  ✅ app_info.helper.dart: Updated default appName and packageName ($app_name_fallback / $PACKAGE_NAME)"
 fi
 
-# 9. Synchronize local Drift database name in lib/data/local/database.dart
+# 8. Synchronize local Drift database name in lib/data/local/database.dart
 if [ -f "$ROOT_DIR/lib/data/local/database.dart" ]; then
   sedi -E "s/driftDatabase\(name: '[^']+'\)/driftDatabase(name: '${BRAND_SLUG_SNAKE}_offline')/g" "$ROOT_DIR/lib/data/local/database.dart"
   echo "  ✅ database.dart: Updated local drift database name to ${BRAND_SLUG_SNAKE}_offline"
 fi
 
-# 10. Synchronize secure storage salt seed in lib/services/storage.service.dart
+# 9. Synchronize secure storage salt seed in lib/services/storage.service.dart
 if [ -f "$ROOT_DIR/lib/services/storage.service.dart" ]; then
   sedi -E "s/static const String _saltSeed = '[^']+';/static const String _saltSeed = '${BRAND_SLUG_SNAKE}_mobile_auth_secure_seed_2026';/g" "$ROOT_DIR/lib/services/storage.service.dart"
   echo "  ✅ storage.service.dart: Updated secure storage salt seed"
 fi
 
-# 11. Synchronize method channels in Dart and Swift
+# 10. Synchronize method channels in Dart and Swift
 if [ -f "$ROOT_DIR/lib/modules/media/audio/services/now_playing.bridge.dart" ]; then
   sedi -E "s/MethodChannel\('[^']+\/now_playing'\)/MethodChannel('${BRAND_SLUG_KEBAB}\/now_playing')/g" "$ROOT_DIR/lib/modules/media/audio/services/now_playing.bridge.dart"
 fi
 if [ -f "$ROOT_DIR/lib/constants/media_download.constants.dart" ]; then
   sedi -E "s/'[a-zA-Z0-9_-]+\/media_download_live_activity'/'${BRAND_SLUG_KEBAB}\/media_download_live_activity'/g" "$ROOT_DIR/lib/constants/media_download.constants.dart"
+  sedi -E "s/static const keySalt = '[^']+';/static const keySalt = '${BRAND_SLUG_SNAKE}_mobile_offline_v1';/g" "$ROOT_DIR/lib/constants/media_download.constants.dart"
 fi
 if [ -f "$ROOT_DIR/ios/Runner/AppDelegate.swift" ]; then
   sedi -E "s/name: \"[^\"]+\/now_playing\"/name: \"${BRAND_SLUG_KEBAB}\/now_playing\"/g" "$ROOT_DIR/ios/Runner/AppDelegate.swift"
@@ -156,7 +152,7 @@ if [ -f "$ROOT_DIR/ios/Runner/AppDelegate.swift" ]; then
   echo "  ✅ iOS/Dart: Updated platform method channel names to ${BRAND_SLUG_KEBAB}"
 fi
 
-# 12. Synchronize iOS URL Scheme in Info.plist
+# 11. Synchronize iOS URL Scheme in Info.plist
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
   url_scheme="${BRAND_SLUG_FLAT}mobile"
   if [ "$BRAND_NAME" = "RexOne" ]; then
@@ -171,7 +167,7 @@ if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
   echo "  ✅ iOS: Updated URL scheme to $url_scheme"
 fi
 
-# 13. Synchronize Firebase project_id and storage_bucket in example templates
+# 12. Synchronize Firebase project_id and storage_bucket in example templates
 fb_project_id="${BRAND_SLUG_KEBAB}"
 fb_storage_bucket="${BRAND_SLUG_KEBAB}.firebasestorage.app"
 if [ "$BRAND_NAME" = "RexOne" ]; then

@@ -50,9 +50,6 @@ fi
 # 3. Update Android Patrol test runner (MainActivityTest.java) package and path
 EXISTING_TEST_JAVA=$(find "$ROOT_DIR/android/app/src/androidTest/java" -name "MainActivityTest.java" 2>/dev/null | head -n 1)
 TEST_PACKAGE_PATH="$PACKAGE_PATH"
-if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
-  TEST_PACKAGE_PATH="com/rexone/mobile"
-fi
 TARGET_TEST_DIR="$ROOT_DIR/android/app/src/androidTest/java/$TEST_PACKAGE_PATH"
 if [ -n "$EXISTING_TEST_JAVA" ] && [ -f "$EXISTING_TEST_JAVA" ]; then
   mkdir -p "$TARGET_TEST_DIR"
