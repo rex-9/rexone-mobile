@@ -1,0 +1,75 @@
+name: "🐛 Bug Report"
+description: "Report a reproducible bug, crash, or layout defect in RexOne Mobile."
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Before reporting, please ensure the bug has not already been reported and that you have tested against the latest `main` or `dev` branch.
+  - type: dropdown
+    id: target_platform
+    attributes:
+      label: "Target Platform & Environment"
+      description: "Which platform did this occur on?"
+      options:
+        - "Android Physical Device"
+        - "Android Emulator"
+        - "iOS Physical Device (iPhone / iPad)"
+        - "iOS Simulator"
+        - "macOS / Desktop"
+        - "Linux Desktop"
+    validations:
+      required: true
+  - type: textarea
+    id: environment_info
+    attributes:
+      label: "Device & Flutter Environment"
+      description: "Device model, OS version, and relevant `flutter doctor -v` snippet."
+      placeholder: |
+        - Device: Pixel 8 / iPhone 15 Pro
+        - OS Version: Android 14 / iOS 17.5
+        - Flutter Version: 3.x
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Bug Description"
+      description: "A clear and concise description of the defect."
+    validations:
+      required: true
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Step-by-step instructions to reproduce the issue."
+      placeholder: |
+        1. Launch app with `flutter run --dart-define=APP_ENV=.env.dev`
+        2. Navigate to `...`
+        3. Tap on `...`
+        4. Observe unexpected behavior / crash
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen instead?"
+    validations:
+      required: true
+  - type: textarea
+    id: logs_or_stacktrace
+    attributes:
+      label: "Flutter Logs & Stack Trace"
+      description: "Paste terminal output, stack trace, or Crashlytics logs here (mask any private secrets!)."
+      render: shell
+  - type: checkboxes
+    id: preflight_checks
+    attributes:
+      label: "Preflight Verification"
+      options:
+        - label: "I have verified that no sensitive credentials, API keys, or private `.env` tokens are included in this report."
+          required: true
+        - label: "I have tested this against the latest branch and verified with `flutter analyze`."
+          required: false

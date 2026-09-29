@@ -1,0 +1,51 @@
+name: "💡 Feature or Mobile Capability Proposal"
+description: "Propose a new mobile feature, offline capability, or architectural enhancement."
+title: "[FEATURE]: "
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing an enhancement to RexOne Mobile! Please ensure your proposal adheres to **Discipline-Driven Development (DDD)** and the constitutional laws defined in [`LAW.md`](../../LAW.md).
+  - type: dropdown
+    id: targeted_subsystem
+    attributes:
+      label: "Targeted Mobile Subsystem"
+      options:
+        - "GetX Controllers & Reactive State Management"
+        - "Drift Offline Database & Background Synchronization"
+        - "Audio / Video Playback & Background Service"
+        - "iOS Live Activities & Dynamic Island Integration"
+        - "Platform Channels (Swift / Kotlin Native Interop)"
+        - "Design System, Themes & Custom Widgets"
+        - "Patrol Integration Testing & Quality Automation"
+    validations:
+      required: true
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: "Problem Statement"
+      description: "What user need, limitation, or improvement does this feature address?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "Proposed Solution & Design"
+      description: "Describe how this should work, controller architecture, and data contracts."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives_considered
+    attributes:
+      label: "Alternatives Considered"
+      description: "What other approaches or packages did you consider, and why did you choose this design?"
+  - type: checkboxes
+    id: constitutional_alignment
+    attributes:
+      label: "Constitutional Alignment"
+      options:
+        - label: "I have reviewed `LAW.md` and confirmed this proposal maintains clean parameter contracts and zero loose code."
+          required: true
+        - label: "I am willing to submit a pull request implementing this feature if approved."
+          required: false

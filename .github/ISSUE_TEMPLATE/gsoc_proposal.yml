@@ -1,0 +1,51 @@
+name: "🎓 GSoC Project Proposal / Discussion"
+description: "Submit or discuss a Google Summer of Code (GSoC) candidate project proposal for Mobile."
+title: "[GSOC]: "
+labels: ["gsoc", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to RexOne GSoC! Before submitting, please review our [Contributing Guidelines](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md), and [Architectural Laws](LAW.md).
+  - type: dropdown
+    id: idea_reference
+    attributes:
+      label: "Project Idea Reference"
+      options:
+        - "Cross-Platform Offline Sync & Vector-Clock Conflict Resolution"
+        - "Adaptive HLS/CMAF Media Pipeline & Mobile Caching Engine"
+        - "Patrol Integration Test Automation & Mobile Device Farm Pipeline"
+        - "Advanced Audio/Video Live Activity Widgets for iOS & Android Auto"
+        - "Custom Project Proposal"
+    validations:
+      required: true
+  - type: input
+    id: candidate_name
+    attributes:
+      label: "Candidate Name & Contact Info"
+      placeholder: "Full Name, GitHub username, Timezone"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal_summary
+    attributes:
+      label: "Proposal Summary & Architecture Plan"
+      description: "Explain your proposed technical approach, Flutter/Dart architecture, and milestones."
+    validations:
+      required: true
+  - type: textarea
+    id: qualifications_experience
+    attributes:
+      label: "Relevant Experience & Prior PRs"
+      description: "List relevant Flutter/Dart experience, open-source contributions, or RexOne PRs."
+    validations:
+      required: true
+  - type: checkboxes
+    id: candidate_commitments
+    attributes:
+      label: "Candidate Commitments"
+      options:
+        - label: "I have read and agree to follow the RexOne Code of Conduct and architectural guidelines."
+          required: true
+        - label: "I commit to dedicating the required weekly hours for the duration of the program."
+          required: true
