@@ -87,7 +87,6 @@ class ProfileController extends GetxController {
         return;
       }
 
-
       if (profile.data != null) {
         photoUrl.value = profile.data?.photo;
         _cacheUser(profile.data!);
@@ -97,6 +96,26 @@ class ProfileController extends GetxController {
       AppSnackbar.success(AppLocales.user.updateSuccess.tr);
     } catch (e, stk) {
       AppSnackbar.error(AppLocales.user.updateFailed.tr, e: e, stk: stk);
+    }
+  }
+
+  Future<void> discardCurrentUser() async {
+    AppLoading.show();
+    try {
+      final res = await _profile.discardCurrentUser();
+      if (!res.success) {
+        AppSnackbar.error(res.error ?? res.message);
+        return;
+      }
+
+      AppSnackbar.success(AppLocales.user.deleteSuccess.tr);
+      if (Get.isRegistered<AuthController>()) {
+        await Get.find<AuthController>().signOut();
+      }
+    } catch (e, stk) {
+      AppSnackbar.error(AppLocales.user.deleteFailed.tr, e: e, stk: stk);
+    } finally {
+      AppLoading.hide();
     }
   }
 

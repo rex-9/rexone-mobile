@@ -78,12 +78,7 @@ if [ -f "$ROOT_DIR/linux/CMakeLists.txt" ]; then
   echo "  ✅ Linux: Updated APPLICATION_ID in CMakeLists.txt"
 fi
 
-# 6. Optional fallback to change_app_package_name if dart is available
-if command -v dart >/dev/null 2>&1; then
-  dart run change_app_package_name:main "$NEW_PACKAGE_NAME" 2>/dev/null || true
-fi
-
-# 7. Update iOS Bundle Identifier in project.pbxproj safely without clobbering extensions
+# 6. Update iOS Bundle Identifier in project.pbxproj safely without clobbering extensions
 if [ -f "$ROOT_DIR/ios/Runner.xcodeproj/project.pbxproj" ]; then
   node -e "
     const fs = require('fs');
@@ -105,7 +100,7 @@ if [ -f "$ROOT_DIR/ios/Runner.xcodeproj/project.pbxproj" ]; then
   echo "  ✅ iOS: Updated PRODUCT_BUNDLE_IDENTIFIER in project.pbxproj"
 fi
 
-# 8. Update iOS GoogleService-Info.plist.example (gitignored live files are NOT touched)
+# 7. Update iOS GoogleService-Info.plist.example (gitignored live files are NOT touched)
 if [ -f "$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example" ]; then
   node -e "
     const fs = require('fs');
@@ -118,7 +113,7 @@ fi
 echo "  ℹ️  iOS Firebase Note: Gitignored 'ios/Runner/GoogleService-Info.plist' is intentionally untouched."
 echo "     ⚠️  Developer Action Required: Download the official 'GoogleService-Info.plist' from Firebase Console for '$NEW_PACKAGE_NAME' and place it in 'ios/Runner/'."
 
-# 9. Update iOS App Group Entitlements & ActionStore
+# 8. Update iOS App Group Entitlements & ActionStore
 app_group_pkg="$NEW_PACKAGE_NAME"
 if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
   app_group_pkg="com.rexone.mobile"
@@ -134,7 +129,7 @@ if [ -f "$ROOT_DIR/ios/MediaDownloadWidget/MediaDownloadLiveActivityActionStore.
   echo "  ✅ iOS: Updated appGroupId in MediaDownloadLiveActivityActionStore.swift"
 fi
 
-# 10. Update iOS Info.plist download background identifier
+# 9. Update iOS Info.plist download background identifier
 dl_pkg="$NEW_PACKAGE_NAME"
 if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
   dl_pkg="com.rexone.mobile"
@@ -144,7 +139,7 @@ if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
   echo "  ✅ iOS: Updated Info.plist download background identifier"
 fi
 
-# 11. Update patrol section in pubspec.yaml
+# 10. Update patrol section in pubspec.yaml
 if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
   sedi -E "s/package_name:[[:space:]]*[a-zA-Z0-9_.]+/package_name: $NEW_PACKAGE_NAME/g" "$ROOT_DIR/pubspec.yaml"
   sedi -E "s/bundle_id:[[:space:]]*[a-zA-Z0-9_.]+/bundle_id: $NEW_PACKAGE_NAME/g" "$ROOT_DIR/pubspec.yaml"

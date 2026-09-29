@@ -98,7 +98,7 @@ RexOne Mobile is built for Flutter teams, founder-engineers, and agencies creati
 
 It is a particularly good fit when a mobile product needs several of these capabilities to work together:
 
-- Complete identity, confirmation, recovery, Google sign-in, and platform-isolated sessions.
+- Complete identity, confirmation, recovery, Google sign-in, user self-account deletion, and platform-isolated sessions.
 - Stripe checkout, subscriptions, purchases, and entitlement-aware experiences.
 - Push and in-app notifications with deep-link handling and conversion analytics.
 - Queued AI responses and real-time operation updates that survive navigation or app backgrounding.
@@ -135,7 +135,7 @@ It was to build a **clear mobile foundation**—strong enough to carry ambitious
 
 | Foundation             | What is ready                                                                            | Details                                                                                 |
 | ---------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, platform sessions       | [Authentication & security](#authentication--security)                                  |
+| **Identity**           | Email/password flow, OTP verification, recovery, Google sign-in, user self-account deletion, platform sessions | [Authentication & security](#authentication--security)                                  |
 | **Profile & IAM**      | Profile settings, camera/gallery avatar upload, and 3-tier RBAC admin hierarchy          | [Profile & IAM Hierarchy](#profile--iam-hierarchy)                                      |
 | **Push Notifications** | OneSignal push messaging, permission management, user tag syncing, and click routing     | [Push & Analytics](#push-notifications--analytics)                                      |
 | **Product Analytics**  | Firebase Analytics screen tracking, auth lifecycle events, and telemetry                 | [Push & Analytics](#push-notifications--analytics)                                      |
@@ -210,6 +210,7 @@ flowchart LR
 
 - Own feature module at `lib/modules/profile/` with route-scoped `ProfileController` on `/profile`.
 - Camera and gallery avatar selection via `image_picker` guarded by shared `PermissionService`.
+- **User Self-Account Deletion**: Dedicated "Delete Account" action in Profile and Setting views prompting an `AppDialog.confirm` warning that the account will be soft-deleted, the email cannot be re-used for new registration, and providing the rebranded support email link, followed by token purge and sign-out.
 - **Three-Tier Administrative RBAC**: Enforces `super_admin` (full authority), `admin` (domain operations, excluding `users` and `iam`), and partial admins (`*_admin`, where permissions grant access to both standard and admin endpoints).
 
 ### Push notifications & Analytics

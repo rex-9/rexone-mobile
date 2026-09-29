@@ -26,4 +26,14 @@ class ProfileService extends GetxService {
       UserModel.fromJson,
     );
   }
+
+  Future<ApiResponse<UserModel>> discardCurrentUser() async {
+    final response = await _api.delete(
+      ServerRoutes.currentUser,
+    );
+    return _api.parseRecord<UserModel>(
+      response,
+      UserModel.fromJson,
+    );
+  }
 }

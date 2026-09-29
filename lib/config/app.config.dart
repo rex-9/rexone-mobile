@@ -61,4 +61,7 @@ class AppConfig {
 
   static String get offlineEncryptionKey =>
       dotenv.env[AppConstants.mediaOfflineEncryptionKey]?.trim() ?? '';
+
+  static String get fromEmail =>
+      dotenv.env[AppConstants.fromEmailKey] ?? 'support@rexone.com';
 }

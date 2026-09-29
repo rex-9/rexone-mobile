@@ -309,6 +309,11 @@ class _UserLocales {
   final accountInfo = 'user.account_info';
   final roles = 'user.roles';
   final permissions = 'user.permissions';
+  final deleteAccount = 'user.delete_account';
+  final deleteConfirmTitle = 'user.delete_confirm_title';
+  final deleteConfirmMessage = 'user.delete_confirm_message';
+  final deleteSuccess = 'user.delete_success';
+  final deleteFailed = 'user.delete_failed';
 }
 
 class _UpdateLocales {

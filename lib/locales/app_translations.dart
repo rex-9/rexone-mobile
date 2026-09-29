@@ -283,6 +283,12 @@ class AppTranslations extends Translations {
       AppLocales.user.accountInfo: 'Account Information',
       AppLocales.user.roles: 'Roles',
       AppLocales.user.permissions: 'Permissions',
+      AppLocales.user.deleteAccount: 'Delete Account',
+      AppLocales.user.deleteConfirmTitle: 'Delete Account',
+      AppLocales.user.deleteConfirmMessage:
+          'Are you sure you want to delete your account? You cannot create a new account with the same email again. If you need assistance or wish to restore your account, contact @email.',
+      AppLocales.user.deleteSuccess: 'Account deleted successfully',
+      AppLocales.user.deleteFailed: 'Could not delete account',
 
       // Notification
       AppLocales.notification.title: 'Notifications',
@@ -685,6 +691,12 @@ class AppTranslations extends Translations {
       AppLocales.user.accountInfo: 'အကောင့် အချက်အလက်',
       AppLocales.user.roles: 'ရာထူးများ',
       AppLocales.user.permissions: 'ခွင့်ပြုချက်များ',
+      AppLocales.user.deleteAccount: 'အကောင့်ဖျက်မည်',
+      AppLocales.user.deleteConfirmTitle: 'အကောင့်ဖျက်ရန် အတည်ပြုပါ',
+      AppLocales.user.deleteConfirmMessage:
+          'သင့်အကောင့်ကို ဖျက်ရန် သေချာပါသလား? ဤအီးမေးလ်ဖြင့် အကောင့်အသစ် ပြန်လည်ဖွင့်၍ ရတော့မည် မဟုတ်ပါ။ အကူအညီ လိုအပ်ပါက သို့မဟုတ် အကောင့်ပြန်ဖွင့်လိုပါက @email သို့ ဆက်သွယ်ပါ။',
+      AppLocales.user.deleteSuccess: 'အကောင့်ကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ',
+      AppLocales.user.deleteFailed: 'အကောင့်ဖျက်ရန် မအောင်မြင်ပါ',
 
       // Notification
       AppLocales.notification.title: 'အသိပေးချက်များ',

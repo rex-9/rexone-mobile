@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/config/config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/design/design.dart';
 
@@ -48,11 +49,79 @@ class ProfilePage extends GetView<ProfileController> {
                 isExpanded: true,
                 onPressed: controller.save,
               ),
+              SizedBox(height: Design.spacing.xxxl),
+              Divider(color: context.colors.divider),
+              SizedBox(height: Design.spacing.lg),
+              AppCard(
+                padding: EdgeInsets.all(Design.spacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocales.user.deleteAccount.tr,
+                      style: context.typo.labelLarge.copyWith(
+                        color: context.colors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: Design.spacing.xs),
+                    Text(
+                      AppLocales.user.deleteConfirmMessage.trParams({
+                        'email': AppConfig.fromEmail,
+                      }),
+                      style: context.typo.bodySmall.copyWith(
+                        color: context.colors.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: Design.spacing.lg),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => _showDeleteDialog(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: context.colors.error,
+                          side: BorderSide(
+                            color: context.colors.error.withValues(alpha: 0.5),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: Design.spacing.md,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              Design.spacing.radiusMedium,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          AppLocales.user.deleteAccount.tr,
+                          style: context.typo.button.copyWith(
+                            color: context.colors.error,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _showDeleteDialog(BuildContext context) async {
+    final confirmed = await AppDialog.confirm(
+      context: context,
+      title: AppLocales.user.deleteConfirmTitle.tr,
+      message: AppLocales.user.deleteConfirmMessage.trParams({
+        'email': AppConfig.fromEmail,
+      }),
+      confirmLabel: AppLocales.user.deleteAccount.tr,
+    );
+    if (confirmed) {
+      controller.discardCurrentUser();
+    }
   }
 
   Widget _buildAvatar(BuildContext context) {

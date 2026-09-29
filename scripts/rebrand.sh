@@ -9,7 +9,15 @@ APP_NAME="${1:-}"
 PACKAGE_NAME="${2:-}"
 LOGO_PATH="${3:-}"
 BRAND_NAME="${4:-$APP_NAME}"
-BRAND_DOMAIN="${5:-rexone.rex9.me}"
+BRAND_DOMAIN="${5:-rexone.com}"
+FROM_EMAIL="${6:-}"
+if [ -z "$FROM_EMAIL" ]; then
+  if [ "$BRAND_NAME" = "RexOne" ]; then
+    FROM_EMAIL="support@rexone.com"
+  else
+    FROM_EMAIL="support@${BRAND_DOMAIN}"
+  fi
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -56,17 +64,18 @@ fi
 
 # 4. Synchronize user-facing brand name in translations
 if [ -n "$BRAND_NAME" ] && [ -f "$ROOT_DIR/lib/locales/app_translations.dart" ]; then
-  sedi -E "s/Welcome to [a-zA-Z0-9_-]+/Welcome to $BRAND_NAME/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/to help improve [a-zA-Z0-9_-]+\./to help improve $BRAND_NAME./g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/welcomeHome: 'Welcome to [^'!]+!/welcomeHome: 'Welcome to $BRAND_NAME!/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/✨ Welcome to [^'✨]+ ✨/✨ Welcome to $BRAND_NAME ✨/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/to help improve [^.]+\./to help improve $BRAND_NAME./g" "$ROOT_DIR/lib/locales/app_translations.dart"
   sedi -E "s/Available on [^']+ Web/Available on $BRAND_NAME Web/g" "$ROOT_DIR/lib/locales/app_translations.dart"
   sedi -E "s/managed in the [^']+ Web admin portal/managed in the $BRAND_NAME Web admin portal/g" "$ROOT_DIR/lib/locales/app_translations.dart"
   sedi -E "s/This link will leave [^']+ and open/This link will leave $BRAND_NAME and open/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/welcomeHome: '[^' ]+ မှ/welcomeHome: '$BRAND_NAME မှ/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/✨ [^' ]+ မှ ကြိုဆိုပါသည် ✨/✨ $BRAND_NAME မှ ကြိုဆိုပါသည် ✨/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/'[^' ]+ ပိုမိုကောင်းမွန်စေရန်/'$BRAND_NAME ပိုမိုကောင်းမွန်စေရန်/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/webOnlyTitle: '[^' ]+ Web/webOnlyTitle: '$BRAND_NAME Web/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/ဤအပြောင်းအလဲကို [^' ]+ Web admin portal/ဤအပြောင်းအလဲကို $BRAND_NAME Web admin portal/g" "$ROOT_DIR/lib/locales/app_translations.dart"
-  sedi -E "s/ဤလင့်ခ်သည် [^' ]+ မှထွက်ပြီး/ဤလင့်ခ်သည် $BRAND_NAME မှထွက်ပြီး/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/welcomeHome: '[^']+ မှ ကြိုဆိုပါတယ်!/welcomeHome: '$BRAND_NAME မှ ကြိုဆိုပါတယ်!/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/✨ [^'✨]+ မှ ကြိုဆိုပါသည် ✨/✨ $BRAND_NAME မှ ကြိုဆိုပါသည် ✨/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/'[^']+ ပိုမိုကောင်းမွန်စေရန်/'$BRAND_NAME ပိုမိုကောင်းမွန်စေရန်/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/webOnlyTitle: '[^']+ Web တွင် ရနိုင်သည်'/webOnlyTitle: '$BRAND_NAME Web တွင် ရနိုင်သည်'/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/ဤအပြောင်းအလဲကို [^']+ Web admin portal/ဤအပြောင်းအလဲကို $BRAND_NAME Web admin portal/g" "$ROOT_DIR/lib/locales/app_translations.dart"
+  sedi -E "s/ဤလင့်ခ်သည် [^']+ မှထွက်ပြီး/ဤလင့်ခ်သည် $BRAND_NAME မှထွက်ပြီး/g" "$ROOT_DIR/lib/locales/app_translations.dart"
   echo "  ✅ AppTranslations: Synchronized brand display name ($BRAND_NAME)"
 fi
 
@@ -78,9 +87,14 @@ if [ -f "$ROOT_DIR/.env.example" ]; then
   fi
   api_domain="$BRAND_DOMAIN"
   if [ "$BRAND_NAME" = "RexOne" ]; then
-    api_domain="rexone.me"
+    api_domain="rexone.com"
   fi
   sedi -E "s|^API_BASE_URL=https?://api\.[^/]+|API_BASE_URL=https://api.$api_domain|g" "$ROOT_DIR/.env.example"
+  if grep -q "^FROM_EMAIL=" "$ROOT_DIR/.env.example"; then
+    sedi -E "s/^FROM_EMAIL=.*/FROM_EMAIL=$FROM_EMAIL/g" "$ROOT_DIR/.env.example"
+  else
+    echo "FROM_EMAIL=$FROM_EMAIL" >> "$ROOT_DIR/.env.example"
+  fi
   echo "  ✅ Mobile: Updated .env.example"
 fi
 
@@ -100,6 +114,7 @@ if [ -f "$ROOT_DIR/lib/config/app.config.dart" ]; then
     app_name_fallback="RexOne"
   fi
   sedi -E "s/dotenv\.env\[AppConstants\.nameKey\] \?\? '[^']+'/dotenv.env[AppConstants.nameKey] ?? '$app_name_fallback'/g" "$ROOT_DIR/lib/config/app.config.dart"
+  sedi -E "s/dotenv\.env\[AppConstants\.fromEmailKey\] \?\? '[^']+'/dotenv.env[AppConstants.fromEmailKey] ?? '$FROM_EMAIL'/g" "$ROOT_DIR/lib/config/app.config.dart"
   echo "  ✅ app.config.dart: Updated default app name and ID fallbacks ($app_name_fallback / $PACKAGE_NAME)"
 fi
 

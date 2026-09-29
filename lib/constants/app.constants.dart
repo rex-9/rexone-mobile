@@ -14,6 +14,7 @@ class AppConstants {
   static String get androidAppIdKey => 'ANDROID_APP_ID';
   static String get iosAppIdKey => 'IOS_APP_ID';
   static String get mediaOfflineEncryptionKey => 'MEDIA_OFFLINE_ENCRYPTION_KEY';
+  static String get fromEmailKey => 'FROM_EMAIL';
 
   // Validation Rules
   static const minPasswordLength = 6;
