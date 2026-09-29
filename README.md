@@ -319,7 +319,7 @@ RexOne Mobile enforces high engineering discipline with strict analyzer checks a
 # 1. Run static analysis across application, tests, and integration specs
 flutter analyze lib/ test/ integration_test/
 
-# 2. Run unit, controller, and widget tests (283 tests)
+# 2. Run unit, controller, and widget tests (322 tests)
 flutter test test/
 # or: ./scripts/test_unit.sh
 
