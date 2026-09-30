@@ -325,7 +325,8 @@ class VideoPlayerService extends GetxService {
       resolvedUrl,
       headers: null,
       subtitles: subtitles.isEmpty ? null : subtitles,
-      // Offline decrypted files may keep a non-media extension (.enc).
+      // Hint for platforms that honor it; file sources still need a real
+      // media path extension (see resolveOpenableMediaPath in _playbackUrl).
       videoExtension: isFile ? 'mp4' : null,
       cacheConfiguration: isFile
           ? null
@@ -428,7 +429,12 @@ class VideoPlayerService extends GetxService {
   Future<String?> _playbackUrl(AssetModel asset) async {
     final downloads = _downloads;
     if (downloads != null && downloads.isDownloaded(asset.id)) {
-      final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
+      // iOS AVPlayer rejects decrypted_cache/*.bin (UTI unknown). Use a
+      // path with a real media extension (mp4/mov/…) via resolveOpenableMediaPath.
+      final localPath = await downloads.resolveOpenableMediaPath(
+        asset.id,
+        fileExtension: asset.resolvedFileExtension ?? 'mp4',
+      );
       debugPrint('🔍 [VideoPlayerService] Local path: $localPath');
       if (localPath != null && localPath.isNotEmpty) {
         _offlineSubtitlesByAssetId[asset.id] = await downloads
