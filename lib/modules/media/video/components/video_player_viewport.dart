@@ -23,8 +23,8 @@ class VideoPlayerViewport extends StatelessWidget {
       child: SizedBox(
         width: size.width,
         height: size.height,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
+        // child: ClipRRect(
+        //   borderRadius: BorderRadius.circular(Design.spacing.radiusMedium),
           child: ColoredBox(
             color: colors.background,
             child: controller == null
@@ -34,7 +34,7 @@ class VideoPlayerViewport extends StatelessWidget {
                     delegates: AppLocalizations.delegates,
                     child: BetterPlayer(controller: controller!),
                   ),
-          ),
+          // ),
         ),
       ),
     );
