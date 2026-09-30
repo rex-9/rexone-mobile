@@ -137,3 +137,23 @@ Drift migrations use `MigrationStrategy`:
 1. Increments `schemaVersion` in `database.dart`.
 2. Adds `onUpgrade` step with `m.createTable` or `m.addColumn`.
 3. Ensures all changes remain backward-compatible and preserve user-downloaded media across app updates.
+
+---
+
+## 6. Offline Auth Lifecycle & Synchronization Resilience
+
+To guarantee that offline persistence never breaks user sessions or floods the network, RexOne follows three architectural rules:
+
+### 6.1. Deterministic Startup Ordering
+1. **Encrypted Storage Hydration**: `StorageService` reads the cached JWT token and user profile into memory first.
+2. **Instant UI Rendering**: `AuthController` restores the user state immediately (`isLoggedIn = true`) from local Drift DAOs. The interface renders without blocking on a network roundtrip.
+3. **Guarded Network & Socket Activation**: `SocketService` verifies that a clean token exists before opening `/cable?token=...`. If unauthenticated, it terminates early to avoid empty-payload socket handshakes.
+
+### 6.2. Network Disconnect vs. Session Expiration
+- **Offline != Logged Out**: Network errors (`SocketException`, DNS resolution failure, HTTP timeouts) during background queries or token validation are caught by telemetry. Local credentials remain intact, and the user continues operating against local Drift storage in airplane mode.
+- **Explicit 401 & Revocation**: The app only triggers `handleSessionExpired()` when the API explicitly returns an HTTP 401 Unauthorized or when ActionCable broadcasts an entitlement change (`sessionExpired`, `accessRevoked`).
+
+### 6.3. Background Sync & Battery Preservation
+- **Capped Exponential Backoff**: ActionCable reconnects with progressive backoff (`2s * attempts`) capped at 5 attempts, preventing infinite battery-draining loops during extended outages.
+- **Channel Rejection Handling**: If the server rejects a subscription frame (`reject_subscription`), the subscription future fails cleanly without continuous retry spam.
+- **Lifecycle Awareness (`WidgetsBindingObserver`)**: When the app transitions to `paused` or `inactive` (e.g. backgrounding, system sleep, or in-app browser), reconnect timers pause immediately and only re-arm once the app returns to `resumed`.
