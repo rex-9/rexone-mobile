@@ -152,6 +152,27 @@ void main() {
       expect(controller.isForceUpdateBlocked.value, isTrue);
     });
 
+    test(
+      'updateRequired without mustUpdate does not force-block splash',
+      () async {
+        fakeVersion.currentResponse = ApiResponse.success(
+          message: 'OK',
+          statusCode: 200,
+          data: version(mustUpdate: false, updateRequired: true),
+        );
+
+        await controller.checkAppVersion();
+
+        expect(controller.latestVersion.value?.updateRequired, isTrue);
+        expect(controller.latestVersion.value?.mustUpdate, isFalse);
+        expect(controller.isForceUpdateBlocked.value, isFalse);
+
+        // Soft dialog is skipped in Get.testMode; call stays no-op.
+        await controller.promptOptionalUpdate(controller.latestVersion.value!);
+        expect(controller.isForceUpdateBlocked.value, isFalse);
+      },
+    );
+
     test('navigate clears the route stack for logged-out users', () async {
       fakeStorage.saveRouteStack([AppRoutes.home, AppRoutes.settings]);
 

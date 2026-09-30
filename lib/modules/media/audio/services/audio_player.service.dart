@@ -626,7 +626,11 @@ class AudioPlayerService extends GetxService with WidgetsBindingObserver {
   Future<String?> _playbackUrl(AssetModel asset) async {
     final downloads = _downloads;
     if (downloads != null && downloads.isDownloaded(asset.id)) {
-      final localPath = await downloads.resolveDecryptedMediaPath(asset.id);
+      // iOS AVFoundation rejects decrypted_cache/*.bin. Prefer a real media ext.
+      final localPath = await downloads.resolveOpenableMediaPath(
+        asset.id,
+        fileExtension: asset.resolvedFileExtension ?? 'm4a',
+      );
       if (localPath != null && localPath.isNotEmpty) {
         _offlineSubtitlesByAssetId[asset.id] =
             await downloads.resolveOfflineSubtitleTracks(asset);

@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rexone_mobile/constants/constants.dart';
+import 'package:rexone_mobile/design/design.dart';
 import 'package:rexone_mobile/helpers/helpers.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
@@ -45,6 +47,10 @@ class SplashController extends GetxController with WidgetsBindingObserver {
       return;
     }
 
+    if (version != null && version.updateRequired) {
+      await promptOptionalUpdate(version);
+    }
+
     await navigate();
   }
 
@@ -69,8 +75,37 @@ class SplashController extends GetxController with WidgetsBindingObserver {
     final version = latestVersion.value;
     if (version != null && !version.mustUpdate) {
       isForceUpdateBlocked.value = false;
+      if (version.updateRequired) {
+        await promptOptionalUpdate(version);
+      }
       await navigate();
     }
+  }
+
+  /// Soft update: dismissible Later / Update dialog. Does not block launch.
+  Future<void> promptOptionalUpdate(VersionModel version) async {
+    if (Get.testMode) return;
+
+    // Wait until SplashPage has a frame so [Get.context] is valid.
+    await WidgetsBinding.instance.endOfFrame;
+    final context = Get.context;
+    if (context == null || !context.mounted) return;
+
+    final title = (version.title?.trim().isNotEmpty == true)
+        ? version.title!.trim()
+        : AppLocales.update.title.tr;
+    final message = (version.description?.trim().isNotEmpty == true)
+        ? version.description!.trim()
+        : AppLocales.update.message.tr;
+
+    await AppDialog.update(
+      context: context,
+      title: title,
+      message: message,
+      onUpdate: () {
+        openStore();
+      },
+    );
   }
 
   Future<void> openStore() async {
