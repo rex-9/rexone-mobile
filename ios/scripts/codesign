@@ -1,0 +1,22 @@
+#!/bin/sh
+# Project-level codesign wrapper to strip macOS extended attributes (detritus)
+# caused by Desktop/iCloud synchronization before invoking the real codesign.
+
+echo "$(date): codesign called with: $@" >> /tmp/codesign_calls.log
+
+for arg in "$@"; do
+  if [ -e "$arg" ]; then
+    xattr -cr "$arg" 2>/dev/null || true
+    p="$arg"
+    while [ "$p" != "/" ] && [ "$p" != "." ]; do
+      p="$(dirname "$p")"
+      case "$p" in
+        *.framework|*.appex|*.app)
+          xattr -cr "$p" 2>/dev/null || true
+          ;;
+      esac
+    done
+  fi
+done
+
+exec /usr/bin/codesign "$@"

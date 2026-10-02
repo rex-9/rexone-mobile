@@ -1,69 +1,103 @@
 import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:rexone_mobile/config/app.config.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 
 /// Helper to normalize network URLs across platforms and environments.
 ///
-/// In local development environments, backend services often return URLs referencing
-/// `localhost` or `127.0.0.1` (such as Garage S3 at `http://localhost:3100`).
-/// On Android emulators, `localhost` refers to the Android device itself, not the host machine.
-/// This helper maps `localhost` and `127.0.0.1` to the host machine IP (`10.0.2.2` or the host
-/// configured in [AppConfig.apiBaseUrl]).
+/// In local development environments:
+/// - Backend services or .env often reference `localhost` or `127.0.0.1` (such as Garage S3 or Rails API).
+///   On Android emulators, `localhost` refers to the Android device itself, not the host machine,
+///   so it is mapped to `10.0.2.2` (or the host configured in `API_BASE_URL`).
+/// - Conversely, when `.env.dev` contains `http://10.0.2.2:3000` (for Android emulators),
+///   iOS simulators cannot reach `10.0.2.2` because iOS shares the host macOS network stack.
+///   On iOS, macOS, and web, `10.0.2.2` is mapped to `localhost`.
+/// - Remote production/staging domains (e.g. `api.rexone.com`) and LAN IPs are preserved untouched.
 class UrlHelper {
   const UrlHelper._();
 
-  /// Normalizes a URL by mapping localhost/127.0.0.1 to the appropriate host on Android.
+  /// Normalizes a URL across Android and iOS/macOS/Web platforms.
   ///
-  /// [isAndroid] can be provided to override platform detection for testing.
-  static String normalize(String url, {bool? isAndroid}) {
+  /// - On Android: maps `localhost` and `127.0.0.1` to `10.0.2.2` (or configured host in `API_BASE_URL`).
+  /// - On non-Android (iOS, macOS, web): maps `10.0.2.2` to `localhost`.
+  ///
+  /// [isAndroid] and [isIOS] can be provided to override platform detection for testing.
+  static String normalize(String url, {bool? isAndroid, bool? isIOS}) {
     if (url.isEmpty) return url;
 
     final uri = Uri.tryParse(url);
     if (uri == null || !uri.hasScheme) return url;
 
     final scheme = uri.scheme.toLowerCase();
-    if (scheme != 'http' &&
-        scheme != 'https' &&
-        scheme != 'ws' &&
-        scheme != 'wss') {
+    if (scheme != NetworkSchemes.http &&
+        scheme != NetworkSchemes.https &&
+        scheme != NetworkSchemes.ws &&
+        scheme != NetworkSchemes.wss) {
       return url;
     }
 
     final host = uri.host.toLowerCase();
-    if (host != 'localhost' && host != '127.0.0.1') {
-      return url;
+
+    bool onAndroid = isAndroid ?? false;
+    if (isAndroid == null) {
+      try {
+        onAndroid = Platform.isAndroid;
+      } catch (_) {}
     }
 
-    final onAndroid = isAndroid ?? Platform.isAndroid;
-    if (!onAndroid) {
-      return url;
-    }
-
-    String targetHost = '10.0.2.2';
-    try {
-      if (dotenv.isInitialized) {
-        final apiUri = Uri.tryParse(AppConfig.apiBaseUrl);
-        final configuredHost = apiUri?.host;
-        if (configuredHost != null &&
-            configuredHost.isNotEmpty &&
-            configuredHost != 'localhost' &&
-            configuredHost != '127.0.0.1') {
-          targetHost = configuredHost;
+    if (onAndroid) {
+      if (host == NetworkHosts.localhost || host == NetworkHosts.loopbackIp) {
+        String targetHost = NetworkHosts.androidEmulatorLoopback;
+        try {
+          if (dotenv.isInitialized) {
+            final rawApi = dotenv.env[AppConstants.apiBaseUrlKey];
+            if (rawApi != null && rawApi.isNotEmpty) {
+              final apiUri = Uri.tryParse(rawApi);
+              final configuredHost = apiUri?.host.toLowerCase();
+              if (configuredHost != null &&
+                  configuredHost.isNotEmpty &&
+                  configuredHost != NetworkHosts.localhost &&
+                  configuredHost != NetworkHosts.loopbackIp &&
+                  configuredHost != NetworkHosts.androidEmulatorLoopback) {
+                targetHost = configuredHost;
+              }
+            }
+          }
+        } catch (_) {
+          // Fallback to default Android emulator host if dotenv throws or is not loaded
         }
+
+        return uri.replace(host: targetHost).toString();
       }
-    } catch (_) {
-      // Fallback to default Android emulator host if dotenv throws or is not loaded
+      return url;
     }
 
-    return uri.replace(host: targetHost).toString();
+    // Non-Android platforms (iOS simulator, macOS, web):
+    // Map Android emulator loopback host (10.0.2.2) back to host machine's localhost.
+    if (host == NetworkHosts.androidEmulatorLoopback) {
+      return uri.replace(host: NetworkHosts.localhost).toString();
+    }
+
+    return url;
   }
 
   /// Normalizes a nullable URL.
-  static String? normalizeNullable(String? url, {bool? isAndroid}) {
+  static String? normalizeNullable(
+    String? url, {
+    bool? isAndroid,
+    bool? isIOS,
+  }) {
     if (url == null) return null;
-    return normalize(url, isAndroid: isAndroid);
+    return normalize(url, isAndroid: isAndroid, isIOS: isIOS);
+  }
+
+  /// Normalizes base URLs such as [AppConfig.apiBaseUrl] across platforms.
+  static String normalizeBaseUrl(
+    String url, {
+    bool? isAndroid,
+    bool? isIOS,
+  }) {
+    return normalize(url, isAndroid: isAndroid, isIOS: isIOS);
   }
 
   /// Returns HTTP headers required for local development services (e.g. AWS SigV4 compatibility).
@@ -77,26 +111,34 @@ class UrlHelper {
     final uri = Uri.tryParse(url);
     if (uri == null || !uri.hasScheme) return const {};
 
-    final onAndroid = isAndroid ?? Platform.isAndroid;
+    bool onAndroid = isAndroid ?? false;
+    if (isAndroid == null) {
+      try {
+        onAndroid = Platform.isAndroid;
+      } catch (_) {}
+    }
     if (!onAndroid) return const {};
 
     final host = uri.host.toLowerCase();
     String? apiHost;
     try {
       if (dotenv.isInitialized) {
-        apiHost = Uri.tryParse(AppConfig.apiBaseUrl)?.host;
+        final rawApi = dotenv.env[AppConstants.apiBaseUrlKey];
+        if (rawApi != null && rawApi.isNotEmpty) {
+          apiHost = Uri.tryParse(rawApi)?.host;
+        }
       }
     } catch (_) {}
 
     final isTargetHost =
-        host == '10.0.2.2' ||
-        host == '127.0.0.1' ||
-        host == 'localhost' ||
+        host == NetworkHosts.androidEmulatorLoopback ||
+        host == NetworkHosts.loopbackIp ||
+        host == NetworkHosts.localhost ||
         (apiHost != null && apiHost.isNotEmpty && host == apiHost);
 
     if (isTargetHost) {
       final portPart = uri.hasPort ? ':${uri.port}' : '';
-      return {AuthHeaders.host: 'localhost$portPart'};
+      return {AuthHeaders.host: '${NetworkHosts.localhost}$portPart'};
     }
 
     return const {};

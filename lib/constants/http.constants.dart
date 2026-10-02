@@ -59,3 +59,23 @@ class HttpStatusMap {
   static bool isServerError(int code) => code >= 500 && code < 600;
   static bool isRedirect(int code) => code >= 300 && code < 400;
 }
+
+/// Well-known URI network schemes.
+class NetworkSchemes {
+  const NetworkSchemes._();
+
+  static const String http = 'http';
+  static const String https = 'https';
+  static const String ws = 'ws';
+  static const String wss = 'wss';
+}
+
+/// Well-known development and loopback network hosts.
+class NetworkHosts {
+  const NetworkHosts._();
+
+  static const String localhost = 'localhost';
+  static const String loopbackIp = '127.0.0.1';
+  static const String androidEmulatorLoopback = '10.0.2.2';
+}
+

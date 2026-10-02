@@ -33,16 +33,23 @@ class AppConfig {
   };
   static String get appName => dotenv.env[AppConstants.nameKey] ?? 'RexOne';
   static String get appVersion => AppInfo.version;
-  static String get apiBaseUrl =>
-      dotenv.env[AppConstants.apiBaseUrlKey] ?? 'api base url not found';
+  static String get apiBaseUrl => UrlHelper.normalizeBaseUrl(
+    dotenv.env[AppConstants.apiBaseUrlKey] ?? 'api base url not found',
+  );
   static String get wsBaseUrl {
     final api = apiBaseUrl;
-    if (api.startsWith('https://')) {
-      return api.replaceFirst('https://', 'wss://');
-    } else if (api.startsWith('http://')) {
-      return api.replaceFirst('http://', 'ws://');
+    if (api.startsWith('${NetworkSchemes.https}://')) {
+      return api.replaceFirst(
+        '${NetworkSchemes.https}://',
+        '${NetworkSchemes.wss}://',
+      );
+    } else if (api.startsWith('${NetworkSchemes.http}://')) {
+      return api.replaceFirst(
+        '${NetworkSchemes.http}://',
+        '${NetworkSchemes.ws}://',
+      );
     }
-    return 'ws://$api';
+    return '${NetworkSchemes.ws}://$api';
   }
 
   static String get googleServerClientId =>

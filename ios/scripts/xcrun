@@ -1,0 +1,13 @@
+#!/bin/sh
+# Project-level xcrun wrapper to route codesign through the project codesign wrapper
+# to automatically strip macOS extended attribute detritus on Desktop workspaces.
+
+echo "$(date): xcrun called with: $@" >> /tmp/xcrun_calls.log
+
+if [ "$1" = "codesign" ]; then
+  shift
+  DIR="$(cd "$(dirname "$0")" && pwd)"
+  exec "$DIR/codesign" "$@"
+else
+  exec /usr/bin/xcrun "$@"
+fi

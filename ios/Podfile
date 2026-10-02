@@ -42,12 +42,24 @@ post_install do |installer|
     target.build_configurations.each do |config|
       # Xcode requires >= 15.0; many pods still declare older targets.
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+      config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+      config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_MICROPHONE=1',
         'PERMISSION_CAMERA=1',
         'PERMISSION_PHOTOS=1',
       ]
+    end
+  end
+
+  # Prepend project scripts directory to PATH in Pods-Runner-frameworks.sh so codesign wrapper strips detritus
+  frameworks_script = File.join(installer.sandbox.target_support_files_dir('Pods-Runner'), 'Pods-Runner-frameworks.sh')
+  if File.exist?(frameworks_script)
+    content = File.read(frameworks_script)
+    unless content.include?('PODS_ROOT}/../scripts')
+      File.write(frameworks_script, "export PATH=\"${PODS_ROOT}/../scripts:$PATH\"\n" + content)
     end
   end
 end

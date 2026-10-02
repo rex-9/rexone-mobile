@@ -1347,8 +1347,8 @@ class MediaDownloadService extends GetxService {
     final isDynamicallySigned =
         uri != null &&
         uri.queryParameters.containsKey(AuthHeaders.xAmzSignature) &&
-        uri.host != 'localhost' &&
-        uri.host != '127.0.0.1';
+        uri.host != NetworkHosts.localhost &&
+        uri.host != NetworkHosts.loopbackIp;
     final headers = isDynamicallySigned
         ? null
         : (UrlHelper.headersFor(normalizedUrl).isEmpty
