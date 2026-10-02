@@ -15,12 +15,13 @@ Built under the same creed as RexOne Core and RexOne Web: **Start from One. Not 
 [![GetX](https://img.shields.io/badge/GetX-4.7-8A2BE2)](https://pub.dev/packages/get)
 [![Drift](https://img.shields.io/badge/Drift_SQLite-Type--Safe-00599C?logo=sqlite&logoColor=white)](docs/CLIENT_DATABASE.md)
 [![Sponsor rex-9](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/rex-9)
+[![Product Hunt](https://img.shields.io/badge/Product_Hunt-Live-DA552F?logo=producthunt&logoColor=white)](https://www.producthunt.com/products/rexone)
 [![Web Demo](https://img.shields.io/badge/Web_Demo-rexone.rex9.me-FF2238?logo=firefox&logoColor=white)](https://rexone.rex9.me)
 [![CI](https://github.com/rex-9/rexone_mobile/actions/workflows/test.yml/badge.svg)](https://github.com/rex-9/rexone_mobile/actions/workflows/test.yml)
 
 **Typed · Modular · Localized · Observable · Push-ready · Analytics-enabled · API-driven · Fully Tested**
 
-[Live Web Demo ↗](https://rexone.rex9.me) · [Explore the client](#feature-map) · [Who it is for](#who-rexone-mobile-is-for) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Agent Governance](https://github.com/rex-9/rexone-core/blob/dev/AGENTS.md) · [Run it locally](#-quick-start) · [Architecture](#architecture) · [Documentation Hub](docs/README.md)
+[Live Web Demo ↗](https://rexone.rex9.me) · [Product Hunt ↗](https://www.producthunt.com/products/rexone) · [Explore the client](#feature-map) · [Who it is for](#who-rexone-mobile-is-for) · [Ecosystem Architecture](ECOSYSTEM.md) · [Development Law](LAW.md) · [Agent Governance](https://github.com/rex-9/rexone-core/blob/dev/AGENTS.md) · [Run it locally](#-quick-start) · [Architecture](#architecture) · [Documentation Hub](docs/README.md)
 
 </div>
 
