@@ -152,19 +152,41 @@ if [ -f "$ROOT_DIR/ios/Runner/AppDelegate.swift" ]; then
   echo "  ✅ iOS/Dart: Updated platform method channel names to ${BRAND_SLUG_KEBAB}"
 fi
 
-# 11. Synchronize iOS URL Scheme in Info.plist
+# 11. Synchronize URL Schemes across Android, iOS, and Dart
+url_scheme="${BRAND_SLUG_FLAT}"
+if [ "$BRAND_NAME" = "RexOne" ]; then
+  url_scheme="rexone"
+fi
+
+# 11a. Android Manifest deep link scheme
+if [ -f "$ROOT_DIR/android/app/src/main/AndroidManifest.xml" ]; then
+  sedi -E "s|<data android:scheme=\"[^\"]*\"/>|<data android:scheme=\"$url_scheme\"/>|g" "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
+  echo "  ✅ Android: Updated deep link scheme to $url_scheme in AndroidManifest.xml"
+fi
+
+# 11b. iOS Info.plist URL Scheme
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
-  url_scheme="${BRAND_SLUG_FLAT}"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    url_scheme="rexone"
-  fi
   node -e "
     const fs = require('fs');
     let c = fs.readFileSync('$ROOT_DIR/ios/Runner/Info.plist', 'utf8');
     c = c.replace(/(<key>CFBundleURLName<\/key>\s*<string>[^<]*<\/string>\s*<key>CFBundleURLSchemes<\/key>\s*<array>\s*<string>)[^<]*(<\/string>)/, '\$1$url_scheme\$2');
     fs.writeFileSync('$ROOT_DIR/ios/Runner/Info.plist', c);
   " 2>/dev/null || true
-  echo "  ✅ iOS: Updated URL scheme to $url_scheme"
+  echo "  ✅ iOS: Updated URL scheme to $url_scheme in Info.plist"
+fi
+
+# 11c. Dart NotificationConstants URL scheme and App Group
+if [ -f "$ROOT_DIR/lib/constants/notification.constants.dart" ]; then
+  sedi -E "s/static const String appUrlScheme = '[^']+';/static const String appUrlScheme = '$url_scheme';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
+  sedi -E "s/static const String iosLiveActivityUrlScheme = '[^']+';/static const String iosLiveActivityUrlScheme = '$url_scheme';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
+  app_group_pkg="$PACKAGE_NAME"
+  if [ "$PACKAGE_NAME" = "com.rex9.rexone" ]; then
+    app_group_pkg="com.rexone.mobile"
+  fi
+  if [ -n "$PACKAGE_NAME" ]; then
+    sedi -E "s/static const String iosAppGroupId = 'group\.[^']+';/static const String iosAppGroupId = 'group.$app_group_pkg';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
+  fi
+  echo "  ✅ NotificationConstants: Synchronized appUrlScheme ($url_scheme) and iosAppGroupId (group.$app_group_pkg)"
 fi
 
 # 12. Synchronize Firebase project_id and storage_bucket in example templates

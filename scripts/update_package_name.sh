@@ -125,6 +125,10 @@ if [ -f "$ROOT_DIR/ios/MediaDownloadWidget/MediaDownloadLiveActivityActionStore.
   sedi -E "s/static let appGroupId = \"group\.[^\"]+\"/static let appGroupId = \"group.$app_group_pkg\"/g" "$ROOT_DIR/ios/MediaDownloadWidget/MediaDownloadLiveActivityActionStore.swift"
   echo "  ✅ iOS: Updated appGroupId in MediaDownloadLiveActivityActionStore.swift"
 fi
+if [ -f "$ROOT_DIR/lib/constants/notification.constants.dart" ]; then
+  sedi -E "s/static const String iosAppGroupId = 'group\.[^']+';/static const String iosAppGroupId = 'group.$app_group_pkg';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
+  echo "  ✅ Dart: Updated iosAppGroupId in notification.constants.dart"
+fi
 
 # 9. Update iOS Info.plist download background identifier
 dl_pkg="$NEW_PACKAGE_NAME"

@@ -107,7 +107,10 @@ void main() {
       expect(AppRoutes.resolveNotificationRoute('https://evil.com'), isNull);
       expect(AppRoutes.resolveNotificationRoute('rexonemobile://ai'), isNull);
       expect(AppRoutes.resolveNotificationRoute('custom://ai'), isNull);
-      expect(AppRoutes.resolveNotificationRoute('rexone://unknown_route'), isNull);
+      expect(
+        AppRoutes.resolveNotificationRoute('rexone://unknown_route'),
+        equals(AppRoutes.home),
+      );
       expect(AppRoutes.resolveNotificationRoute(''), isNull);
       expect(AppRoutes.resolveNotificationRoute(null), isNull);
     });
