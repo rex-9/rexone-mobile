@@ -122,8 +122,7 @@ class SplashController extends GetxController with WidgetsBindingObserver {
     await Future.delayed(const Duration(milliseconds: 10));
 
     if (_auth.isLoggedIn.value) {
-      _storage.saveRouteStack([AppRoutes.home]);
-      AppRoutes.toHome();
+      AppRoutes.navigateContinueURL(_storage);
     } else {
       _storage.clearRouteStack();
       AppRoutes.toAuth();

@@ -18,6 +18,7 @@ class ConfirmEmailPage extends GetView<AuthController> {
 
     return AppPage(
       title: AppLocales.auth.confirmEmail.title.tr,
+      showBackButton: true,
       child: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),

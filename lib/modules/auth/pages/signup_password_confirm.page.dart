@@ -13,6 +13,7 @@ class SignUpPasswordConfirmPage extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return AppPage(
       title: AppLocales.auth.signUpPasscodeConfirm.title.tr,
+      showBackButton: true,
       child: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),

@@ -214,8 +214,9 @@ flowchart LR
 - **User Self-Account Deletion**: Dedicated "Delete Account" action in Profile and Setting views prompting an `AppDialog.confirm` warning that the account will be soft-deleted, the email cannot be re-used for new registration, and providing the rebranded support email link, followed by token purge and sign-out.
 - **Three-Tier Administrative RBAC**: Enforces `super_admin` (full authority), `admin` (domain operations, excluding `users` and `iam`), and partial admins (`*_admin`, where permissions grant access to both standard and admin endpoints).
 
-### Push notifications & Analytics
+### Push notifications, Deep Linking & Analytics
 
+- **Universal Deep Linking (`rexone://`)**: Native URI scheme support on Android and iOS via `DeepLinkService`. Automatically routes external URLs (e.g. `rexone://ai`, `rexone://payment`, `rexone://profile`, `rexone://notifications`) directly to target screens while maintaining `Home` as the base of the back navigation stack. If unauthenticated, requested routes are preserved as return-after-auth continue routes.
 - **OneSignal Push**: Native push messaging for Android and iOS with user tag synchronization hooked into auth lifecycle and deep-link click routing.
 - **Firebase Analytics**: Central navigation tracking emits `view_page` from `GetMaterialApp.navigatorObservers` with `platform: android` or `platform: ios`. User identity is synced via opaque user ID; personal data is never sent to Analytics.
 
@@ -321,7 +322,7 @@ RexOne Mobile enforces high engineering discipline with strict analyzer checks a
 # 1. Run static analysis across application, tests, and integration specs
 flutter analyze lib/ test/ integration_test/
 
-# 2. Run unit, controller, and widget tests (322 tests)
+# 2. Run unit, controller, and widget tests (342 tests)
 flutter test test/
 # or: ./scripts/test_unit.sh
 

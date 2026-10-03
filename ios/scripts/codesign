@@ -1,22 +1,46 @@
 #!/bin/sh
-# Project-level codesign wrapper to strip macOS extended attributes (detritus)
-# caused by Desktop/iCloud synchronization before invoking the real codesign.
+# Project-level codesign wrapper to strip FinderInfo before invoking codesign.
 
-echo "$(date): codesign called with: $@" >> /tmp/codesign_calls.log
+/usr/bin/python3 - "$@" << 'EOF'
+import sys, os, subprocess, ctypes
 
-for arg in "$@"; do
-  if [ -e "$arg" ]; then
-    xattr -cr "$arg" 2>/dev/null || true
-    p="$arg"
-    while [ "$p" != "/" ] && [ "$p" != "." ]; do
-      p="$(dirname "$p")"
-      case "$p" in
-        *.framework|*.appex|*.app)
-          xattr -cr "$p" 2>/dev/null || true
-          ;;
-      esac
-    done
-  fi
-done
+libc = ctypes.CDLL(None)
+removexattr = libc.removexattr
+removexattr.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+removexattr.restype = ctypes.c_int
 
-exec /usr/bin/codesign "$@"
+attrs = [b"com.apple.FinderInfo", b"com.apple.ResourceFork"]
+
+def clean(path):
+    if not os.path.exists(path):
+        return
+    bpath = path.encode("utf-8")
+    for a in attrs:
+        removexattr(bpath, a, 0)
+    if os.path.isdir(path):
+        for root, dirs, files in os.walk(path):
+            for name in dirs + files:
+                p = os.path.join(root, name).encode("utf-8")
+                for a in attrs:
+                    removexattr(p, a, 0)
+
+def clean_all(args):
+    for arg in args:
+        if os.path.exists(arg):
+            clean(arg)
+            p = os.path.abspath(arg)
+            while p and p != "/":
+                p = os.path.dirname(p)
+                if p.endswith((".framework", ".appex", ".app")):
+                    clean(p)
+
+args = sys.argv[1:]
+clean_all(args)
+
+res = subprocess.run(["/usr/bin/codesign"] + args)
+if res.returncode != 0:
+    clean_all(args)
+    res = subprocess.run(["/usr/bin/codesign"] + args)
+
+sys.exit(res.returncode)
+EOF

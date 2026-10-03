@@ -61,6 +61,25 @@ class FakeStorageService extends StorageService {
     memory.remove(StorageKeys.token);
     memory.remove(StorageKeys.userEmail);
     memory.remove(StorageKeys.user);
+    memory.remove(StorageKeys.continueUrl);
+  }
+
+  @override
+  void setContinueRoute(String route) => memory[StorageKeys.continueUrl] = route;
+
+  @override
+  String? getContinueRoute() => memory[StorageKeys.continueUrl] as String?;
+
+  @override
+  void clearContinueRoute() => memory.remove(StorageKeys.continueUrl);
+
+  @override
+  String? consumeContinueRoute() {
+    final route = getContinueRoute();
+    if (route != null) {
+      clearContinueRoute();
+    }
+    return route;
   }
 
   @override

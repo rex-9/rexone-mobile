@@ -9,6 +9,7 @@ void main() {
       expect(StorageKeys.token, 'token');
       expect(StorageKeys.user, 'user');
       expect(StorageKeys.theme, 'theme');
+      expect(StorageKeys.continueUrl, 'continueUrl');
     });
 
     test('mobile session keys are defined correctly', () {

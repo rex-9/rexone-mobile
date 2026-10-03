@@ -16,6 +16,7 @@ class SignUpPasswordCreatePage extends GetView<AuthController> {
 
     return AppPage(
       title: AppLocales.auth.signUpPasscodeCreate.title.tr,
+      showBackButton: true,
       child: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),

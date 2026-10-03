@@ -79,6 +79,25 @@ class StorageService extends GetxService {
     _box.remove(StorageKeys.token);
     _box.remove(StorageKeys.userEmail);
     _box.remove(StorageKeys.user);
+    _box.remove(StorageKeys.continueUrl);
+  }
+
+  // ============================================================
+  // CONTINUE ROUTE (Return-After-Auth)
+  // ============================================================
+  void setContinueRoute(String route) =>
+      _box.write(StorageKeys.continueUrl, route);
+
+  String? getContinueRoute() => _box.read(StorageKeys.continueUrl);
+
+  void clearContinueRoute() => _box.remove(StorageKeys.continueUrl);
+
+  String? consumeContinueRoute() {
+    final route = getContinueRoute();
+    if (route != null) {
+      clearContinueRoute();
+    }
+    return route;
   }
 
   // ============================================================

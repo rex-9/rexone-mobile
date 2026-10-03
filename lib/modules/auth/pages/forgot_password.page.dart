@@ -15,6 +15,7 @@ class ForgotPasswordPage extends GetView<AuthController> {
 
     return AppPage(
       title: AppLocales.auth.forgotPasscode.title.tr,
+      showBackButton: true,
       child: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),

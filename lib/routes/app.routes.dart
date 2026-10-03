@@ -7,6 +7,7 @@ import 'package:rexone_mobile/design/components/app_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:rexone_mobile/routes/guard.routes.dart';
 import 'package:rexone_mobile/routes/server.routes.dart';
+import 'package:rexone_mobile/services/storage.service.dart';
 
 import '../modules/ai/ai.dart';
 import '../modules/auth/auth.dart';
@@ -73,6 +74,25 @@ class AppRoutes {
 
   // ===== PROTECTED NAVIGATION =====
   static void toHome() => Get.offAllNamed(home);
+
+  /// Navigates to the preserved continue route (e.g. from deep links) or falls back to Home,
+  /// preserving Home as the root of the navigation stack.
+  static void navigateContinueURL([StorageService? storageService]) {
+    final storage = storageService ?? Get.find<StorageService>();
+    final continueRoute = storage.consumeContinueRoute();
+    if (continueRoute != null &&
+        continueRoute.isNotEmpty &&
+        continueRoute != auth &&
+        continueRoute != home) {
+      storage.saveRouteStack([home, continueRoute]);
+      Get.offAllNamed(home);
+      Get.toNamed(continueRoute);
+    } else {
+      storage.saveRouteStack([home]);
+      toHome();
+    }
+  }
+
   static void toSettings() => Get.toNamed(settings);
   static void toPayment() => Get.toNamed(payment);
   static void toCheckout({required String url}) =>
@@ -91,12 +111,11 @@ class AppRoutes {
 
   static void toVideoPlayer() => Get.toNamed(videoPlayer);
 
-  /// Resolves and routes a notification or deep link.
+  /// Resolves and routes an incoming deep link or notification link.
   ///
-  /// Notification links always stay inside the native application. Unsupported
-  /// or Web-only routes keep the current page open and explain where to view
-  /// the update.
-  static Future<void> handleNotificationLink(String? rawLink) async {
+  /// External links prompt confirmation before opening. Unsupported or
+  /// Web-only routes keep the current page open and notify the user.
+  static Future<void> handleDeepLink(String? rawLink) async {
     try {
       if (isExternalNotificationLink(rawLink)) {
         final context = Get.context;
@@ -124,37 +143,74 @@ class AppRoutes {
         }
         return;
       }
-      if (target == payment) {
-        toPayment();
+
+      final storage = Get.isRegistered<StorageService>()
+          ? Get.find<StorageService>()
+          : null;
+      final authController = Get.isRegistered<AuthController>()
+          ? Get.find<AuthController>()
+          : null;
+
+      final isLoggedIn = authController?.isLoggedIn.value ?? false;
+
+      // If route is protected and user is not logged in: save continueRoute and go to auth
+      if (!isLoggedIn) {
+        storage?.clearRouteStack();
+        storage?.setContinueRoute(target);
+        toAuth();
         return;
       }
-      if (target == ai || target.startsWith('$ai?')) {
-        Get.toNamed(target);
+
+      // If user is already on the target route, avoid duplicate push
+      if (Get.currentRoute == target) {
         return;
       }
-      if (target == profile) {
-        toProfile();
+
+      // User is authenticated: ensure Home is the base of the back stack
+      if (target == home) {
+        storage?.saveRouteStack([home]);
+        toHome();
         return;
       }
-      if (target == notifications) {
-        toNotifications();
-        return;
-      }
-      if (target == home) toHome();
+
+      storage?.saveRouteStack([home, target]);
+      Get.offAllNamed(home);
+      Get.toNamed(target);
     } catch (e) {
-      debugPrint('❌ Error routing notification link: $e');
+      debugPrint('❌ Error routing deep link: $e');
     }
   }
 
-  /// Converts Core's platform-neutral link into a registered Mobile route.
+  /// Converts Core's platform-neutral link or custom scheme URI (e.g. rexone://ai)
+  /// into a registered Mobile route.
   static String? resolveNotificationRoute(String? rawLink) {
     final value = rawLink?.trim();
     if (value == null || value.isEmpty) return null;
 
     final uri = Uri.tryParse(value);
-    if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
+    if (uri == null) return null;
 
-    var path = uri.path.toLowerCase();
+    String path;
+    String? query;
+
+    if (uri.hasScheme) {
+      final scheme = uri.scheme.toLowerCase();
+      if (scheme != NotificationConstants.appUrlScheme) {
+        return null;
+      }
+      final host = uri.host.isNotEmpty ? '/${uri.host}' : '';
+      path = '$host${uri.path}';
+      if (uri.hasQuery) {
+        query = uri.query;
+      }
+    } else {
+      path = uri.path;
+      if (uri.hasQuery) {
+        query = uri.query;
+      }
+    }
+
+    path = path.toLowerCase();
     if (path.length > 1 && path.endsWith('/')) {
       path = path.substring(0, path.length - 1);
     }
@@ -163,9 +219,17 @@ class AppRoutes {
     if (path == profile) return profile;
     if (path == payment || path.startsWith('$payment/')) return payment;
     if (path == ai) {
-      return uri.hasQuery ? '$ai?${uri.query}' : ai;
+      return query != null && query.isNotEmpty ? '$ai?$query' : ai;
     }
     if (path == notifications) return notifications;
+    if (path == settings) return settings;
+    if (path == mediaPlaylist) return mediaPlaylist;
+
+    // Non-existent route from custom scheme defaults directly to home
+    if (uri.hasScheme &&
+        uri.scheme.toLowerCase() == NotificationConstants.appUrlScheme) {
+      return home;
+    }
 
     return null;
   }
@@ -291,10 +355,4 @@ class AppRoutes {
       middlewares: [GuardRoutes()],
     ),
   ];
-
-  static final notFound = GetPage(
-    name: '/404',
-    page: () => const HomePage(),
-    middlewares: [GuardRoutes()],
-  );
 }

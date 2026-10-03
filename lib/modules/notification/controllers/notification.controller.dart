@@ -131,7 +131,7 @@ class NotificationController extends GetxController {
     await markAsRead(item);
 
     if (item.link?.isNotEmpty ?? false) {
-      await AppRoutes.handleNotificationLink(item.link);
+      await AppRoutes.handleDeepLink(item.link);
     }
   }
 

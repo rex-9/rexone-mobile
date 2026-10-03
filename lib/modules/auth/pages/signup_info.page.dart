@@ -20,6 +20,7 @@ class SignUpInfoPage extends GetView<AuthController> {
 
     return AppPage(
       title: AppLocales.auth.signUpInfo.title.tr,
+      showBackButton: true,
       child: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: Design.spacing.lg),

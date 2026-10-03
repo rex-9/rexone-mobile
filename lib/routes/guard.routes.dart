@@ -51,16 +51,22 @@ class GuardRoutes extends GetMiddleware {
       AppRoutes.mediaPlaylist,
     ];
 
+    final isAuthRequired = route != null &&
+        authRequiredRoutes.any((r) => route == r || route.startsWith('$r?'));
+
     // Redirect unauthenticated access to auth
-    if (route != null && authRequiredRoutes.contains(route) && !isLoggedIn) {
+    if (isAuthRequired && !isLoggedIn) {
       storage.clearRouteStack();
+      if (route != AppRoutes.home) {
+        storage.setContinueRoute(route);
+      }
       return const RouteSettings(name: AppRoutes.auth);
     }
 
     // If already logged in and landing on auth flow — restore last tracked route
     if (route != null && authFlowRoutes.contains(route) && isLoggedIn) {
       final stack = storage.getRouteStack();
-      if (stack.isNotEmpty) {
+      if (stack.isNotEmpty && stack.last != AppRoutes.home) {
         return RouteSettings(name: stack.last);
       }
       return const RouteSettings(name: AppRoutes.home);

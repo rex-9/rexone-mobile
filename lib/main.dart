@@ -51,6 +51,7 @@ void main() async {
   await AppInfo.init();
   InitialBinding().dependencies();
   await Get.find<PushNotificationService>().initializePlatform();
+  await Get.find<DeepLinkService>().init();
   await Get.find<MediaDownloadNotificationService>().initialize();
   await Get.find<MediaDownloadService>().initializeDownloader();
 
@@ -80,7 +81,6 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           initialRoute: AppRoutes.splash,
           getPages: AppRoutes.pages,
-          unknownRoute: AppRoutes.notFound,
           navigatorObservers: [analytics.observer, MiniPlayerRouteObserver()],
           builder: (context, child) {
             return Overlay.wrap(

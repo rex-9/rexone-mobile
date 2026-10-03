@@ -154,9 +154,9 @@ fi
 
 # 11. Synchronize iOS URL Scheme in Info.plist
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
-  url_scheme="${BRAND_SLUG_FLAT}mobile"
+  url_scheme="${BRAND_SLUG_FLAT}"
   if [ "$BRAND_NAME" = "RexOne" ]; then
-    url_scheme="rexonemobile"
+    url_scheme="rexone"
   fi
   node -e "
     const fs = require('fs');

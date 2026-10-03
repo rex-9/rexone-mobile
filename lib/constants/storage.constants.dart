@@ -10,6 +10,7 @@ class StorageKeys {
   static const token = 'token';
   static const user = 'user';
   static const theme = 'theme';
+  static const continueUrl = 'continueUrl';
 
   // Mobile-specific session & navigation keys
   static const routes = 'routes';

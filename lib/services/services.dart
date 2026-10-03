@@ -11,3 +11,4 @@ export 'analytics.service.dart';
 export 'push_notification.service.dart';
 export 'network.service.dart';
 export 'version.service.dart';
+export 'deep_link.service.dart';

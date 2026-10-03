@@ -96,10 +96,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.rexone.mobile.download</string>
+			<string>com.rex9.rexone</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>rexonemobile</string>
+				<string>rexone</string>
 			</array>
 		</dict>
 	</array>

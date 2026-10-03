@@ -74,7 +74,7 @@ class PushNotificationService extends GetxService {
         final link = data?[NotificationKeys.link]?.toString();
 
         if (link != null && link.isNotEmpty) {
-          AppRoutes.handleNotificationLink(link);
+          AppRoutes.handleDeepLink(link);
         }
       });
     } catch (e) {

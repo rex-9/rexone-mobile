@@ -655,13 +655,20 @@ class AuthController extends GetxController {
 
   // Sign out
   Future<void> signOut() async {
+    final provider = currentUser.value?.provider;
+
+    // Immediately clear local session, route stack, and navigate to auth
+    await _clearLocalSession();
+    _storage.clearRouteStack();
+
+    // Background server/google sign out and analytics
     try {
       await _auth.signOut();
     } catch (e, stack) {
       LogService.reportPlatformError(e, stack);
     }
 
-    if (currentUser.value?.provider == EAuthProvider.google.name) {
+    if (provider == EAuthProvider.google.name) {
       try {
         await GoogleSignIn.instance.signOut();
       } catch (e, stack) {
@@ -669,8 +676,6 @@ class AuthController extends GetxController {
       }
     }
 
-    await _clearLocalSession();
-    _storage.clearRouteStack();
     if (Get.isRegistered<AnalyticsService>()) {
       _analytics.logSignOut();
       _analytics.clearUserId();
@@ -689,7 +694,7 @@ class AuthController extends GetxController {
     // 2. Request push permission (non-blocking)
     unawaited(_pushNotificationService.requestPermission());
 
-    // 3. Navigate to home
-    AppRoutes.toHome();
+    // 3. Navigate to continue route or fallback to home
+    AppRoutes.navigateContinueURL(_storage);
   }
 }

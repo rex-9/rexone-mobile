@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/models.dart';
 import 'package:rexone_mobile/modules/auth/auth.dart';
+import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/modules/payment/payment.dart';
 import 'package:rexone_mobile/services/analytics.service.dart';
 import 'package:rexone_mobile/services/media_download.service.dart';
@@ -71,11 +72,12 @@ void main() {
       expect(fakeSocket.lastConnectedToken, equals('stored_token_123'));
     });
 
-    test('signOut clears local storage session, route stack, and resets state', () async {
+    test('signOut clears local storage session, route stack, continue route, and resets state', () async {
       final user = UserModel(id: 'usr_abc', email: 'rex@example.com');
       fakeStorage.setToken('stored_token_123');
       fakeStorage.setUserData(user);
-      fakeStorage.saveRouteStack(['/home', '/settings']);
+      fakeStorage.saveRouteStack([AppRoutes.home, AppRoutes.settings]);
+      fakeStorage.setContinueRoute(AppRoutes.ai);
 
       await authController.checkAuthStatus();
       expect(authController.isLoggedIn.value, isTrue);
@@ -88,6 +90,7 @@ void main() {
       expect(fakeStorage.getToken(), isNull);
       expect(fakeStorage.getUserData(), isNull);
       expect(fakeStorage.getRouteStack(), isEmpty);
+      expect(fakeStorage.getContinueRoute(), isNull);
       expect(fakePush.userCleared, isTrue);
       expect(fakeDownloads.clearedAll, isTrue);
       expect(fakeSocket.wasDisconnected, isTrue);

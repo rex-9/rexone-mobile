@@ -35,6 +35,8 @@ class NotificationConstants {
   /// App Group shared with iOS Live Activity widget extension.
   static const String iosAppGroupId = 'group.com.rexone.mobile';
 
+  static const String appUrlScheme = 'rexone';
+
   /// URL scheme registered for Live Activities (must match Info.plist).
-  static const String iosLiveActivityUrlScheme = 'rexonemobile';
+  static const String iosLiveActivityUrlScheme = 'rexone';
 }

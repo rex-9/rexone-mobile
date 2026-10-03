@@ -31,6 +31,9 @@ class InitialBinding extends Bindings {
     // Notifications: OneSignal + local notifications + Live Activities
     Get.put(PushNotificationService(), permanent: true);
 
+    // Deep linking: Custom schemes (rexone://) and external links
+    Get.put(DeepLinkService(), permanent: true);
+
     // API Service (interface + implementation)
     Get.put<ApiService>(ApiService(), permanent: true);
 
