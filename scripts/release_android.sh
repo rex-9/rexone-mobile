@@ -24,38 +24,50 @@ fi
 
 TARGET_ENV="prod"
 BUILD_MODE="bundle" # options: bundle, apk, all
+BUILD_NUMBER_OVERRIDE="${BUILD_NUMBER:-}"
 
-for arg in "$@"; do
-  case "$arg" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     uat)
       TARGET_ENV="uat"
+      shift
       ;;
     prod)
       TARGET_ENV="prod"
+      shift
       ;;
     --bundle)
       BUILD_MODE="bundle"
+      shift
       ;;
     --apk)
       BUILD_MODE="apk"
+      shift
       ;;
     --all)
       BUILD_MODE="all"
+      shift
+      ;;
+    --build-number)
+      BUILD_NUMBER_OVERRIDE="$2"
+      shift 2
       ;;
     -h|--help)
       echo "🤖 Android Release Builder"
       echo "------------------------------------------------------------"
-      echo "Usage: ./scripts/release_android.sh [prod|uat] [--bundle|--apk|--all]"
+      echo "Usage: ./scripts/release_android.sh [prod|uat] [--bundle|--apk|--all] [--build-number <num>]"
       echo ""
       echo "Options:"
-      echo "  prod      Build using .env.prod (default)"
-      echo "  uat       Build using .env.uat"
-      echo "  --bundle  Build Android App Bundle (.aab for Google Play, default)"
-      echo "  --apk     Build Release APK (for direct download)"
-      echo "  --all     Build both .aab and .apk"
+      echo "  prod                  Build using .env.prod (default)"
+      echo "  uat                   Build using .env.uat"
+      echo "  --bundle              Build Android App Bundle (.aab for Google Play, default)"
+      echo "  --apk                 Build Release APK (for direct download)"
+      echo "  --all                 Build both .aab and .apk"
+      echo "  --build-number <num>  Override build number (e.g. 15)"
       exit 0
       ;;
     *)
+      shift
       ;;
   esac
 done
@@ -70,6 +82,10 @@ echo "📦 Build Target:       $BUILD_MODE"
 RAW_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
 VERSION_NAME=$(echo "$RAW_VERSION" | cut -d'+' -f1)
 BUILD_NUMBER=$(echo "$RAW_VERSION" | cut -d'+' -f2)
+if [ -n "$BUILD_NUMBER_OVERRIDE" ]; then
+  BUILD_NUMBER="$BUILD_NUMBER_OVERRIDE"
+  echo "🔢 Build Number Override: $BUILD_NUMBER"
+fi
 echo "🏷️ App Version:        v${VERSION_NAME} (Build ${BUILD_NUMBER})"
 PACKAGE_NAME="com.rex9.rexone"
 APP_DISPLAY_NAME="RexOne"
@@ -138,6 +154,8 @@ export TARGET_ENV="$TARGET_ENV"
 if [ "$BUILD_MODE" = "bundle" ] || [ "$BUILD_MODE" = "all" ]; then
   echo "🔨 Building Android App Bundle (AAB for Google Play)..."
   flutter build appbundle --release \
+    --build-name="$VERSION_NAME" \
+    --build-number="$BUILD_NUMBER" \
     --dart-define="APP_ENV=$ENV_FILE" \
     --dart-define="TARGET_ENV=$TARGET_ENV"
 fi
@@ -145,6 +163,8 @@ fi
 if [ "$BUILD_MODE" = "apk" ] || [ "$BUILD_MODE" = "all" ]; then
   echo "🔨 Building Android Release APK..."
   flutter build apk --release \
+    --build-name="$VERSION_NAME" \
+    --build-number="$BUILD_NUMBER" \
     --dart-define="APP_ENV=$ENV_FILE" \
     --dart-define="TARGET_ENV=$TARGET_ENV"
 fi

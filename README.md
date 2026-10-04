@@ -362,8 +362,8 @@ RexOne Mobile features a modern **hybrid release architecture** designed for zer
 
 ### 🤖 Android Automated Publishing (GitHub Actions)
 Pushing to `uat` or `main` automatically triggers GitHub Actions:
-- **`uat` branch**: Injects `.env.uat`, builds pre-release APK & AAB, tags GitHub pre-release.
-- **`main` branch**: Injects `.env.prod`, signs with production keystore, tags GitHub release, and uploads AAB directly to Google Play Internal Testing.
+- **`uat` branch**: Injects `.env.uat`, builds pre-release APK & AAB (`<com.company.app>.uat`), publishes AAB directly to Google Play **Internal Testing** for `<App Name> UAT`, and tags a GitHub pre-release with attached APK & AAB downloads.
+- **`main` branch**: Injects `.env.prod`, builds production APK & AAB (`<com.company.app>`), publishes AAB directly to Google Play **Internal Testing** for `<App Name>` (Production), and tags a formal GitHub release with attached APK & AAB downloads.
 
 Generate your production signing credentials and copy the Base64 secret in one command:
 ```bash

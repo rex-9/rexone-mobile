@@ -81,7 +81,7 @@ All local development, code verification, translation checks, and rebranding tas
 | `./scripts/generate_keystore.sh` | Generates standard Android release keystore & exports Base64 secret | `[app_name] [alias]` |
 | `./scripts/copy_keystore_base64.sh` | Encodes existing upload keystore to Base64 and copies to clipboard | `[app_name]` |
 | `./scripts/copy_play_store_key.sh` | Copies Google Play Service Account JSON key to clipboard | `[app_name]` |
-| `./scripts/release_android.sh` | Compiles release Android App Bundle (.aab) or APK locally | `[prod\|uat] [--bundle\|--apk\|--all]` |
+| `./scripts/release_android.sh` | Compiles release Android App Bundle (.aab) or APK locally | `[prod\|uat] [--bundle\|--apk\|--all] [--build-number <num>]` |
 | `./scripts/release_ios.sh` | Builds release IPA locally and deploys to Apple TestFlight | `[prod\|uat] [--build-only]` |
 | `./scripts/rebrand.sh` | Standalone mobile rebranding (App Display Name + Package ID + App Icon) | `"<Name>" "<bundle.id>" "<icon.png>"` |
 | `./scripts/update_app_name.sh` | Updates app display name across Android, iOS, and environment files | `"<New App Name>"` |

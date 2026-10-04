@@ -59,6 +59,9 @@ This directory holds local Android release signing keystores and Google Play Sto
 
 # Build release APK
 ./scripts/release_android.sh prod --apk
+
+# Build with build number override (for manual store uploads)
+./scripts/release_android.sh prod --bundle --build-number 15
 ```
 
 ---
