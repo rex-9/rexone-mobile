@@ -1,0 +1,9 @@
+# keystores/key.properties.example
+# Android Release Signing Configuration Example
+# Copy to android/key.properties if testing signed release builds locally.
+# NEVER commit the real key.properties or keystores to git.
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=../keystores/rexone-upload-keystore.jks

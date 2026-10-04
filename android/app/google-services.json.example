@@ -7,9 +7,28 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:YOUR_APP_ID",
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:PROD_APP_ID",
         "android_client_info": {
           "package_name": "com.rex9.rexone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:UAT_APP_ID",
+        "android_client_info": {
+          "package_name": "com.rex9.rexone.uat"
         }
       },
       "oauth_client": [],

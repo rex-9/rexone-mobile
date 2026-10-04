@@ -32,8 +32,10 @@ INSTRUCTION.md
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build*
-.nosync
+build/
+**/build/
+*.nosync
+android/.gradle/
 
 # Symbolication related
 app.*.symbols
@@ -46,6 +48,14 @@ android/local.properties
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/keystores/*
+!android/keystores/*.example
+!android/keystores/README.md
+*.jks
+*.keystore
+*.pem
+*play-store*.json
+android/key.properties
 
 # Misc
 .DS_Store
