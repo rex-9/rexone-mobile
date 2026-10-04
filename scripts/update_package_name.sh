@@ -28,7 +28,11 @@ cd "$ROOT_DIR"
 # 1. Update Android Gradle configuration (build.gradle.kts)
 if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
   sedi -E "s/namespace = \"[^\"]+\"/namespace = \"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
-  sedi -E "s/applicationId = \"[^\"]+\"/applicationId = \"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
+  if grep -q 'applicationId = if (isUat)' "$ROOT_DIR/android/app/build.gradle.kts"; then
+    sedi -E "s/applicationId = if \(isUat\) \"[^\"]+\" else \"[^\"]+\"/applicationId = if (isUat) \"$NEW_PACKAGE_NAME.uat\" else \"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
+  else
+    sedi -E "s/applicationId = \"[^\"]+\"/applicationId = \"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
+  fi
   echo "  ✅ Android: Updated namespace and applicationId in build.gradle.kts"
 fi
 
@@ -63,8 +67,23 @@ fi
 
 # 4. Update Android google-services.json.example (gitignored live files are NOT touched)
 if [ -f "$ROOT_DIR/android/app/google-services.json.example" ]; then
-  sedi -E "s/\"package_name\": \"[^\"]+\"/\"package_name\": \"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/android/app/google-services.json.example"
-  echo "  ✅ Android: Updated package_name in google-services.json.example"
+  python3 -c "
+import os, json
+f = '$ROOT_DIR/android/app/google-services.json.example'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        data = json.load(fp)
+    for client in data.get('client', []):
+        app_id = client.get('client_info', {}).get('mobilesdk_app_id', '')
+        if 'UAT' in app_id:
+            client['client_info']['android_client_info']['package_name'] = '$NEW_PACKAGE_NAME.uat'
+        else:
+            client['client_info']['android_client_info']['package_name'] = '$NEW_PACKAGE_NAME'
+    with open(f, 'w') as fp:
+        json.dump(data, fp, indent=2)
+        fp.write('\n')
+" 2>/dev/null || true
+  echo "  ✅ Android: Updated package_name in google-services.json.example (Prod & UAT)"
 fi
 echo "  ℹ️  Android Firebase Note: Gitignored 'android/app/google-services.json' is intentionally untouched."
 echo "     ⚠️  Developer Action Required: Download the official 'google-services.json' from Firebase Console for '$NEW_PACKAGE_NAME' and place it in 'android/app/'."
@@ -77,34 +96,35 @@ fi
 
 # 6. Update iOS Bundle Identifier in project.pbxproj safely without clobbering extensions
 if [ -f "$ROOT_DIR/ios/Runner.xcodeproj/project.pbxproj" ]; then
-  node -e "
-    const fs = require('fs');
-    const file = '$ROOT_DIR/ios/Runner.xcodeproj/project.pbxproj';
-    if (fs.existsSync(file)) {
-      let p = fs.readFileSync(file, 'utf8');
-      p = p.replace(/PRODUCT_BUNDLE_IDENTIFIER = [a-zA-Z0-9_.]*?(RunnerTests|MediaDownloadWidget)?;/g, (m, suffix) => {
-        if (suffix === 'RunnerTests') {
-          return 'PRODUCT_BUNDLE_IDENTIFIER = $NEW_PACKAGE_NAME.RunnerTests;';
-        } else if (suffix === 'MediaDownloadWidget') {
-          const widgetPkg = ('$NEW_PACKAGE_NAME' === 'com.rex9.rexone') ? 'com.rexone.mobile' : '$NEW_PACKAGE_NAME';
-          return 'PRODUCT_BUNDLE_IDENTIFIER = ' + widgetPkg + '.MediaDownloadWidget;';
-        }
-        return 'PRODUCT_BUNDLE_IDENTIFIER = $NEW_PACKAGE_NAME;';
-      });
-      fs.writeFileSync(file, p);
-    }
-  " 2>/dev/null || true
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner.xcodeproj/project.pbxproj'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        p = fp.read()
+    p = re.sub(
+        r'PRODUCT_BUNDLE_IDENTIFIER = [a-zA-Z0-9_.]*?(RunnerTests|MediaDownloadWidget)?;',
+        lambda m: f'PRODUCT_BUNDLE_IDENTIFIER = $NEW_PACKAGE_NAME.{m.group(1)};' if m.group(1) else f'PRODUCT_BUNDLE_IDENTIFIER = $NEW_PACKAGE_NAME;',
+        p
+    )
+    with open(f, 'w') as fp:
+        fp.write(p)
+" 2>/dev/null || true
   echo "  ✅ iOS: Updated PRODUCT_BUNDLE_IDENTIFIER in project.pbxproj"
 fi
 
 # 7. Update iOS GoogleService-Info.plist.example (gitignored live files are NOT touched)
 if [ -f "$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example" ]; then
-  node -e "
-    const fs = require('fs');
-    let c = fs.readFileSync('$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example', 'utf8');
-    c = c.replace(/(<key>BUNDLE_ID<\/key>\s*<string>)[^<]*(<\/string>)/, '\$1$NEW_PACKAGE_NAME\$2');
-    fs.writeFileSync('$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example', c);
-  " 2>/dev/null || true
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        c = fp.read()
+    c = re.sub(r'(<key>BUNDLE_ID<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$NEW_PACKAGE_NAME\g<2>', c)
+    with open(f, 'w') as fp:
+        fp.write(c)
+" 2>/dev/null || true
   echo "  ✅ iOS: Updated bundle_id in GoogleService-Info.plist.example"
 fi
 echo "  ℹ️  iOS Firebase Note: Gitignored 'ios/Runner/GoogleService-Info.plist' is intentionally untouched."
@@ -130,14 +150,24 @@ if [ -f "$ROOT_DIR/lib/constants/notification.constants.dart" ]; then
   echo "  ✅ Dart: Updated iosAppGroupId in notification.constants.dart"
 fi
 
-# 9. Update iOS Info.plist download background identifier
+# 9. Update iOS Info.plist download background identifier & CFBundleURLName
 dl_pkg="$NEW_PACKAGE_NAME"
 if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
   dl_pkg="com.rexone.mobile"
 fi
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner/Info.plist'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        c = fp.read()
+    c = re.sub(r'(<key>CFBundleURLName<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$NEW_PACKAGE_NAME\g<2>', c)
+    with open(f, 'w') as fp:
+        fp.write(c)
+" 2>/dev/null || true
   sedi -E "s|<string>[a-zA-Z0-9_.]+\.download</string>|<string>$dl_pkg.download</string>|g" "$ROOT_DIR/ios/Runner/Info.plist"
-  echo "  ✅ iOS: Updated Info.plist download background identifier"
+  echo "  ✅ iOS: Updated Info.plist CFBundleURLName and download identifier"
 fi
 
 # 10. Update patrol section in pubspec.yaml
@@ -145,6 +175,24 @@ if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
   sedi -E "s/package_name:[[:space:]]*[a-zA-Z0-9_.]+/package_name: $NEW_PACKAGE_NAME/g" "$ROOT_DIR/pubspec.yaml"
   sedi -E "s/bundle_id:[[:space:]]*[a-zA-Z0-9_.]+/bundle_id: $NEW_PACKAGE_NAME/g" "$ROOT_DIR/pubspec.yaml"
   echo "  ✅ pubspec.yaml: Updated patrol package_name and bundle_id"
+fi
+
+# 11. Update release_android.sh PACKAGE_BASE
+if [ -f "$ROOT_DIR/scripts/release_android.sh" ]; then
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/scripts/release_android.sh"
+  echo "  ✅ release_android.sh: Updated PACKAGE_BASE"
+fi
+
+# 12. Update build_android.yaml PACKAGE_BASE
+if [ -f "$ROOT_DIR/.github/workflows/build_android.yaml" ]; then
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"$NEW_PACKAGE_NAME\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  echo "  ✅ build_android.yaml: Updated PACKAGE_BASE"
+fi
+
+# 13. Update test_e2e.sh default PACKAGE_NAME
+if [ -f "$ROOT_DIR/scripts/test_e2e.sh" ]; then
+  sedi -E "s/PACKAGE_NAME=\"\\\$\{PACKAGE_NAME:-[^\}]*\}\"/PACKAGE_NAME=\"\${PACKAGE_NAME:-$NEW_PACKAGE_NAME}\"/g" "$ROOT_DIR/scripts/test_e2e.sh"
+  echo "  ✅ test_e2e.sh: Updated default PACKAGE_NAME"
 fi
 
 echo "🎉 Package name / Bundle ID successfully changed to \"$NEW_PACKAGE_NAME\"!"

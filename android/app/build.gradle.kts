@@ -72,7 +72,12 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystoreFile = file("../keystores/rexone-upload-keystore.jks")
+            val configuredKeystore = file("../keystores/rexone-upload-keystore.jks")
+            val keystoreFile = if (configuredKeystore.exists()) {
+                configuredKeystore
+            } else {
+                file("../keystores").listFiles()?.firstOrNull { it.name.endsWith("-upload-keystore.jks") && !it.name.contains(".example") } ?: configuredKeystore
+            }
             val storePass = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProps.getProperty("storePassword")
             val keyPass = System.getenv("KEY_PASSWORD") ?: keystoreProps.getProperty("keyPassword") ?: storePass
             val alias = System.getenv("KEY_ALIAS") ?: keystoreProps.getProperty("keyAlias") ?: "upload"

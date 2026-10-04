@@ -158,20 +158,36 @@ if [ "$BRAND_NAME" = "RexOne" ]; then
   url_scheme="rexone"
 fi
 
-# 11a. Android Manifest deep link scheme
+# 11a. Android Manifest & Gradle deep link scheme
+if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
+  if grep -q 'manifestPlaceholders\["deepLinkScheme"\]' "$ROOT_DIR/android/app/build.gradle.kts"; then
+    sedi -E "s/manifestPlaceholders\[\"deepLinkScheme\"\] = if \(isUat\) \"[^\"]+\" else \"[^\"]+\"/manifestPlaceholders[\"deepLinkScheme\"] = if (isUat) \"${url_scheme}-uat\" else \"${url_scheme}\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
+    echo "  ✅ Android: Updated manifestPlaceholders[\"deepLinkScheme\"] in build.gradle.kts (${url_scheme})"
+  fi
+fi
 if [ -f "$ROOT_DIR/android/app/src/main/AndroidManifest.xml" ]; then
-  sedi -E "s|<data android:scheme=\"[^\"]*\"/>|<data android:scheme=\"$url_scheme\"/>|g" "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
-  echo "  ✅ Android: Updated deep link scheme to $url_scheme in AndroidManifest.xml"
+  if ! grep -q 'android:scheme="\${deepLinkScheme}"' "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"; then
+    sedi -E 's|<data android:scheme="[^"]*"/>|<data android:scheme="${deepLinkScheme}"/>|g' "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
+  fi
+  echo "  ✅ Android: Preserved dynamic android:scheme=\"\${deepLinkScheme}\" in AndroidManifest.xml"
 fi
 
 # 11b. iOS Info.plist URL Scheme
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
-  node -e "
-    const fs = require('fs');
-    let c = fs.readFileSync('$ROOT_DIR/ios/Runner/Info.plist', 'utf8');
-    c = c.replace(/(<key>CFBundleURLName<\/key>\s*<string>[^<]*<\/string>\s*<key>CFBundleURLSchemes<\/key>\s*<array>\s*<string>)[^<]*(<\/string>)/, '\$1$url_scheme\$2');
-    fs.writeFileSync('$ROOT_DIR/ios/Runner/Info.plist', c);
-  " 2>/dev/null || true
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner/Info.plist'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        c = fp.read()
+    c = re.sub(
+        r'(<key>CFBundleURLName<\/key>\s*<string>[^<]*<\/string>\s*<key>CFBundleURLSchemes<\/key>\s*<array>\s*<string>)[^<]*(<\/string>)',
+        r'\g<1>$url_scheme\g<2>',
+        c
+    )
+    with open(f, 'w') as fp:
+        fp.write(c)
+" 2>/dev/null || true
   echo "  ✅ iOS: Updated URL scheme to $url_scheme in Info.plist"
 fi
 
@@ -201,13 +217,83 @@ if [ -f "$ROOT_DIR/android/app/google-services.json.example" ]; then
   sedi -E "s/\"storage_bucket\": \"[^\"]+\"/\"storage_bucket\": \"$fb_storage_bucket\"/g" "$ROOT_DIR/android/app/google-services.json.example"
 fi
 if [ -f "$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example" ]; then
-  node -e "
-    const fs = require('fs');
-    let c = fs.readFileSync('$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example', 'utf8');
-    c = c.replace(/(<key>PROJECT_ID<\/key>\s*<string>)[^<]*(<\/string>)/, '\$1$fb_project_id\$2');
-    c = c.replace(/(<key>STORAGE_BUCKET<\/key>\s*<string>)[^<]*(<\/string>)/, '\$1$fb_storage_bucket\$2');
-    fs.writeFileSync('$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example', c);
-  " 2>/dev/null || true
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        c = fp.read()
+    c = re.sub(r'(<key>PROJECT_ID<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$fb_project_id\g<2>', c)
+    c = re.sub(r'(<key>STORAGE_BUCKET<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$fb_storage_bucket\g<2>', c)
+    with open(f, 'w') as fp:
+        fp.write(c)
+" 2>/dev/null || true
+fi
+
+# 13. Synchronize Android upload keystore file references in build.gradle.kts and scripts
+keystore_slug="${BRAND_SLUG_FLAT}"
+if [ "$BRAND_NAME" = "RexOne" ]; then
+  keystore_slug="rexone"
+fi
+
+if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
+  sedi -E "s/configuredKeystore = file\(\"\.\.\/keystores\/[a-z0-9_-]+-upload-keystore\.jks\"\)/configuredKeystore = file(\"..\/keystores\/${keystore_slug}-upload-keystore.jks\")/g" "$ROOT_DIR/android/app/build.gradle.kts"
+  echo "  ✅ Android: Synchronized keystore file (${keystore_slug}-upload-keystore.jks) in build.gradle.kts"
+fi
+
+# 14. Synchronize release scripts and CI/CD workflows
+app_display_base="$APP_NAME"
+if [ "$APP_NAME" = "RexOne Mobile" ] || [ "$APP_NAME" = "RexOne" ]; then
+  app_display_base="RexOne"
+elif [[ "$APP_NAME" == *" Mobile" ]]; then
+  app_display_base="${APP_NAME% Mobile}"
+fi
+
+if [ -f "$ROOT_DIR/scripts/release_android.sh" ]; then
+  sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/scripts/release_android.sh"
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"${PACKAGE_NAME}\"/g" "$ROOT_DIR/scripts/release_android.sh"
+  sedi -E "s/DEFAULT_APP_BASE=\"[^\"]*\"/DEFAULT_APP_BASE=\"${app_display_base}\"/g" "$ROOT_DIR/scripts/release_android.sh"
+  echo "  ✅ release_android.sh: Synchronized APP_SLUG (${keystore_slug}), PACKAGE_BASE (${PACKAGE_NAME}), and DEFAULT_APP_BASE (${app_display_base})"
+fi
+
+if [ -f "$ROOT_DIR/scripts/release_ios.sh" ]; then
+  sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/scripts/release_ios.sh"
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"${PACKAGE_NAME}\"/g" "$ROOT_DIR/scripts/release_ios.sh"
+  sedi -E "s/DEFAULT_APP_BASE=\"[^\"]*\"/DEFAULT_APP_BASE=\"${app_display_base}\"/g" "$ROOT_DIR/scripts/release_ios.sh"
+  echo "  ✅ release_ios.sh: Synchronized APP_SLUG (${keystore_slug}), PACKAGE_BASE (${PACKAGE_NAME}), and DEFAULT_APP_BASE (${app_display_base})"
+fi
+
+if [ -f "$ROOT_DIR/.github/workflows/build_android.yaml" ]; then
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"${PACKAGE_NAME}\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  sedi -E "s|android/keystores/[a-z0-9_-]+-upload-keystore\.jks|android/keystores/${keystore_slug}-upload-keystore.jks|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  workflow_domain="$BRAND_DOMAIN"
+  if [ "$BRAND_NAME" = "RexOne" ]; then
+    workflow_domain="rexone.me"
+  fi
+  sedi -E "s|https://uat\.api\.[a-zA-Z0-9_.-]+|https://uat.api.${workflow_domain}|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  sedi -E "s|https://api\.[a-zA-Z0-9_.-]+|https://api.${workflow_domain}|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
+  echo "  ✅ build_android.yaml: Synchronized PACKAGE_BASE, APP_SLUG, keystore, and API URLs"
+fi
+
+for script_file in "$ROOT_DIR/scripts/copy_keystore_base64.sh" "$ROOT_DIR/scripts/copy_play_store_key.sh" "$ROOT_DIR/scripts/generate_keystore.sh"; do
+  if [ -f "$script_file" ]; then
+    sedi -E "s/APP_NAME=\"\\\$\{1:-[^\}]*\}\"/APP_NAME=\"\${1:-${keystore_slug}}\"/g" "$script_file"
+  fi
+done
+
+if [ -f "$ROOT_DIR/scripts/copy_play_store_key.sh" ]; then
+  sedi -E "s/[a-z0-9_-]+-play-store-key\.json/${keystore_slug}-play-store-key.json/g" "$ROOT_DIR/scripts/copy_play_store_key.sh"
+fi
+
+if [ -f "$ROOT_DIR/scripts/test_e2e.sh" ]; then
+  sedi -E "s/PACKAGE_NAME=\"\\\$\{PACKAGE_NAME:-[^\}]*\}\"/PACKAGE_NAME=\"\${PACKAGE_NAME:-${PACKAGE_NAME}}\"/g" "$ROOT_DIR/scripts/test_e2e.sh"
+  sedi -E "s/dev-[a-z0-9_-]+-core-api/dev-${BRAND_SLUG_KEBAB}-core-api/g" "$ROOT_DIR/scripts/test_e2e.sh"
+  test_domain="${BRAND_SLUG_FLAT}.test"
+  if [ "$BRAND_NAME" = "RexOne" ]; then
+    test_domain="rexone.test"
+  fi
+  sedi -E "s/%@[a-z0-9_-]+\.test/%@${test_domain}/g" "$ROOT_DIR/scripts/test_e2e.sh"
 fi
 
 echo "  ℹ️  Credential Isolation Note: Gitignored files (.env, google-services.json, GoogleService-Info.plist) are untouched."

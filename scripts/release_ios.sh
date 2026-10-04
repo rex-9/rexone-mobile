@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       echo "🍎 iOS Release & TestFlight Publisher"
       echo "------------------------------------------------------------"
-      echo "Usage: ./scripts/release_ios.sh [prod|uat] [options]"
+      echo "Usage: ./scripts/release_ios.sh [prod|uat] [--build-only] [--validate-only] [--build-number <num>]"
       echo ""
       echo "Options:"
       echo "  prod                  Build using .env.prod (default)"
@@ -61,8 +61,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+APP_SLUG="rexone"
+PACKAGE_BASE="com.rex9.rexone"
+DEFAULT_APP_BASE="RexOne"
+
+APP_DISPLAY_NAME="$DEFAULT_APP_BASE"
+PACKAGE_NAME="$PACKAGE_BASE"
+if [ "$TARGET_ENV" = "uat" ]; then
+  PACKAGE_NAME="${PACKAGE_BASE}.uat"
+  APP_DISPLAY_NAME="${DEFAULT_APP_BASE} UAT"
+fi
+
+BUILD_BANNER=$(echo "$APP_DISPLAY_NAME iOS Release & TestFlight Deployer" | tr '[:lower:]' '[:upper:]')
 echo "============================================================"
-echo "🍎  REXONE IOS RELEASE & TESTFLIGHT DEPLOYER"
+echo "🍎  $BUILD_BANNER"
 echo "============================================================"
 echo "🎯 Target Environment: $TARGET_ENV"
 echo "📦 Build Only:         $BUILD_ONLY"
@@ -75,13 +87,6 @@ BUILD_NUMBER=$(echo "$RAW_VERSION" | cut -d'+' -f2)
 if [ -n "$BUILD_NUMBER_OVERRIDE" ]; then
   BUILD_NUMBER="$BUILD_NUMBER_OVERRIDE"
   echo "🔢 Build Number Override: $BUILD_NUMBER"
-fi
-
-PACKAGE_NAME="com.rex9.rexone"
-APP_DISPLAY_NAME="RexOne"
-if [ "$TARGET_ENV" = "uat" ]; then
-  PACKAGE_NAME="com.rex9.rexone.uat"
-  APP_DISPLAY_NAME="RexOne UAT"
 fi
 
 echo "🏷️ App Version:        v${VERSION_NAME} (Build ${BUILD_NUMBER})"
@@ -174,8 +179,8 @@ echo "🔨 Building iOS Release IPA (Apple Silicon Native)..."
 START_TIME=$(date +%s)
 
 flutter build ipa --release \
-  --build-name="$VERSION_NAME" \
-  --build-number="$BUILD_NUMBER" \
+  --build-name="${VERSION_NAME}" \
+  --build-number="${BUILD_NUMBER}" \
   --dart-define="APP_ENV=$ENV_FILE" \
   --dart-define="TARGET_ENV=$TARGET_ENV"
 
@@ -198,7 +203,7 @@ fi
 DEST_DIR="$ROOT_DIR/build/release-artifacts"
 mkdir -p "$DEST_DIR"
 
-IPA_NAME="rexone-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.ipa"
+IPA_NAME="${APP_SLUG}-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.ipa"
 FINAL_IPA_PATH="$DEST_DIR/$IPA_NAME"
 cp "$RAW_IPA_PATH" "$FINAL_IPA_PATH"
 

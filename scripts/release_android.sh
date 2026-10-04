@@ -72,8 +72,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+APP_SLUG="rexone"
+PACKAGE_BASE="com.rex9.rexone"
+DEFAULT_APP_BASE="RexOne"
+
+APP_DISPLAY_NAME="$DEFAULT_APP_BASE"
+PACKAGE_NAME="$PACKAGE_BASE"
+if [ "$TARGET_ENV" = "uat" ]; then
+  PACKAGE_NAME="${PACKAGE_BASE}.uat"
+  APP_DISPLAY_NAME="${DEFAULT_APP_BASE} UAT"
+fi
+
+BUILD_BANNER=$(echo "$APP_DISPLAY_NAME Android Release Builder" | tr '[:lower:]' '[:upper:]')
 echo "============================================================"
-echo "🤖  REXONE ANDROID RELEASE BUILDER"
+echo "🤖  $BUILD_BANNER"
 echo "============================================================"
 echo "🎯 Target Environment: $TARGET_ENV"
 echo "📦 Build Target:       $BUILD_MODE"
@@ -87,13 +99,6 @@ if [ -n "$BUILD_NUMBER_OVERRIDE" ]; then
   echo "🔢 Build Number Override: $BUILD_NUMBER"
 fi
 echo "🏷️ App Version:        v${VERSION_NAME} (Build ${BUILD_NUMBER})"
-PACKAGE_NAME="com.rex9.rexone"
-APP_DISPLAY_NAME="RexOne"
-if [ "$TARGET_ENV" = "uat" ]; then
-  PACKAGE_NAME="com.rex9.rexone.uat"
-  APP_DISPLAY_NAME="RexOne UAT"
-fi
-
 echo "📦 Target Package:     $PACKAGE_NAME"
 echo "📱 App Display Name:   $APP_DISPLAY_NAME"
 echo "------------------------------------------------------------"
@@ -111,12 +116,13 @@ fi
 
 # 3. Check for release signing credentials
 KEY_PROPS="android/key.properties"
+KEYSTORE_FILE="android/keystores/${APP_SLUG}-upload-keystore.jks"
 if [ -f "$KEY_PROPS" ]; then
   echo "🔐 Release signing configured via $KEY_PROPS."
 elif [ -n "${KEYSTORE_PASSWORD:-}" ]; then
   echo "🔐 Release signing password detected from environment."
-elif [ -f "android/keystores/rexone-upload-keystore.jks" ]; then
-  echo "🔐 Release keystore found: android/keystores/rexone-upload-keystore.jks"
+elif [ -f "$KEYSTORE_FILE" ]; then
+  echo "🔐 Release keystore found: $KEYSTORE_FILE"
   echo "   Password is required to sign this release build."
   read -r -s -p "Enter Keystore Password: " ENTERED_PASS
   echo ""
@@ -129,7 +135,7 @@ elif [ -f "android/keystores/rexone-upload-keystore.jks" ]; then
 storePassword=$ENTERED_PASS
 keyPassword=$ENTERED_PASS
 keyAlias=upload
-storeFile=../keystores/rexone-upload-keystore.jks
+storeFile=../keystores/${APP_SLUG}-upload-keystore.jks
 EOF
       chmod 600 "$KEY_PROPS"
       echo "✅ Saved to $KEY_PROPS (strictly gitignored)."
@@ -139,7 +145,7 @@ EOF
     exit 1
   fi
 else
-  echo "❌ Error: Release keystore not found in android/keystores/rexone-upload-keystore.jks"
+  echo "❌ Error: Release keystore not found in $KEYSTORE_FILE"
   exit 1
 fi
 
@@ -189,8 +195,8 @@ fi
 DEST_DIR="$ROOT_DIR/build/release-artifacts"
 mkdir -p "$DEST_DIR"
 
-AAB_NAME="rexone-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
-APK_NAME="rexone-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
+AAB_NAME="${APP_SLUG}-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
+APK_NAME="${APP_SLUG}-${TARGET_ENV}-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
 AAB_PATH="$DEST_DIR/$AAB_NAME"
 APK_PATH="$DEST_DIR/$APK_NAME"
 
