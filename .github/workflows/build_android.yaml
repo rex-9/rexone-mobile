@@ -113,7 +113,8 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Decoding release keystore from GitHub Secrets..."
             mkdir -p android/keystores
-            echo "$KEYSTORE_BASE64" | base64 -d > android/keystores/rexone-upload-keystore.jks
+            KEYSTORE_FILE="android/keystores/rexone-upload-keystore.jks"
+            echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_FILE"
             echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
             if [ -n "${{ secrets.KEY_ALIAS }}" ]; then
               echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
@@ -138,19 +139,21 @@ jobs:
           BUILD_NUMBER=$(( BASE_BUILD + GITHUB_RUN_NUMBER ))
 
           TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"
+          PACKAGE_BASE="com.rex9.rexone"
+          APP_SLUG="rexone"
 
           if [ "$TARGET_ENV" = "uat" ]; then
             TAG_NAME="v${VERSION_NAME}-uat+${BUILD_NUMBER}"
             RELEASE_TITLE="UAT Android Build v${VERSION_NAME} (Build ${BUILD_NUMBER})"
-            APK_NAME="rexone-uat-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
-            AAB_NAME="rexone-uat-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
-            PACKAGE_NAME="com.rex9.rexone.uat"
+            APK_NAME="${APP_SLUG}-uat-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
+            AAB_NAME="${APP_SLUG}-uat-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
+            PACKAGE_NAME="${PACKAGE_BASE}.uat"
           else
             TAG_NAME="v${VERSION_NAME}+${BUILD_NUMBER}"
             RELEASE_TITLE="Production Android Release v${VERSION_NAME} (Build ${BUILD_NUMBER})"
-            APK_NAME="rexone-prod-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
-            AAB_NAME="rexone-prod-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
-            PACKAGE_NAME="com.rex9.rexone"
+            APK_NAME="${APP_SLUG}-prod-v${VERSION_NAME}-b${BUILD_NUMBER}.apk"
+            AAB_NAME="${APP_SLUG}-prod-v${VERSION_NAME}-b${BUILD_NUMBER}.aab"
+            PACKAGE_NAME="${PACKAGE_BASE}"
           fi
 
           echo "Tag Name: $TAG_NAME"

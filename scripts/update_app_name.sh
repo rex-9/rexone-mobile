@@ -24,14 +24,26 @@ sedi() {
 
 echo "🔄 Updating App Name to: \"$NEW_APP_NAME\"..."
 
-# 1. Android Manifest (android:label)
-if [ -f "$ROOT_DIR/android/app/src/main/AndroidManifest.xml" ]; then
-  android_label="$NEW_APP_NAME"
-  if [ "$NEW_APP_NAME" = "RexOne" ] || [ "$NEW_APP_NAME" = "RexOne Mobile" ]; then
-    android_label="rexone_mobile"
+app_display_base="$NEW_APP_NAME"
+if [ "$NEW_APP_NAME" = "RexOne Mobile" ] || [ "$NEW_APP_NAME" = "RexOne" ]; then
+  app_display_base="RexOne"
+elif [[ "$NEW_APP_NAME" == *" Mobile" ]]; then
+  app_display_base="${NEW_APP_NAME% Mobile}"
+fi
+
+# 1. Android Gradle configuration (manifestPlaceholders["appName"]) & AndroidManifest.xml
+if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
+  if grep -q 'manifestPlaceholders\["appName"\]' "$ROOT_DIR/android/app/build.gradle.kts"; then
+    sedi -E "s/manifestPlaceholders\[\"appName\"\] = if \(isUat\) \"[^\"]+\" else \"[^\"]+\"/manifestPlaceholders[\"appName\"] = if (isUat) \"$app_display_base UAT\" else \"$app_display_base\"/g" "$ROOT_DIR/android/app/build.gradle.kts"
+    echo "  ✅ Android: Updated manifestPlaceholders[\"appName\"] in build.gradle.kts ($app_display_base)"
   fi
-  sedi -E "s/android:label=\"[^\"]*\"/android:label=\"$android_label\"/g" "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
-  echo "  ✅ Android: Updated android:label in AndroidManifest.xml"
+fi
+
+if [ -f "$ROOT_DIR/android/app/src/main/AndroidManifest.xml" ]; then
+  if ! grep -q 'android:label="\${appName}"' "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"; then
+    sedi -E 's/android:label="[^"]*"/android:label="${appName}"/g' "$ROOT_DIR/android/app/src/main/AndroidManifest.xml"
+  fi
+  echo "  ✅ Android: Preserved dynamic android:label=\"\${appName}\" in AndroidManifest.xml"
 fi
 
 # 2. iOS Info.plist (CFBundleDisplayName & CFBundleName)
@@ -43,16 +55,17 @@ if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
     cf_bundle_name="rexone_mobile"
   fi
 
-  node -e "
-    const fs = require('fs');
-    const file = '$ROOT_DIR/ios/Runner/Info.plist';
-    if (fs.existsSync(file)) {
-      let c = fs.readFileSync(file, 'utf8');
-      c = c.replace(/(<key>CFBundleDisplayName<\/key>\s*<string>)[^<]*(<\/string>)/, '\$1$cf_display_name\$2');
-      c = c.replace(/(<key>CFBundleName<\/key>\s*(?:<!--[^\n]*-->\s*)?<string>)[^<]*(<\/string>)/, '\$1$cf_bundle_name\$2');
-      fs.writeFileSync(file, c);
-    }
-  " 2>/dev/null || true
+  python3 -c "
+import os, re
+f = '$ROOT_DIR/ios/Runner/Info.plist'
+if os.path.exists(f):
+    with open(f, 'r') as fp:
+        c = fp.read()
+    c = re.sub(r'(<key>CFBundleDisplayName<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$cf_display_name\g<2>', c)
+    c = re.sub(r'(<key>CFBundleName<\/key>\s*(?:<!--[^\n]*-->\s*)?<string>)[^<]*(<\/string>)', r'\g<1>$cf_bundle_name\g<2>', c)
+    with open(f, 'w') as fp:
+        fp.write(c)
+" 2>/dev/null || true
 
   echo "  ✅ iOS: Updated CFBundleDisplayName and CFBundleName in Info.plist"
 fi
@@ -78,6 +91,18 @@ if [ -f "$ROOT_DIR/.env.example" ]; then
   fi
   sedi -E "s/^APP_NAME=.*/APP_NAME=$env_app_name/g" "$ROOT_DIR/.env.example"
   echo "  ✅ Updated APP_NAME in .env.example"
+fi
+
+# 5. release_android.sh default app name
+if [ -f "$ROOT_DIR/scripts/release_android.sh" ]; then
+  sedi -E "s/DEFAULT_APP_BASE=\"[^\"]*\"/DEFAULT_APP_BASE=\"$app_display_base\"/g" "$ROOT_DIR/scripts/release_android.sh"
+  echo "  ✅ release_android.sh: Updated DEFAULT_APP_BASE ($app_display_base)"
+fi
+
+# 6. release_ios.sh default app name
+if [ -f "$ROOT_DIR/scripts/release_ios.sh" ]; then
+  sedi -E "s/DEFAULT_APP_BASE=\"[^\"]*\"/DEFAULT_APP_BASE=\"$app_display_base\"/g" "$ROOT_DIR/scripts/release_ios.sh"
+  echo "  ✅ release_ios.sh: Updated DEFAULT_APP_BASE ($app_display_base)"
 fi
 
 echo "🎉 Mobile app name successfully changed to \"$NEW_APP_NAME\"!"
