@@ -82,7 +82,7 @@ All local development, code verification, translation checks, and rebranding tas
 | `./scripts/copy_keystore_base64.sh` | Encodes existing upload keystore to Base64 and copies to clipboard | `[app_name]` |
 | `./scripts/copy_play_store_key.sh` | Copies Google Play Service Account JSON key to clipboard | `[app_name]` |
 | `./scripts/release_android.sh` | Compiles release Android App Bundle (.aab) or APK locally | `[prod\|uat] [--bundle\|--apk\|--all] [--build-number <num>]` |
-| `./scripts/release_ios.sh` | Builds release IPA locally and deploys to Apple TestFlight | `[prod\|uat] [--build-only]` |
+| `./scripts/release_ios.sh` | Builds release IPA locally and deploys to Apple TestFlight | `[prod\|uat] [--build-only] [--validate-only] [--build-number <num>]` |
 | `./scripts/rebrand.sh` | Standalone mobile rebranding (App Display Name + Package ID + App Icon) | `"<Name>" "<bundle.id>" "<icon.png>"` |
 | `./scripts/update_app_name.sh` | Updates app display name across Android, iOS, and environment files | `"<New App Name>"` |
 | `./scripts/update_package_name.sh` | Updates package identifier and iOS Bundle ID across native projects | `<com.company.app>` |
@@ -208,6 +208,12 @@ Builds and deploys to TestFlight directly from macOS terminal using official App
 
 # Compile IPA locally without uploading to Apple
 ./scripts/release_ios.sh prod --build-only
+
+# Validate IPA with App Store Connect without uploading
+./scripts/release_ios.sh prod --validate-only
+
+# Build with custom build number override (for TestFlight monotonic versioning)
+./scripts/release_ios.sh prod --build-number 15
 ```
 
 #### Local Credential Setup:

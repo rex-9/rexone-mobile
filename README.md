@@ -395,6 +395,12 @@ Compile and publish directly from your Mac terminal in ~2 minutes:
 
 # Build IPA locally without uploading to Apple
 ./scripts/release_ios.sh prod --build-only
+
+# Validate IPA with App Store Connect without uploading
+./scripts/release_ios.sh prod --validate-only
+
+# Build with custom build number override (for TestFlight monotonic versioning)
+./scripts/release_ios.sh prod --build-number 15
 ```
 
 For complete step-by-step key setup instructions (Google Play Service Account JSON & Apple App Store Connect `.p8`), see **[`docs/README.md`](docs/README.md)**.
