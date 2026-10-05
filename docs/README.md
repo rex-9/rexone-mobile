@@ -8,6 +8,7 @@ This directory serves as the technical documentation manual for **RexOne Mobile*
 
 | Guide | Description | Canonical Path |
 | :--- | :--- | :--- |
+| **🚀 Store Deployment & CI/CD** | Step-by-step store publishing, GitHub Actions automation, and TestFlight pipeline | **[`docs/DEPLOYMENT.md`](DEPLOYMENT.md)** |
 | **🗄️ Client SQLite Database (Drift)** | Drift SQLite architecture, schema mirroring, offline states, and local caching | **[`docs/CLIENT_DATABASE.md`](CLIENT_DATABASE.md)** |
 | **🏛️ Unified Ecosystem Architecture** | Cross-platform contracts, WebSocket event catalogs, and shared data structures | **[`ECOSYSTEM.md`](../ECOSYSTEM.md)** |
 | **📜 Constitutional Law** | Non-negotiable architecture, state management, and design system rules | **[`LAW.md`](../LAW.md)** |
@@ -143,98 +144,30 @@ RexOne Mobile includes a dedicated media and offline streaming pipeline designed
 
 ## 🚀 Production Releases & Automated CI/CD
 
-RexOne Mobile implements a sovereign **hybrid release pipeline**:
-- **Android**: Automated cloud build and store publication on GitHub Actions (`ubuntu-latest`).
-- **iOS**: Apple Silicon local build and TestFlight upload via [`./scripts/release_ios.sh`](../scripts/release_ios.sh), preserving free GitHub Actions minutes.
+RexOne Mobile implements a sovereign **hybrid release pipeline** designed for zero cloud cost and maximum speed:
+- **Android (Automated Cloud CI/CD)**: GitHub Actions ([`.github/workflows/build_android.yaml`](../.github/workflows/build_android.yaml)) compiles release APKs and App Bundles (`.aab`) on standard Linux runners (`ubuntu-latest`), automatically publishing to Google Play's **Internal Testing** track on pushes to `uat` or `main`.
+- **iOS (Native Local Apple Silicon Pipeline)**: Native M-series builds via [`./scripts/release_ios.sh`](../scripts/release_ios.sh) upload directly to Apple **TestFlight** in ~90 seconds using App Store Connect API keys (`.p8`), preserving your free GitHub Actions quota (avoiding macOS 10x multiplier).
 
-### 🤖 Android Automated Pipeline (`.github/workflows/build_android.yaml`)
-Triggered automatically on pushes to `uat` or `main`:
-1. Sets up JDK 21 and Flutter SDK.
-2. Injects `.env` secrets and `google-services.json`.
-3. Injects and decodes release keystore from `ANDROID_KEYSTORE_BASE64`.
-4. Compiles both `.apk` (for direct release download) and `.aab` (optimized App Bundle for Google Play).
-5. Automatically tags GitHub release and attaches APK + AAB assets.
-6. Publishes `.aab` directly to Google Play **Internal Testing** track via `r0adkll/upload-google-play@v1` if `PLAY_STORE_JSON_KEY` is present.
+### 📖 Master Step-by-Step Deployment Guide
+For complete instructions on keystore generation, Google Cloud Service Account permissions, GitHub Secrets configuration, Apple `.p8` credential setup, monotonic build number management, and troubleshooting, see the authoritative manual:
 
-#### Required GitHub Secrets for Android:
-| Secret Name | Description |
-| :--- | :--- |
-| `ENV_PROD` | Production environment file content (`.env.prod`) |
-| `ENV_UAT` | UAT environment file content (`.env.uat`) |
-| `ANDROID_GOOGLE_SERVICES_JSON` | Firebase `android/app/google-services.json` content (use `./scripts/copy_google_services_android.sh`) |
-| `IOS_GOOGLE_SERVICES_PLIST` | Firebase `ios/Runner/GoogleService-Info.plist` content (use `./scripts/copy_google_services_ios.sh`) |
-| `ANDROID_KEYSTORE_BASE64` | Base64-encoded `upload-keystore.jks` (use `./scripts/copy_keystore_base64.sh`) |
-| `KEYSTORE_PASSWORD` | Password for the release keystore |
-| `KEY_ALIAS` | Key alias (e.g. `upload` or `rexone`) |
-| `KEY_PASSWORD` | Password for the key alias |
-| `PLAY_STORE_JSON_KEY` | Google Cloud Service Account JSON key for Play Developer API (use `./scripts/copy_play_store_key.sh`) |
+👉 **[`docs/DEPLOYMENT.md`](DEPLOYMENT.md)**
 
-#### 📁 Secure Local Key Organization
-All release signing assets and store deployment keys are safely organized in local directories strictly excluded from git tracking (`.gitignore`):
-- **`rexone_mobile/android/keystores/`**:
-  - `rexone-upload-keystore.jks`: Android release upload signing keystore (used by both Prod and UAT)
-  - `rexone-upload-cert.pem`: Public X.509 certificate for Play Console upload key registration / reset
-  - `rexone-play-store-key.json`: Google Cloud Service Account JSON key for Google Play Developer API (GitHub Actions CI/CD)
-  - `firebase-adminsdk-key.json`: Firebase Admin SDK Service Account JSON (uploaded to OneSignal for FCM v1 push notifications & backend admin)
-- **Ecosystem Backup**: Mirrors in `Dev/rexone/keystores/` and `~/.android/keystores/` (zero risk of loss).
-
-#### 📱 Dual-Package Store Architecture (Prod vs UAT)
-RexOne Mobile implements side-by-side app store distribution allowing developers and QA testers to have both Production and UAT apps installed simultaneously on the same physical device:
-
-| Environment | Public Display Name | Store Application ID | Deep Link Scheme | Config File |
-| :--- | :--- | :--- | :--- | :--- |
-| **Production** | `<App Name>` | `<com.company.app>` | `<scheme>://` | `.env.prod` |
-| **UAT / Staging** | `<App Name> UAT` | `<com.company.app>.uat` | `<scheme>-uat://` | `.env.uat` |
-
-##### Why `namespace` is Static while `applicationId` is Dynamic:
-- **`namespace = "<com.company.app>"`**: In modern Android Gradle Plugin (AGP 8.0+), `namespace` defines the internal Kotlin/Java source package where generated `R` and `BuildConfig` classes live (`package <com.company.app>` in `MainActivity.kt`). It **must remain static** so Kotlin code compiles without requiring physical directory renames.
-- **`defaultConfig.applicationId`**: This is the **only** identifier recognized by Android OS, Google Play, and Firebase. It is switched dynamically based on `TARGET_ENV`:
-  ```kotlin
-  applicationId = if (isUat) "<com.company.app>.uat" else "<com.company.app>"
-  manifestPlaceholders["appName"] = if (isUat) "<App Name> UAT" else "<App Name>"
-  manifestPlaceholders["deepLinkScheme"] = if (isUat) "<scheme>-uat" else "<scheme>"
-  ```
-- **Firebase Dual-Client Integration**: A single `android/app/google-services.json` contains configuration entries for both `<com.company.app>` and `<com.company.app>.uat`. The Google Services Gradle plugin matches the active `applicationId` at build time.
-
-### 🍎 iOS Local Pipeline (`scripts/release_ios.sh`)
-Builds and deploys to TestFlight directly from macOS terminal using official App Store Connect API keys (`.p8`):
-
+### 📱 Quick Command Reference
 ```bash
-# Production TestFlight release
-./scripts/release_ios.sh prod
+# Android: Generate release keystore & copy Base64 to clipboard
+./scripts/generate_keystore.sh rexone upload
 
-# Staging / UAT TestFlight release
-./scripts/release_ios.sh uat
+# Android: Copy Google Play Service Account JSON to clipboard
+./scripts/copy_play_store_key.sh rexone
 
-# Compile IPA locally without uploading to Apple
-./scripts/release_ios.sh prod --build-only
+# Android: Local release builds (optional)
+./scripts/release_android.sh prod --bundle    # Production .aab
+./scripts/release_android.sh uat --bundle     # UAT staging .aab
+./scripts/release_android.sh prod --apk       # Sideloadable APK
 
-# Validate IPA with App Store Connect without uploading
-./scripts/release_ios.sh prod --validate-only
-
-# Build with custom build number override (for TestFlight monotonic versioning)
-./scripts/release_ios.sh prod --build-number 15
-```
-
-#### Local Credential Setup:
-1. Store credentials in `~/.appstoreconnect/credentials`:
-   ```bash
-   export APP_STORE_KEY_ID="XXXXXXXXXX"
-   export APP_STORE_ISSUER_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-   ```
-2. Place private key `.p8` in `~/.appstoreconnect/private_keys/`:
-   ```bash
-   ~/.appstoreconnect/private_keys/AuthKey_<APP_STORE_KEY_ID>.p8
-   ```
-
-### 🔨 Manual Local Compilations
-```bash
-# Android Release APK
-flutter build apk --release --dart-define=APP_ENV=.env.prod
-
-# Android App Bundle (Google Play AAB)
-flutter build appbundle --release --dart-define=APP_ENV=.env.prod
-
-# iOS Release IPA
-flutter build ipa --release --dart-define=APP_ENV=.env.prod
+# iOS: Build and upload to TestFlight (macOS)
+./scripts/release_ios.sh prod                 # Production TestFlight release
+./scripts/release_ios.sh uat                  # UAT staging TestFlight release
+./scripts/release_ios.sh prod --validate-only # Pre-validate without uploading
 ```

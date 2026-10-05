@@ -35,6 +35,7 @@ Built under the same creed as RexOne Core and RexOne Web: **Start from One. Not 
 | **📜 Constitutional Law**           | Non-negotiable architecture, design system, and state laws: **[LAW.md](LAW.md)** _(Zero exceptions)_                                                                                                                                                                                                                    |
 | **🤖 Operational Agent Governance** | Autonomous agent rules, secret isolation, and documentation synchronization: **[AGENTS.md](https://github.com/rex-9/rexone-core/blob/dev/AGENTS.md)**                                                                                                                                                                   |
 | **🗄️ Client Database**              | Drift SQLite local-first architecture and schema mirroring: **[`docs/CLIENT_DATABASE.md`](docs/CLIENT_DATABASE.md)**                                                                                                                                                                                                    |
+| **🚀 Store Deployment & CI/CD**     | Step-by-step store publishing, GitHub Actions, and TestFlight: **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**                                                                                                                                                                            |
 | **📖 Master Documentation Hub**     | Native subsystem architecture, CLI tools, and E2E testing: **[`docs/README.md`](docs/README.md)**                                                                                                                                                                                                                       |
 
 ---
@@ -348,6 +349,7 @@ To maintain high architectural discipline without cluttering the primary showcas
 | :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **📖 Master Mobile Documentation Hub** | Native architecture topology, CLI script catalog, and testing guides: **[`docs/README.md`](docs/README.md)**                                             |
 | **🗄️ Client SQLite Database (Drift)**  | Drift SQLite architecture, schema mirroring, offline states, and DAOs: **[`docs/CLIENT_DATABASE.md`](docs/CLIENT_DATABASE.md)**                          |
+| **🚀 Store Deployment & CI/CD**        | Step-by-step store publishing, GitHub Actions, and TestFlight: **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**                                           |
 | **🏛️ Unified Ecosystem Architecture**  | Cross-platform contracts, WebSocket event catalogs, and shared schemas: **[`ECOSYSTEM.md`](ECOSYSTEM.md)**                                               |
 | **📜 Constitutional Law**              | Non-negotiable architecture, state management, and design tokens: **[`LAW.md`](LAW.md)**                                                                 |
 | **🤖 Autonomous Agent Governance**     | Operational agent rules, secret isolation, and documentation synchronization: **[`AGENTS.md`](https://github.com/rex-9/rexone-core/blob/dev/AGENTS.md)** |
@@ -403,7 +405,7 @@ Compile and publish directly from your Mac terminal in ~2 minutes:
 ./scripts/release_ios.sh prod --build-number 15
 ```
 
-For complete step-by-step key setup instructions (Google Play Service Account JSON & Apple App Store Connect `.p8`), see **[`docs/README.md`](docs/README.md)**.
+For complete step-by-step key setup instructions (Google Play Service Account JSON & Apple App Store Connect `.p8`), see **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)**.
 
 ---
 
