@@ -155,6 +155,12 @@ For complete instructions on keystore generation, Google Cloud Service Account p
 
 ### 📱 Quick Command Reference
 ```bash
+# Fast-fail pre-flight readiness audit (fails fast before build)
+./scripts/preflight_check.sh                  # All platforms (Prod)
+./scripts/preflight_check.sh ios prod         # iOS TestFlight check
+./scripts/preflight_check.sh android prod     # Android Google Play check
+./scripts/preflight_check.sh all uat          # UAT / Staging check
+
 # Android: Generate release keystore & copy Base64 to clipboard
 ./scripts/generate_keystore.sh rexone upload
 

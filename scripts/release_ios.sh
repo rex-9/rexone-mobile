@@ -18,6 +18,7 @@ fi
 TARGET_ENV="prod"
 BUILD_ONLY=false
 VALIDATE_ONLY=false
+SKIP_PREFLIGHT=false
 BUILD_NUMBER_OVERRIDE="${BUILD_NUMBER:-}"
 
 while [[ $# -gt 0 ]]; do
@@ -38,6 +39,10 @@ while [[ $# -gt 0 ]]; do
       VALIDATE_ONLY=true
       shift
       ;;
+    --skip-preflight)
+      SKIP_PREFLIGHT=true
+      shift
+      ;;
     --build-number)
       BUILD_NUMBER_OVERRIDE="$2"
       shift 2
@@ -45,13 +50,14 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       echo "🍎 iOS Release & TestFlight Publisher"
       echo "------------------------------------------------------------"
-      echo "Usage: ./scripts/release_ios.sh [prod|uat] [--build-only] [--validate-only] [--build-number <num>]"
+      echo "Usage: ./scripts/release_ios.sh [prod|uat] [--build-only] [--validate-only] [--build-number <num>] [--skip-preflight]"
       echo ""
       echo "Options:"
       echo "  prod                  Build using .env.prod (default)"
       echo "  uat                   Build using .env.uat"
       echo "  --build-only          Compile IPA and prepare release artifact without uploading"
       echo "  --validate-only       Validate IPA with App Store Connect without uploading"
+      echo "  --skip-preflight      Bypass fast-fail preflight readiness checks"
       echo "  --build-number <num>  Override build number (e.g. 15)"
       exit 0
       ;;
@@ -93,6 +99,17 @@ echo "🏷️ App Version:        v${VERSION_NAME} (Build ${BUILD_NUMBER})"
 echo "📦 Target Package:     $PACKAGE_NAME"
 echo "📱 App Display Name:   $APP_DISPLAY_NAME"
 echo "------------------------------------------------------------"
+
+# 1.1 Fast-fail pre-flight readiness verification
+if [ "$SKIP_PREFLIGHT" = false ] && [ -x "$SCRIPT_DIR/preflight_check.sh" ]; then
+  PREFLIGHT_ARGS=("$TARGET_ENV")
+  [ "$BUILD_ONLY" = true ] && PREFLIGHT_ARGS+=("--build-only")
+  if ! "$SCRIPT_DIR/preflight_check.sh" ios "${PREFLIGHT_ARGS[@]}"; then
+    echo "❌ iOS Release aborted: Pre-flight readiness checks failed."
+    echo "💡 Fix the reported issues above or pass --skip-preflight to force compilation."
+    exit 1
+  fi
+fi
 
 # 2. Check environment file
 ENV_FILE=".env.${TARGET_ENV}"

@@ -25,6 +25,7 @@ fi
 TARGET_ENV="prod"
 BUILD_MODE="bundle" # options: bundle, apk, all
 BUILD_NUMBER_OVERRIDE="${BUILD_NUMBER:-}"
+SKIP_PREFLIGHT=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       BUILD_MODE="all"
       shift
       ;;
+    --skip-preflight)
+      SKIP_PREFLIGHT=true
+      shift
+      ;;
     --build-number)
       BUILD_NUMBER_OVERRIDE="$2"
       shift 2
@@ -55,7 +60,7 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       echo "🤖 Android Release Builder"
       echo "------------------------------------------------------------"
-      echo "Usage: ./scripts/release_android.sh [prod|uat] [--bundle|--apk|--all] [--build-number <num>]"
+      echo "Usage: ./scripts/release_android.sh [prod|uat] [--bundle|--apk|--all] [--build-number <num>] [--skip-preflight]"
       echo ""
       echo "Options:"
       echo "  prod                  Build using .env.prod (default)"
@@ -63,6 +68,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --bundle              Build Android App Bundle (.aab for Google Play, default)"
       echo "  --apk                 Build Release APK (for direct download)"
       echo "  --all                 Build both .aab and .apk"
+      echo "  --skip-preflight      Bypass fast-fail preflight readiness checks"
       echo "  --build-number <num>  Override build number (e.g. 15)"
       exit 0
       ;;
@@ -102,6 +108,15 @@ echo "🏷️ App Version:        v${VERSION_NAME} (Build ${BUILD_NUMBER})"
 echo "📦 Target Package:     $PACKAGE_NAME"
 echo "📱 App Display Name:   $APP_DISPLAY_NAME"
 echo "------------------------------------------------------------"
+
+# 1.1 Fast-fail pre-flight readiness verification
+if [ "$SKIP_PREFLIGHT" = false ] && [ -x "$SCRIPT_DIR/preflight_check.sh" ]; then
+  if ! "$SCRIPT_DIR/preflight_check.sh" android "$TARGET_ENV"; then
+    echo "❌ Android Release aborted: Pre-flight readiness checks failed."
+    echo "💡 Fix the reported issues above or pass --skip-preflight to force compilation."
+    exit 1
+  fi
+fi
 
 # 2. Check environment file
 ENV_FILE=".env.${TARGET_ENV}"

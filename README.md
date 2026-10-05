@@ -362,6 +362,25 @@ RexOne Mobile features a modern **hybrid release architecture** designed for zer
 - **Android (Automated Cloud CI/CD)**: [`.github/workflows/build_android.yaml`](.github/workflows/build_android.yaml) runs on Linux runners (`ubuntu-latest`) to build release APKs and App Bundles (`.aab`), automatically publishing production builds to Google Play's **Internal Testing** track.
 - **iOS (Native Local Apple Silicon Pipeline)**: Fast local builds via [`./scripts/release_ios.sh`](scripts/release_ios.sh) upload directly to Apple **TestFlight** using App Store Connect API keys (`.p8`), preserving your free GitHub Actions quota (avoiding macOS 10x multiplier).
 
+### 🚦 Fast-Fail Pre-Flight Release Readiness Checker
+Audit all required signing keys, certificates, Google services, Apple `.p8` API keys, and environment files in **under 1 second** before compiling:
+
+```bash
+# Verify both Android & iOS release readiness (Production)
+./scripts/preflight_check.sh
+
+# Verify iOS TestFlight readiness
+./scripts/preflight_check.sh ios prod
+
+# Verify Android Google Play readiness
+./scripts/preflight_check.sh android prod
+
+# Verify staging / UAT release readiness
+./scripts/preflight_check.sh all uat
+```
+
+Both [`./scripts/release_ios.sh`](scripts/release_ios.sh) and [`./scripts/release_android.sh`](scripts/release_android.sh) automatically execute this preflight verification before building, halting immediately if any required credential or file is missing with exact step-by-step remediation instructions.
+
 ### 🤖 Android Automated Publishing (GitHub Actions)
 Pushing to `uat` or `main` automatically triggers GitHub Actions:
 - **`uat` branch**: Injects `.env.uat`, builds pre-release APK & AAB (`<com.company.app>.uat`), publishes AAB directly to Google Play **Internal Testing** for `<App Name> UAT`, and tags a GitHub pre-release with attached APK & AAB downloads.

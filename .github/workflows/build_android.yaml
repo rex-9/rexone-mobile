@@ -165,6 +165,11 @@ jobs:
           echo "aab_name=$AAB_NAME" >> "$GITHUB_OUTPUT"
           echo "package_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
 
+      - name: Pre-Flight Release Readiness Audit (Fast-Fail Check)
+        run: |
+          TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"
+          ./scripts/preflight_check.sh android "$TARGET_ENV" --ci
+
       - name: Build Android App Bundle (AAB for Google Play)
         run: |
           TARGET_ENV="${{ steps.env_selector.outputs.target_env }}"

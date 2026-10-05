@@ -220,11 +220,12 @@ git merge dev
 ```
 - **What happens on `uat`**:
   1. GitHub Actions triggers `.github/workflows/build_android.yaml`.
-  2. Injects `.env.uat` and decodes your signing keystore.
-  3. Automatically computes monotonic build number (`base_build + GITHUB_RUN_NUMBER`).
-  4. Compiles `rexone-uat-v1.0.0-b15.apk` and `rexone-uat-v1.0.0-b15.aab`.
-  5. Uploads the AAB directly to Google Play **Internal Testing** for `RexOne UAT`.
-  6. Creates a GitHub Pre-Release with attached `.apk` and `.aab` for immediate direct downloads.
+  2. Injects `.env.uat`, decodes signing keystore, and writes `google-services.json`.
+  3. **Fast-Fail Pre-Flight Audit**: Runs `./scripts/preflight_check.sh android uat --ci` in <1s to verify all credentials before building.
+  4. Automatically computes monotonic build number (`base_build + GITHUB_RUN_NUMBER`).
+  5. Compiles `rexone-uat-v1.0.0-b15.apk` and `rexone-uat-v1.0.0-b15.aab`.
+  6. Uploads the AAB directly to Google Play **Internal Testing** for `RexOne UAT`.
+  7. Creates a GitHub Pre-Release with attached `.apk` and `.aab` for immediate direct downloads.
 
 ```bash
 # Deploy to Production:
@@ -233,10 +234,11 @@ git merge uat
 # (Push main branch to origin)
 ```
 - **What happens on `main`**:
-  1. Compiles production `rexone-prod-v1.0.0-b16.apk` and `rexone-prod-v1.0.0-b16.aab`.
-  2. Uploads the production AAB directly to Google Play **Internal Testing** for `RexOne`.
-  3. Tags a formal GitHub Release with release notes and downloadable binaries.
-  4. You can promote this build to **Closed Testing**, **Open Testing**, or **Production** in Google Play Console with 1 click!
+  1. Injects `.env.prod`, decodes production keystore, and runs the pre-flight readiness audit.
+  2. Compiles production `rexone-prod-v1.0.0-b16.apk` and `rexone-prod-v1.0.0-b16.aab`.
+  3. Uploads the production AAB directly to Google Play **Internal Testing** for `RexOne`.
+  4. Tags a formal GitHub Release with release notes and downloadable binaries.
+  5. You can promote this build to **Closed Testing**, **Open Testing**, or **Production** in Google Play Console with 1 click!
 
 ---
 
@@ -387,22 +389,31 @@ When releasing new milestone versions, bump the version using the updater script
 
 ## 🚦 6. Pre-Flight Release Checklist
 
-Run these local checks before merging into `uat` or `main`:
+RexOne Mobile includes an automated fast-fail audit script: [`./scripts/preflight_check.sh`](../scripts/preflight_check.sh). It validates all signing keys, `.p8` private keys, Google services JSON/plist, JDK 21, Xcode tools, and environment configurations in **under 1 second**, preventing wasted compile cycles, high CPU usage, and battery drain.
+
+Both [`./scripts/release_ios.sh`](../scripts/release_ios.sh) and [`./scripts/release_android.sh`](../scripts/release_android.sh) automatically execute this preflight verification before building.
 
 ```bash
-# 1. Translation Parity Audit (verifies en_US and my_MM key symmetry)
+# 1. Fast-Fail Pre-Flight Release Readiness Audit (Android & iOS)
+./scripts/preflight_check.sh               # Checks both platforms for Production
+./scripts/preflight_check.sh ios prod      # Checks iOS TestFlight readiness
+./scripts/preflight_check.sh android prod  # Checks Android Google Play readiness
+./scripts/preflight_check.sh all uat       # Checks UAT / Staging readiness
+./scripts/preflight_check.sh ios --build-only # Validates local IPA compilation without store uploads
+
+# 2. Translation Parity Audit (verifies en_US and my_MM key symmetry)
 ./scripts/check_locales.sh
 
-# 2. Dead Code Translation Audit (identifies unused translation keys)
+# 3. Dead Code Translation Audit (identifies unused translation keys)
 ./scripts/check_locales.sh --unused
 
-# 3. Secret Scanner (ensures no real .env or secrets are staged for Git)
+# 4. Secret Scanner (ensures no real .env or secrets are staged for Git)
 ./scripts/check_secrets.sh
 
-# 4. Automated Unit & Widget Test Suite
+# 5. Automated Unit & Widget Test Suite
 flutter test test/
 
-# 5. Static Code Analysis
+# 6. Static Code Analysis
 flutter analyze lib/ test/ integration_test/
 ```
 
