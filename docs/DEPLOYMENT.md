@@ -438,15 +438,11 @@ flutter analyze lib/ test/ integration_test/
 When spinning off a new white-labeled or derivative product from the RexOne foundation:
 
 ```bash
-# Option A: Ecosystem-wide Rebranding from Core (Core API, Web, and Mobile simultaneously)
-cd ../rexone-core && ./scripts/rebrand.sh
+# Option A: Ecosystem-wide Rebranding from Core (Recommended: synchronizes Core, Web, and Mobile)
+cd ../rexone-core && ./scripts/rebrand.sh brand.config.json
 
 # Option B: Standalone Mobile Rebranding
 ./scripts/rebrand.sh "Acme App" "com.acme.app" "path/to/logo.png"
 ```
 
-The rebranding engine automatically updates:
-1. `APP_NAME` and `PACKAGE_BASE` in Android Manifest & iOS Info.plist.
-2. Keystore file references in `android/app/build.gradle.kts`.
-3. Parameter contracts inside `release_android.sh`, `release_ios.sh`, and `.github/workflows/build_android.yaml`.
-4. App launcher icons across all Android and iOS display densities.
+For the comprehensive guide, automated synchronization matrix, and manual checklist, see **[Ecosystem Rebranding Guide (rexone-core/docs/REBRANDING.md)](https://github.com/rex-9/rexone-core/blob/dev/docs/REBRANDING.md)**.

@@ -66,9 +66,8 @@ android/key.properties
 coverage/
 
 # Environment
-.env.dev
-.env.uat
-.env.prod
+.env*
+!.env.example
 
 # Firebase / Google Services
 android/app/google-services.json

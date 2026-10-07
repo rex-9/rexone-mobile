@@ -440,7 +440,8 @@ For complete step-by-step key setup instructions (Google Play Service Account JS
 For full, synchronized rebranding across Core, Web, and Mobile, execute the master rebrand engine from **`rexone-core`**:
 
 ```bash
-cd ../rexone-core && ./scripts/rebrand.sh
+# Recommended: Ecosystem-wide rebrand from rexone-core:
+cd ../rexone-core && ./scripts/rebrand.sh brand.config.json
 ```
 
 For standalone mobile rebranding:
@@ -449,7 +450,8 @@ For standalone mobile rebranding:
 ./scripts/rebrand.sh "New App Name" "com.company.newapp" "path/to/icon.png"
 ```
 
-For the complete catalog of individual utility scripts (name, package ID, icons, versions), see **[`docs/README.md`](docs/README.md)**.
+For the comprehensive ecosystem guide, see **[Ecosystem Rebranding Guide (rexone-core/docs/REBRANDING.md)](https://github.com/rex-9/rexone-core/blob/dev/docs/REBRANDING.md)**.
+For the complete catalog of individual mobile utility scripts (name, package ID, icons, versions), see **[`docs/README.md`](docs/README.md)**.
 
 ---
 

@@ -94,10 +94,17 @@ android {
     buildTypes {
         release {
             val releaseConfig = signingConfigs.getByName("release")
+            val isReleaseTask = gradle.startParameter.taskNames.any { task ->
+                task.contains("Release", ignoreCase = true)
+            }
+
             if (releaseConfig.storeFile?.exists() == true && !releaseConfig.storePassword.isNullOrEmpty()) {
                 signingConfig = releaseConfig
+            } else if (isReleaseTask) {
+                throw GradleException("❌ Release signing failed: Keystore file or password missing. For UAT/Prod release builds, please configure android/key.properties or KEYSTORE_PASSWORD.")
             } else {
-                throw GradleException("❌ Release signing failed: Keystore file or password missing. Please set android/key.properties or KEYSTORE_PASSWORD.")
+                // Safe fallback only during local debug execution (e.g. flutter run / assembleDebug)
+                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }

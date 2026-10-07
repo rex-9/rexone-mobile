@@ -10,14 +10,7 @@ PACKAGE_NAME="${2:-}"
 LOGO_PATH="${3:-}"
 BRAND_NAME="${4:-$APP_NAME}"
 BRAND_DOMAIN="${5:-rexone.com}"
-FROM_EMAIL="${6:-}"
-if [ -z "$FROM_EMAIL" ]; then
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    FROM_EMAIL="support@rexone.com"
-  else
-    FROM_EMAIL="support@${BRAND_DOMAIN}"
-  fi
-fi
+FROM_EMAIL="${FROM_EMAIL:-support@${BRAND_DOMAIN}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -55,6 +48,17 @@ if [ -n "$PACKAGE_NAME" ]; then
   "$SCRIPT_DIR/update_package_name.sh" "$PACKAGE_NAME"
 fi
 
+# 2.5 Update pubspec.yaml package name and all Dart imports
+target_pub_name="${BRAND_SLUG_SNAKE}_mobile"
+if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
+  old_pub_name=$(grep -E "^name: " "$ROOT_DIR/pubspec.yaml" | awk '{print $2}')
+  if [ -n "$old_pub_name" ] && [ "$old_pub_name" != "$target_pub_name" ]; then
+    sedi -E "s/^name: .*/name: $target_pub_name/g" "$ROOT_DIR/pubspec.yaml"
+    find "$ROOT_DIR/lib" "$ROOT_DIR/test" "$ROOT_DIR/integration_test" -type f -name "*.dart" -exec sed -i '' -E "s/package:${old_pub_name}\//package:${target_pub_name}\//g" {} + 2>/dev/null || true
+    echo "  ✅ pubspec.yaml: Updated package name to '$target_pub_name' and synchronized all Dart imports"
+  fi
+fi
+
 # 3. Update Logo / Icon if provided
 if [ -n "$LOGO_PATH" ] && [ -f "$LOGO_PATH" ]; then
   echo "🖼️ Updating App Launcher Icon from: $LOGO_PATH..."
@@ -81,15 +85,15 @@ fi
 
 # 5. Synchronize Android/iOS app IDs and API Base URL in .env.example (Law U16 & Secret Isolation)
 if [ -f "$ROOT_DIR/.env.example" ]; then
+  sedi -E "s/^APP_NAME=.*/APP_NAME=$APP_NAME/g" "$ROOT_DIR/.env.example"
   if [ -n "$PACKAGE_NAME" ]; then
     sedi -E "s/^ANDROID_APP_ID=.*/ANDROID_APP_ID=$PACKAGE_NAME/g" "$ROOT_DIR/.env.example"
     sedi -E "s/^IOS_APP_ID=.*/IOS_APP_ID=$PACKAGE_NAME/g" "$ROOT_DIR/.env.example"
   fi
   api_domain="$BRAND_DOMAIN"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    api_domain="rexone.com"
-  fi
   sedi -E "s|^API_BASE_URL=https?://api\.[^/]+|API_BASE_URL=https://api.$api_domain|g" "$ROOT_DIR/.env.example"
+  sedi -E "s|Production: API_BASE_URL=https?://api\.[^/]+|Production: API_BASE_URL=https://api.$api_domain|g" "$ROOT_DIR/.env.example"
+  sedi -E "s|UAT:        API_BASE_URL=https?://uat\.api\.[^/]+|UAT:        API_BASE_URL=https://uat.api.$api_domain|g" "$ROOT_DIR/.env.example"
   if grep -q "^FROM_EMAIL=" "$ROOT_DIR/.env.example"; then
     sedi -E "s/^FROM_EMAIL=.*/FROM_EMAIL=$FROM_EMAIL/g" "$ROOT_DIR/.env.example"
   else
@@ -105,9 +109,6 @@ if [ -f "$ROOT_DIR/lib/config/app.config.dart" ]; then
     sedi -E "s/(iosAppIdKey\] \?\? ')[^']+'/\1$PACKAGE_NAME'/g" "$ROOT_DIR/lib/config/app.config.dart"
   fi
   app_name_fallback="$APP_NAME"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    app_name_fallback="RexOne"
-  fi
   sedi -E "s/dotenv\.env\[AppConstants\.nameKey\] \?\? '[^']+'/dotenv.env[AppConstants.nameKey] ?? '$app_name_fallback'/g" "$ROOT_DIR/lib/config/app.config.dart"
   sedi -E "s/dotenv\.env\[AppConstants\.fromEmailKey\] \?\? '[^']+'/dotenv.env[AppConstants.fromEmailKey] ?? '$FROM_EMAIL'/g" "$ROOT_DIR/lib/config/app.config.dart"
   echo "  ✅ app.config.dart: Updated default app name, email, and ID fallbacks ($app_name_fallback / $PACKAGE_NAME)"
@@ -116,9 +117,6 @@ fi
 # 7. Synchronize app info helper fallbacks in lib/helpers/app_info.helper.dart
 if [ -f "$ROOT_DIR/lib/helpers/app_info.helper.dart" ]; then
   app_name_fallback="$APP_NAME"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    app_name_fallback="RexOne"
-  fi
   sedi -E "s/appName: '[^']+'/appName: '$app_name_fallback'/g" "$ROOT_DIR/lib/helpers/app_info.helper.dart"
   if [ -n "$PACKAGE_NAME" ]; then
     sedi -E "s/packageName: '[^']+'/packageName: '$PACKAGE_NAME'/g" "$ROOT_DIR/lib/helpers/app_info.helper.dart"
@@ -154,9 +152,6 @@ fi
 
 # 11. Synchronize URL Schemes across Android, iOS, and Dart
 url_scheme="${BRAND_SLUG_FLAT}"
-if [ "$BRAND_NAME" = "RexOne" ]; then
-  url_scheme="rexone"
-fi
 
 # 11a. Android Manifest & Gradle deep link scheme
 if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
@@ -196,9 +191,6 @@ if [ -f "$ROOT_DIR/lib/constants/notification.constants.dart" ]; then
   sedi -E "s/static const String appUrlScheme = '[^']+';/static const String appUrlScheme = '$url_scheme';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
   sedi -E "s/static const String iosLiveActivityUrlScheme = '[^']+';/static const String iosLiveActivityUrlScheme = '$url_scheme';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
   app_group_pkg="$PACKAGE_NAME"
-  if [ "$PACKAGE_NAME" = "com.rex9.rexone" ]; then
-    app_group_pkg="com.rexone.mobile"
-  fi
   if [ -n "$PACKAGE_NAME" ]; then
     sedi -E "s/static const String iosAppGroupId = 'group\.[^']+';/static const String iosAppGroupId = 'group.$app_group_pkg';/g" "$ROOT_DIR/lib/constants/notification.constants.dart"
   fi
@@ -208,10 +200,6 @@ fi
 # 12. Synchronize Firebase project_id and storage_bucket in example templates
 fb_project_id="${BRAND_SLUG_KEBAB}"
 fb_storage_bucket="${BRAND_SLUG_KEBAB}.firebasestorage.app"
-if [ "$BRAND_NAME" = "RexOne" ]; then
-  fb_project_id="YOUR_PROJECT_ID"
-  fb_storage_bucket="YOUR_PROJECT_ID.firebasestorage.app"
-fi
 if [ -f "$ROOT_DIR/android/app/google-services.json.example" ]; then
   sedi -E "s/\"project_id\": \"[^\"]+\"/\"project_id\": \"$fb_project_id\"/g" "$ROOT_DIR/android/app/google-services.json.example"
   sedi -E "s/\"storage_bucket\": \"[^\"]+\"/\"storage_bucket\": \"$fb_storage_bucket\"/g" "$ROOT_DIR/android/app/google-services.json.example"
@@ -232,9 +220,6 @@ fi
 
 # 13. Synchronize Android upload keystore file references in build.gradle.kts and scripts
 keystore_slug="${BRAND_SLUG_FLAT}"
-if [ "$BRAND_NAME" = "RexOne" ]; then
-  keystore_slug="rexone"
-fi
 
 if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
   sedi -E "s/configuredKeystore = file\(\"\.\.\/keystores\/[a-z0-9_-]+-upload-keystore\.jks\"\)/configuredKeystore = file(\"..\/keystores\/${keystore_slug}-upload-keystore.jks\")/g" "$ROOT_DIR/android/app/build.gradle.kts"
@@ -242,12 +227,7 @@ if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
 fi
 
 # 14. Synchronize release scripts and CI/CD workflows
-app_display_base="$APP_NAME"
-if [ "$APP_NAME" = "RexOne Mobile" ] || [ "$APP_NAME" = "RexOne" ]; then
-  app_display_base="RexOne"
-elif [[ "$APP_NAME" == *" Mobile" ]]; then
-  app_display_base="${APP_NAME% Mobile}"
-fi
+app_display_base="${APP_NAME% Mobile}"
 
 if [ -f "$ROOT_DIR/scripts/release_android.sh" ]; then
   sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/scripts/release_android.sh"
@@ -268,9 +248,6 @@ if [ -f "$ROOT_DIR/.github/workflows/build_android.yaml" ]; then
   sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
   sedi -E "s|android/keystores/[a-z0-9_-]+-upload-keystore\.jks|android/keystores/${keystore_slug}-upload-keystore.jks|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
   workflow_domain="$BRAND_DOMAIN"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    workflow_domain="rexone.me"
-  fi
   sedi -E "s|https://uat\.api\.[a-zA-Z0-9_.-]+|https://uat.api.${workflow_domain}|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
   sedi -E "s|https://api\.[a-zA-Z0-9_.-]+|https://api.${workflow_domain}|g" "$ROOT_DIR/.github/workflows/build_android.yaml"
   echo "  ✅ build_android.yaml: Synchronized PACKAGE_BASE, APP_SLUG, keystore, and API URLs"
@@ -290,9 +267,6 @@ if [ -f "$ROOT_DIR/scripts/test_e2e.sh" ]; then
   sedi -E "s/PACKAGE_NAME=\"\\\$\{PACKAGE_NAME:-[^\}]*\}\"/PACKAGE_NAME=\"\${PACKAGE_NAME:-${PACKAGE_NAME}}\"/g" "$ROOT_DIR/scripts/test_e2e.sh"
   sedi -E "s/dev-[a-z0-9_-]+-core-api/dev-${BRAND_SLUG_KEBAB}-core-api/g" "$ROOT_DIR/scripts/test_e2e.sh"
   test_domain="${BRAND_SLUG_FLAT}.test"
-  if [ "$BRAND_NAME" = "RexOne" ]; then
-    test_domain="rexone.test"
-  fi
   sedi -E "s/%@[a-z0-9_-]+\.test/%@${test_domain}/g" "$ROOT_DIR/scripts/test_e2e.sh"
 fi
 

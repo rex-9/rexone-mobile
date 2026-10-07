@@ -132,9 +132,6 @@ echo "     ⚠️  Developer Action Required: Download the official 'GoogleServi
 
 # 8. Update iOS App Group Entitlements & ActionStore
 app_group_pkg="$NEW_PACKAGE_NAME"
-if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
-  app_group_pkg="com.rexone.mobile"
-fi
 for ent in "$ROOT_DIR/ios/Runner/Runner.entitlements" "$ROOT_DIR/ios/MediaDownloadWidgetExtension.entitlements"; do
   if [ -f "$ent" ]; then
     sedi -E "s|<string>group\.[a-zA-Z0-9_.]+</string>|<string>group.$app_group_pkg</string>|g" "$ent"
@@ -152,9 +149,6 @@ fi
 
 # 9. Update iOS Info.plist download background identifier & CFBundleURLName
 dl_pkg="$NEW_PACKAGE_NAME"
-if [ "$NEW_PACKAGE_NAME" = "com.rex9.rexone" ]; then
-  dl_pkg="com.rexone.mobile"
-fi
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
   python3 -c "
 import os, re
