@@ -70,12 +70,9 @@ if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
   echo "  ✅ pubspec.yaml: Updated description and patrol app_name"
 fi
 
-# 4. Environment example file (Strict Law & Secret Isolation: never touch local gitignored .env files)
-if [ -f "$ROOT_DIR/.env.example" ]; then
-  env_app_name="${NEW_APP_NAME% Mobile}"
-  sedi -E "s/^APP_NAME=.*/APP_NAME=$env_app_name/g" "$ROOT_DIR/.env.example"
-  echo "  ✅ Updated APP_NAME in .env.example"
-fi
+# 4. Environment note
+# Committed .env.example remains strictly generic stubs and is NEVER touched.
+
 
 # 5. release_android.sh default app name
 if [ -f "$ROOT_DIR/scripts/release_android.sh" ]; then

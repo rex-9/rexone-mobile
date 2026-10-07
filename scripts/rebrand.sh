@@ -83,24 +83,8 @@ if [ -n "$BRAND_NAME" ] && [ -f "$ROOT_DIR/lib/locales/app_translations.dart" ];
   echo "  ✅ AppTranslations: Synchronized brand display name ($BRAND_NAME)"
 fi
 
-# 5. Synchronize Android/iOS app IDs and API Base URL in .env.example (Law U16 & Secret Isolation)
-if [ -f "$ROOT_DIR/.env.example" ]; then
-  sedi -E "s/^APP_NAME=.*/APP_NAME=$APP_NAME/g" "$ROOT_DIR/.env.example"
-  if [ -n "$PACKAGE_NAME" ]; then
-    sedi -E "s/^ANDROID_APP_ID=.*/ANDROID_APP_ID=$PACKAGE_NAME/g" "$ROOT_DIR/.env.example"
-    sedi -E "s/^IOS_APP_ID=.*/IOS_APP_ID=$PACKAGE_NAME/g" "$ROOT_DIR/.env.example"
-  fi
-  api_domain="$BRAND_DOMAIN"
-  sedi -E "s|^API_BASE_URL=https?://api\.[^/]+|API_BASE_URL=https://api.$api_domain|g" "$ROOT_DIR/.env.example"
-  sedi -E "s|Production: API_BASE_URL=https?://api\.[^/]+|Production: API_BASE_URL=https://api.$api_domain|g" "$ROOT_DIR/.env.example"
-  sedi -E "s|UAT:        API_BASE_URL=https?://uat\.api\.[^/]+|UAT:        API_BASE_URL=https://uat.api.$api_domain|g" "$ROOT_DIR/.env.example"
-  if grep -q "^FROM_EMAIL=" "$ROOT_DIR/.env.example"; then
-    sedi -E "s/^FROM_EMAIL=.*/FROM_EMAIL=$FROM_EMAIL/g" "$ROOT_DIR/.env.example"
-  else
-    echo "FROM_EMAIL=$FROM_EMAIL" >> "$ROOT_DIR/.env.example"
-  fi
-  echo "  ✅ Mobile: Updated .env.example"
-fi
+# 5. Example and local credential isolation
+# Committed *.example files (.env.example, google-services.json.example, etc.) remain strictly generic stubs and are NEVER touched.
 
 # 6. Synchronize default fallbacks in lib/config/app.config.dart
 if [ -f "$ROOT_DIR/lib/config/app.config.dart" ]; then
@@ -197,26 +181,7 @@ if [ -f "$ROOT_DIR/lib/constants/notification.constants.dart" ]; then
   echo "  ✅ NotificationConstants: Synchronized appUrlScheme ($url_scheme) and iosAppGroupId (group.$app_group_pkg)"
 fi
 
-# 12. Synchronize Firebase project_id and storage_bucket in example templates
-fb_project_id="${BRAND_SLUG_KEBAB}"
-fb_storage_bucket="${BRAND_SLUG_KEBAB}.firebasestorage.app"
-if [ -f "$ROOT_DIR/android/app/google-services.json.example" ]; then
-  sedi -E "s/\"project_id\": \"[^\"]+\"/\"project_id\": \"$fb_project_id\"/g" "$ROOT_DIR/android/app/google-services.json.example"
-  sedi -E "s/\"storage_bucket\": \"[^\"]+\"/\"storage_bucket\": \"$fb_storage_bucket\"/g" "$ROOT_DIR/android/app/google-services.json.example"
-fi
-if [ -f "$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example" ]; then
-  python3 -c "
-import os, re
-f = '$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example'
-if os.path.exists(f):
-    with open(f, 'r') as fp:
-        c = fp.read()
-    c = re.sub(r'(<key>PROJECT_ID<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$fb_project_id\g<2>', c)
-    c = re.sub(r'(<key>STORAGE_BUCKET<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$fb_storage_bucket\g<2>', c)
-    with open(f, 'w') as fp:
-        fp.write(c)
-" 2>/dev/null || true
-fi
+
 
 # 13. Synchronize Android upload keystore file references in build.gradle.kts and scripts
 keystore_slug="${BRAND_SLUG_FLAT}"

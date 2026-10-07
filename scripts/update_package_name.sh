@@ -65,26 +65,8 @@ if [ -n "$EXISTING_TEST_JAVA" ] && [ -f "$EXISTING_TEST_JAVA" ]; then
   echo "  ✅ Android: Relocated and updated MainActivityTest.java -> $TEST_PACKAGE_PATH/MainActivityTest.java"
 fi
 
-# 4. Update Android google-services.json.example (gitignored live files are NOT touched)
-if [ -f "$ROOT_DIR/android/app/google-services.json.example" ]; then
-  python3 -c "
-import os, json
-f = '$ROOT_DIR/android/app/google-services.json.example'
-if os.path.exists(f):
-    with open(f, 'r') as fp:
-        data = json.load(fp)
-    for client in data.get('client', []):
-        app_id = client.get('client_info', {}).get('mobilesdk_app_id', '')
-        if 'UAT' in app_id:
-            client['client_info']['android_client_info']['package_name'] = '$NEW_PACKAGE_NAME.uat'
-        else:
-            client['client_info']['android_client_info']['package_name'] = '$NEW_PACKAGE_NAME'
-    with open(f, 'w') as fp:
-        json.dump(data, fp, indent=2)
-        fp.write('\n')
-" 2>/dev/null || true
-  echo "  ✅ Android: Updated package_name in google-services.json.example (Prod & UAT)"
-fi
+# 4. Android Firebase credential note
+# Committed example files remain strictly generic stubs and are NEVER touched.
 echo "  ℹ️  Android Firebase Note: Gitignored 'android/app/google-services.json' is intentionally untouched."
 echo "     ⚠️  Developer Action Required: Download the official 'google-services.json' from Firebase Console for '$NEW_PACKAGE_NAME' and place it in 'android/app/'."
 
@@ -113,20 +95,8 @@ if os.path.exists(f):
   echo "  ✅ iOS: Updated PRODUCT_BUNDLE_IDENTIFIER in project.pbxproj"
 fi
 
-# 7. Update iOS GoogleService-Info.plist.example (gitignored live files are NOT touched)
-if [ -f "$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example" ]; then
-  python3 -c "
-import os, re
-f = '$ROOT_DIR/ios/Runner/GoogleService-Info.plist.example'
-if os.path.exists(f):
-    with open(f, 'r') as fp:
-        c = fp.read()
-    c = re.sub(r'(<key>BUNDLE_ID<\/key>\s*<string>)[^<]*(<\/string>)', r'\g<1>$NEW_PACKAGE_NAME\g<2>', c)
-    with open(f, 'w') as fp:
-        fp.write(c)
-" 2>/dev/null || true
-  echo "  ✅ iOS: Updated bundle_id in GoogleService-Info.plist.example"
-fi
+# 7. iOS Firebase credential note
+# Committed example files remain strictly generic stubs and are NEVER touched.
 echo "  ℹ️  iOS Firebase Note: Gitignored 'ios/Runner/GoogleService-Info.plist' is intentionally untouched."
 echo "     ⚠️  Developer Action Required: Download the official 'GoogleService-Info.plist' from Firebase Console for '$NEW_PACKAGE_NAME' and place it in 'ios/Runner/'."
 
