@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/config/config.dart';
 
 /// iOS Lock Screen / Control Center Now Playing.
 ///
@@ -8,7 +9,7 @@ import 'package:get/get.dart';
 class NowPlayingBridge {
   const NowPlayingBridge._();
 
-  static const _channel = MethodChannel('rexone/now_playing');
+  static final _channel = MethodChannel('${AppConfig.appSlug}/now_playing');
 
   static Future<void> setPlaybackState({required bool playing}) async {
     if (!GetPlatform.isIOS) return;

@@ -1,6 +1,7 @@
 // test/routes/app_routes_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/routes/routes.dart';
 import 'package:rexone_mobile/services/services.dart';
 import '../mocks/test_services.dart';
@@ -76,39 +77,41 @@ void main() {
       );
     });
 
-    test('resolves custom rexone:// scheme correctly', () {
+    test('resolves custom app scheme correctly', () {
+      final scheme = NotificationConstants.appUrlScheme;
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://ai'),
+        AppRoutes.resolveNotificationRoute('$scheme://ai'),
         equals(AppRoutes.ai),
       );
       expect(
-        AppRoutes.resolveNotificationRoute('rexone:///ai'),
+        AppRoutes.resolveNotificationRoute('$scheme:///ai'),
         equals(AppRoutes.ai),
       );
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://ai?prompt=test'),
+        AppRoutes.resolveNotificationRoute('$scheme://ai?prompt=test'),
         equals('${AppRoutes.ai}?prompt=test'),
       );
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://payment'),
+        AppRoutes.resolveNotificationRoute('$scheme://payment'),
         equals(AppRoutes.payment),
       );
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://profile'),
+        AppRoutes.resolveNotificationRoute('$scheme://profile'),
         equals(AppRoutes.profile),
       );
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://settings'),
+        AppRoutes.resolveNotificationRoute('$scheme://settings'),
         equals(AppRoutes.settings),
       );
     });
 
     test('rejects unrecognized schemes or invalid routes', () {
+      final scheme = NotificationConstants.appUrlScheme;
       expect(AppRoutes.resolveNotificationRoute('https://evil.com'), isNull);
-      expect(AppRoutes.resolveNotificationRoute('rexonemobile://ai'), isNull);
+      expect(AppRoutes.resolveNotificationRoute('invalid_${scheme}://ai'), isNull);
       expect(AppRoutes.resolveNotificationRoute('custom://ai'), isNull);
       expect(
-        AppRoutes.resolveNotificationRoute('rexone://unknown_route'),
+        AppRoutes.resolveNotificationRoute('$scheme://unknown_route'),
         equals(AppRoutes.home),
       );
       expect(AppRoutes.resolveNotificationRoute(''), isNull);

@@ -10,10 +10,7 @@ class MediaDownloadConstants {
   static const offlineRootDirName = 'media_offline';
 
   /// Plaintext images, attachments, and other non-A/V offline files (named after the app).
-  static String get plaintextRootDirName => AppConfig.appName
-      .trim()
-      .toLowerCase()
-      .replaceAll(RegExp(r'[^a-z0-9_]'), '_');
+  static String get plaintextRootDirName => AppConfig.appSlug;
 
   static const decryptedCacheDirName = 'decrypted_cache';
   static const mediaFileSuffix = '.enc';
@@ -21,7 +18,7 @@ class MediaDownloadConstants {
   static const encryptedExtension = 'enc';
   static const defaultState = 'none';
 
-  static const keySalt = 'rexone_mobile_offline_v1';
+  static String get keySalt => '${AppConfig.appSlug}_mobile_offline_v1';
 
   static const downloadTaskGroup = 'media_offline';
   static const tempDirName = '.tmp';
@@ -32,8 +29,8 @@ class MediaDownloadConstants {
   static const notificationChannelId = 'media_download';
 
   /// MethodChannel for Live Activity Pause/Resume (must match AppDelegate).
-  static const liveActivityMethodChannel =
-      'rexone/media_download_live_activity';
+  static String get liveActivityMethodChannel =>
+      '${AppConfig.appSlug}/media_download_live_activity';
   static const liveActivityMethodAction = 'action';
   static const liveActivityMethodTakePending = 'takePending';
 

@@ -14,7 +14,7 @@ import 'package:rexone_mobile/services/push_notification.service.dart';
 /// Media-download-specific notification UX (progress Live Activity + complete/fail).
 /// Platform plugins live in [PushNotificationService].
 class MediaDownloadNotificationService extends GetxService {
-  static const _liveActivityChannel = MethodChannel(
+  static final _liveActivityChannel = MethodChannel(
     MediaDownloadConstants.liveActivityMethodChannel,
   );
 

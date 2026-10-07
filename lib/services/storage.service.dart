@@ -10,7 +10,8 @@ import '../models/user.model.dart';
 class StorageService extends GetxService {
   late final GetStorage _box;
   static const String _tokenPrefix = 'enc:v1:';
-  static const String _saltSeed = 'rexone_mobile_auth_secure_seed_2026';
+  static String get _saltSeed =>
+      '${AppConfig.appSlug}_mobile_auth_secure_seed_2026';
 
   // ===== LIFECYCLE =====
   @override

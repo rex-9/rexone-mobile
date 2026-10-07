@@ -31,10 +31,29 @@ class AppConfig {
     AppEnvironment.prod => AppEnvironment.production,
     _ => AppEnvironment.development,
   };
-  static String get appName => dotenv.env[AppConstants.nameKey] ?? 'RexOne';
+  static String _env(String key, [String fallback = '']) {
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env[key] ?? fallback;
+      }
+    } catch (_) {}
+    return fallback;
+  }
+
+  static String get appName => _env(AppConstants.nameKey, 'App');
   static String get appVersion => AppInfo.version;
+
+  /// Canonical brand slug (e.g. 'rexone' or 'meritmoon').
+  static String get appSlug => appName
+      .trim()
+      .toLowerCase()
+      .replaceFirst(RegExp(r'\s+mobile$', caseSensitive: false), '')
+      .replaceAll(RegExp(r'[^a-z0-9_]'), '_');
+
+  /// Universal offline database name (e.g. 'rexone_offline' or 'meritmoon_offline').
+  static String get offlineDbName => '${appSlug}_offline';
   static String get apiBaseUrl => UrlHelper.normalizeBaseUrl(
-    dotenv.env[AppConstants.apiBaseUrlKey] ?? 'api base url not found',
+    _env(AppConstants.apiBaseUrlKey, ''),
   );
   static String get wsBaseUrl {
     final api = apiBaseUrl;
@@ -53,22 +72,20 @@ class AppConfig {
   }
 
   static String get googleServerClientId =>
-      dotenv.env[AppConstants.googleServerClientIdKey] ??
-      'google server client id not found';
+      _env(AppConstants.googleServerClientIdKey, '');
 
   static String get oneSignalAppId =>
-      dotenv.env[AppConstants.oneSignalAppIdKey] ??
-      'one signal app id not found';
+      _env(AppConstants.oneSignalAppIdKey, '');
 
   static String get androidAppId =>
-      dotenv.env[AppConstants.androidAppIdKey] ?? 'com.rex9.rexone';
+      _env(AppConstants.androidAppIdKey, '');
 
   static String get iosAppId =>
-      dotenv.env[AppConstants.iosAppIdKey] ?? 'com.rex9.rexone';
+      _env(AppConstants.iosAppIdKey, '');
 
   static String get offlineEncryptionKey =>
-      dotenv.env[AppConstants.mediaOfflineEncryptionKey]?.trim() ?? '';
+      _env(AppConstants.mediaOfflineEncryptionKey, '').trim();
 
   static String get fromEmail =>
-      dotenv.env[AppConstants.fromEmailKey] ?? 'support@rexone.com';
+      _env(AppConstants.fromEmailKey, '');
 }

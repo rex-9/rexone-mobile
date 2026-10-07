@@ -1,5 +1,6 @@
 // lib/helpers/app_info.dart
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:rexone_mobile/config/config.dart';
 
 /// Centralized, high-performance cache for platform package and version metadata.
 /// Initialized once during app bootstrap to eliminate redundant native channel calls.
@@ -18,8 +19,8 @@ class AppInfo {
     } catch (_) {
       // Safe fallback in test harnesses or unsupported environments
       _info = PackageInfo(
-        appName: 'RexOne',
-        packageName: 'com.rex9.rexone',
+        appName: AppConfig.appName,
+        packageName: AppConfig.androidAppId,
         version: '1.0.0',
         buildNumber: '1',
       );
@@ -63,8 +64,8 @@ class AppInfo {
   static void _ensureInitialized() {
     if (!_initialized) {
       _info = PackageInfo(
-        appName: 'RexOne',
-        packageName: 'com.rex9.rexone',
+        appName: AppConfig.appName,
+        packageName: AppConfig.androidAppId,
         version: '1.0.0',
         buildNumber: '1',
       );
