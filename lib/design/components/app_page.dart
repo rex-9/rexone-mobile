@@ -113,6 +113,7 @@ class AppPage extends StatelessWidget {
       border: Border(
         bottom: BorderSide(color: context.colors.divider, width: 0.5),
       ),
+      padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
       automaticallyImplyLeading: false,
       leading: showBackButton
           ? AppButton(
@@ -127,7 +128,16 @@ class AppPage extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
-        children: [_timeZoneIndicator(context), ...?actions],
+        children: [
+          Flexible(
+            fit: FlexFit.loose,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _timeZoneIndicator(context),
+            ),
+          ),
+          ...?actions,
+        ],
       ),
     );
   }
@@ -161,10 +171,10 @@ class AppPage extends StatelessWidget {
       message: '${AppDateTime.timeZoneName} (${AppDateTime.utcOffset})',
       child: Container(
         margin: const EdgeInsets.only(right: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(color: context.colors.divider),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(Design.spacing.radiusSm),
         ),
         child: Text(AppDateTime.utcOffset, style: context.typo.caption),
       ),

@@ -43,8 +43,8 @@ fi
 
 # 2. iOS Info.plist (CFBundleDisplayName & CFBundleName)
 if [ -f "$ROOT_DIR/ios/Runner/Info.plist" ]; then
-  cf_display_name="$NEW_APP_NAME"
-  cf_bundle_name="${NEW_APP_NAME% Mobile}"
+  cf_display_name="$app_display_base"
+  cf_bundle_name="$app_display_base"
 
   python3 -c "
 import os, re
@@ -63,8 +63,8 @@ fi
 
 # 3. pubspec.yaml description & patrol app_name
 if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
-  pub_desc="$NEW_APP_NAME # \$APP_NAME"
-  patrol_app="${NEW_APP_NAME% Mobile}"
+  pub_desc="$app_display_base # \$APP_NAME"
+  patrol_app="$app_display_base"
   sedi -E "s/^description: .*/description: $pub_desc/g" "$ROOT_DIR/pubspec.yaml"
   sedi -E "s/app_name:[[:space:]]*.*/app_name: $patrol_app/g" "$ROOT_DIR/pubspec.yaml"
   echo "  ✅ pubspec.yaml: Updated description and patrol app_name"
