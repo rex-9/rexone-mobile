@@ -1,4 +1,4 @@
-// lib/modules/setting/pages/settings_page.dart
+// lib/modules/setting/pages/setting.page.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rexone_mobile/config/config.dart';
@@ -26,132 +26,169 @@ class SettingPage extends GetView<SettingController> {
         padding: EdgeInsets.all(Design.spacing.lg),
         children: [
           // Theme Section
-          _buildSectionHeader(context, AppLocales.setting.theme.tr),
-          _buildThemeTile(context),
+          AppSectionCard(
+            title: AppLocales.setting.theme.tr,
+            children: [
+              _buildThemeTile(context),
+            ],
+          ),
 
           SizedBox(height: Design.spacing.xxl),
 
           // Language Section
-          _buildSectionHeader(context, AppLocales.setting.language.tr),
-          _buildLanguageTile(context),
+          AppSectionCard(
+            title: AppLocales.setting.language.tr,
+            children: [
+              _buildLanguageTile(context),
+            ],
+          ),
 
           SizedBox(height: Design.spacing.xxl),
 
           // Account Section
-          _buildSectionHeader(context, AppLocales.setting.account.tr),
-          _buildAccountTile(context, authController),
+          AppSectionCard(
+            title: AppLocales.setting.account.tr,
+            children: [
+              Obx(
+                () => AppListTile(
+                  leading: AppAvatar(
+                    url: authController.currentUser.value?.photo,
+                    name: authController.currentUser.value?.name ??
+                        authController.currentUser.value?.username ??
+                        authController.currentUser.value?.email,
+                    radius: Design.spacing.avatarRadius / 2,
+                  ),
+                  title: Text(
+                    authController.currentUser.value?.name ??
+                        authController.currentUser.value?.username ??
+                        AppLocales.setting.account.tr,
+                  ),
+                  subtitle: Text(
+                    authController.currentUser.value?.email ??
+                        AppLocales.common.loading.tr,
+                  ),
+                  trailing: Icon(
+                    Design.icons.rightArrow,
+                    color: context.colors.textSecondary,
+                  ),
+                  onTap: AppRoutes.toProfile,
+                ),
+              ),
+              AppListTile(
+                leading: Icon(Design.icons.logout, color: context.colors.error),
+                title: Text(AppLocales.common.signOut.tr),
+                isDestructive: true,
+                onTap: () => _showLogoutDialog(context, authController),
+              ),
+              AppListTile(
+                leading: Icon(
+                  Icons.delete_forever_outlined,
+                  color: context.colors.error,
+                ),
+                title: Text(AppLocales.user.deleteAccount.tr),
+                isDestructive: true,
+                onTap: () => _showDeleteAccountDialog(context),
+              ),
+            ],
+          ),
 
           SizedBox(height: Design.spacing.xxl),
 
           // Feedback Section
-          _buildSectionHeader(context, AppLocales.feedback.title.tr),
-          _buildFeedbackTile(context),
+          AppSectionCard(
+            title: AppLocales.feedback.title.tr,
+            children: [
+              _buildFeedbackTile(context),
+            ],
+          ),
 
           SizedBox(height: Design.spacing.xxl),
 
           // App Info Section
-          _buildSectionHeader(context, AppLocales.setting.appInfo.tr),
-          _buildAppInfoTile(context),
+          AppSectionCard(
+            title: AppLocales.setting.appInfo.tr,
+            children: [
+              _buildAppInfoTile(context),
+            ],
+          ),
+
+          SizedBox(height: Design.spacing.xxl),
         ],
       ),
     );
   }
 
   Widget _buildFeedbackTile(BuildContext context) {
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: AppListTile(
-        leading: Icon(Icons.feedback_outlined, color: context.colors.primary),
-        title: Text(AppLocales.feedback.title.tr),
-        subtitle: Text(AppLocales.feedback.description.tr),
-        trailing: Icon(
-          Design.icons.rightArrow,
-          color: context.colors.textSecondary,
-        ),
-        onTap: () => FeedbackBottomSheet.show(),
+    return AppListTile(
+      leading: Icon(Icons.feedback_outlined, color: context.colors.primary),
+      title: Text(AppLocales.feedback.title.tr),
+      subtitle: Text(AppLocales.feedback.description.tr),
+      trailing: Icon(
+        Design.icons.rightArrow,
+        color: context.colors.textSecondary,
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: Design.spacing.sm,
-        bottom: Design.spacing.md,
-        top: Design.spacing.md,
-      ),
-      child: Text(
-        title.toUpperCase(),
-        style: context.typo.labelMedium.copyWith(
-          color: context.colors.textSecondary,
-          letterSpacing: 1.0,
-        ),
-      ),
+      onTap: () => FeedbackBottomSheet.show(),
     );
   }
 
   Widget _buildThemeTile(BuildContext context) {
     return Obx(
-      () => AppCard(
-        padding: EdgeInsets.zero,
-        child: AppListTile(
-          leading: Icon(controller.themeIcon, color: context.colors.primary),
-          title: Text(AppLocales.setting.theme.tr),
-          subtitle: Text(controller.themeLabel),
-          trailing: AppToggle(
-            value: controller.isDarkMode.value,
-            onChanged: (_) => controller.toggleTheme(),
-            activeColor: context.colors.primary,
-          ),
-          onTap: controller.toggleTheme,
+      () => AppListTile(
+        leading: Icon(controller.themeIcon, color: context.colors.primary),
+        title: Text(AppLocales.setting.theme.tr),
+        subtitle: Text(controller.themeLabel),
+        trailing: AppToggle(
+          value: controller.isDarkMode.value,
+          onChanged: (_) => controller.toggleTheme(),
+          activeColor: context.colors.primary,
         ),
+        onTap: controller.toggleTheme,
       ),
     );
   }
 
   Widget _buildLanguageTile(BuildContext context) {
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: AppListTile(
-        leading: _buildFlagIcon(context),
-        title: Text(AppLocales.setting.language.tr),
-        subtitle: Obx(() => Text(controller.currentLanguageName)),
-        trailing: PopupMenuButton<String>(
-          icon: Icon(
-            Design.icons.downArrow,
-            color: context.colors.textSecondary,
-          ),
-          onSelected: controller.changeLocale,
-          itemBuilder: (context) => controller.supportedLocales
-              .map(
-                (entry) => PopupMenuItem<String>(
-                  value: entry.key,
-                  child: Obx(
-                    () => Row(
-                      children: [
-                        _buildFlagIcon(context, locale: entry.key),
-                        SizedBox(width: Design.spacing.sm),
-                        Text(
-                          entry.value,
-                          style: context.typo.bodyMedium.copyWith(
-                            color: controller.isLocale(entry.key)
-                                ? context.colors.primary
-                                : context.colors.textPrimary,
-                          ),
+    return AppListTile(
+      leading: _buildFlagIcon(context),
+      title: Text(AppLocales.setting.language.tr),
+      subtitle: Obx(() => Text(controller.currentLanguageName)),
+      trailing: PopupMenuButton<String>(
+        icon: Icon(
+          Design.icons.downArrow,
+          color: context.colors.textSecondary,
+        ),
+        onSelected: controller.changeLocale,
+        itemBuilder: (context) => controller.supportedLocales
+            .map(
+              (entry) => PopupMenuItem<String>(
+                value: entry.key,
+                child: Obx(
+                  () => Row(
+                    children: [
+                      _buildFlagIcon(context, locale: entry.key),
+                      SizedBox(width: Design.spacing.sm),
+                      Text(
+                        entry.value,
+                        style: context.typo.bodyMedium.copyWith(
+                          color: controller.isLocale(entry.key)
+                              ? context.colors.primary
+                              : context.colors.textPrimary,
                         ),
-                        if (controller.isLocale(entry.key))
-                          Icon(
-                            Design.icons.check,
-                            size: Design.spacing.iconSmall,
-                            color: context.colors.primary,
-                          ),
+                      ),
+                      if (controller.isLocale(entry.key)) ...[
+                        SizedBox(width: Design.spacing.xs),
+                        Icon(
+                          Design.icons.check,
+                          size: Design.spacing.iconSmall,
+                          color: context.colors.primary,
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
-              )
-              .toList(),
-        ),
+              ),
+            )
+            .toList(),
       ),
     );
   }
@@ -164,75 +201,11 @@ class SettingPage extends GetView<SettingController> {
     );
   }
 
-  Widget _buildAccountTile(
-    BuildContext context,
-    AuthController authController,
-  ) {
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          Obx(
-            () => AppListTile(
-              leading: AppAvatar(
-                url: authController.currentUser.value?.photo,
-                name:
-                    authController.currentUser.value?.name ??
-                    authController.currentUser.value?.username ??
-                    authController.currentUser.value?.email,
-                radius: Design.spacing.avatarRadius / 2,
-              ),
-              title: Text(
-                authController.currentUser.value?.name ??
-                    authController.currentUser.value?.username ??
-                    AppLocales.setting.account.tr,
-              ),
-              subtitle: Text(
-                authController.currentUser.value?.email ??
-                    AppLocales.common.loading.tr,
-              ),
-              trailing: Icon(
-                Design.icons.rightArrow,
-                color: context.colors.textSecondary,
-              ),
-              onTap: AppRoutes.toProfile,
-            ),
-          ),
-          Divider(
-            color: context.colors.divider,
-            indent: Design.spacing.lg,
-            endIndent: Design.spacing.lg,
-          ),
-          AppListTile(
-            leading: Icon(Design.icons.logout, color: context.colors.error),
-            title: Text(AppLocales.common.signOut.tr),
-            isDestructive: true,
-            onTap: () => _showLogoutDialog(context, authController),
-          ),
-          Divider(
-            color: context.colors.divider,
-            indent: Design.spacing.lg,
-            endIndent: Design.spacing.lg,
-          ),
-          AppListTile(
-            leading: Icon(Icons.delete_forever_outlined, color: context.colors.error),
-            title: Text(AppLocales.user.deleteAccount.tr),
-            isDestructive: true,
-            onTap: () => _showDeleteAccountDialog(context),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildAppInfoTile(BuildContext context) {
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: AppListTile(
-        leading: Icon(Design.icons.info, color: context.colors.textSecondary),
-        title: Text(AppConfig.appName),
-        subtitle: Obx(() => Text('v${controller.appVersion.value}')),
-      ),
+    return AppListTile(
+      leading: Icon(Design.icons.info, color: context.colors.textSecondary),
+      title: Text(AppConfig.appName),
+      subtitle: Obx(() => Text('v${controller.appVersion.value}')),
     );
   }
 
@@ -279,4 +252,3 @@ class SettingPage extends GetView<SettingController> {
     }
   }
 }
-

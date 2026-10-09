@@ -174,7 +174,7 @@ class AppPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(color: context.colors.divider),
-          borderRadius: BorderRadius.circular(Design.spacing.radiusSm),
+          borderRadius: BorderRadius.circular(Design.spacing.radiusSmall),
         ),
         child: Text(AppDateTime.utcOffset, style: context.typo.caption),
       ),

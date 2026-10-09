@@ -38,6 +38,8 @@ class AppSpacing {
   double get radiusMedium => 12.0;
   double get radiusLarge => 16.0;
   double get radiusXLarge => 24.0;
+  double get radiusPill => 50.0;
+  double get radiusFull => 9999.0;
 
   // Icon sizes
   double get iconSmall => 16.0;
