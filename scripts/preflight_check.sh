@@ -22,6 +22,18 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
 # ------------------------------------------------------------------------------
+# App & Package Metadata Discovery (Read directly from project config)
+# ------------------------------------------------------------------------------
+APP_NAME=$(grep '^name:' "$ROOT_DIR/pubspec.yaml" 2>/dev/null | awk '{print $2}' || true)
+APP_SLUG="${APP_NAME%_mobile}"
+APP_SLUG="${APP_SLUG%-mobile}"
+
+DEFAULT_APP_BASE=$(grep '^description:' "$ROOT_DIR/pubspec.yaml" 2>/dev/null | sed 's/^description:[[:space:]]*//' | cut -d'#' -f1 | xargs || true)
+[ -z "$DEFAULT_APP_BASE" ] && DEFAULT_APP_BASE="${APP_SLUG}"
+
+PACKAGE_BASE=$(grep 'namespace =' "$ROOT_DIR/android/app/build.gradle.kts" 2>/dev/null | cut -d'"' -f2 || true)
+
+# ------------------------------------------------------------------------------
 # Colors & Formatting
 # ------------------------------------------------------------------------------
 RED='\033[0;31m'
@@ -61,7 +73,7 @@ for arg in "$@"; do
       CI_MODE=true
       ;;
     -h|--help)
-      echo_e "${BOLD}🚦 RexOne Mobile Pre-Flight Release Readiness Checker${NC}"
+      echo_e "${BOLD}🚦 ${DEFAULT_APP_BASE} Mobile Pre-Flight Release Readiness Checker${NC}"
       echo "------------------------------------------------------------------------"
       echo "Validates all critical keys, certificates, credentials, and configs"
       echo "BEFORE building to fail fast and prevent wasted compile cycles."
@@ -119,20 +131,8 @@ if [ -z "${JAVA_HOME:-}" ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# App & Package Metadata Discovery
+# App & Package Metadata Resolution
 # ------------------------------------------------------------------------------
-APP_SLUG="rexone"
-PACKAGE_BASE="com.rex9.rexone"
-DEFAULT_APP_BASE="RexOne"
-
-# Detect dynamic package changes from build.gradle.kts
-if [ -f "$ROOT_DIR/android/app/build.gradle.kts" ]; then
-  DETECTED_PKG=$(grep -E 'namespace[[:space:]]*=' "$ROOT_DIR/android/app/build.gradle.kts" | head -n 1 | sed -E 's/.*namespace[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/' | tr -d '[:space:]' || true)
-  if [ -n "$DETECTED_PKG" ]; then
-    PACKAGE_BASE="$DETECTED_PKG"
-  fi
-fi
-
 PACKAGE_NAME="$PACKAGE_BASE"
 APP_DISPLAY_NAME="$DEFAULT_APP_BASE"
 if [ "$TARGET_ENV" = "uat" ]; then
@@ -142,6 +142,7 @@ fi
 
 UPPER_ENV=$(echo "$TARGET_ENV" | tr '[:lower:]' '[:upper:]')
 UPPER_PLATFORM=$(echo "$TARGET_PLATFORM" | tr '[:lower:]' '[:upper:]')
+UPPER_APP=$(echo "$DEFAULT_APP_BASE" | tr '[:lower:]' '[:upper:]')
 
 # ------------------------------------------------------------------------------
 # Check Result Accumulators
@@ -233,7 +234,7 @@ if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
 else
   add_fail "pubspec.yaml File" "Missing pubspec.yaml" \
     "Cannot locate pubspec.yaml at the mobile workspace root." \
-    "Ensure you are running the script from within the rexone_mobile directory."
+    "Ensure you are running the script from within the mobile workspace root directory."
 fi
 
 # 1.2 Target Environment File (.env.prod or .env.uat)
@@ -536,7 +537,7 @@ if [ "$TARGET_PLATFORM" = "all" ] || [ "$TARGET_PLATFORM" = "ios" ]; then
   else
     add_fail "Xcode Project File" "ios/Runner.xcodeproj/project.pbxproj missing" \
       "The iOS Xcode project file does not exist." \
-      "Verify that the rexone_mobile workspace contains the ios/ directory."
+      "Verify that the mobile workspace contains the ios/ directory."
   fi
 
   # 3.6 App Store Connect API Credentials (.p8 & credentials file)
@@ -634,7 +635,7 @@ done
 
 echo ""
 echo "========================================================================"
-echo_e "${BOLD}🚦 REXONE MOBILE PRE-FLIGHT RELEASE READINESS CHECKLIST${NC}"
+echo_e "${BOLD}🚦 ${UPPER_APP} MOBILE PRE-FLIGHT RELEASE READINESS CHECKLIST${NC}"
 echo "========================================================================"
 echo_e "🎯 Target Environment: ${BOLD}${UPPER_ENV}${NC} (.env.${TARGET_ENV})"
 echo_e "📱 Platform Scope:     ${BOLD}${UPPER_PLATFORM}${NC}"

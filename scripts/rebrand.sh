@@ -159,6 +159,13 @@ if [ -f "$ROOT_DIR/scripts/release_ios.sh" ]; then
   echo "  ✅ release_ios.sh: Synchronized APP_SLUG (${keystore_slug}), PACKAGE_BASE (${PACKAGE_NAME}), and DEFAULT_APP_BASE (${app_display_base})"
 fi
 
+if [ -f "$ROOT_DIR/scripts/preflight_check.sh" ]; then
+  sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/scripts/preflight_check.sh"
+  sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"${PACKAGE_NAME}\"/g" "$ROOT_DIR/scripts/preflight_check.sh"
+  sedi -E "s/DEFAULT_APP_BASE=\"[^\"]*\"/DEFAULT_APP_BASE=\"${app_display_base}\"/g" "$ROOT_DIR/scripts/preflight_check.sh"
+  echo "  ✅ preflight_check.sh: Synchronized APP_SLUG (${keystore_slug}), PACKAGE_BASE (${PACKAGE_NAME}), and DEFAULT_APP_BASE (${app_display_base})"
+fi
+
 if [ -f "$ROOT_DIR/.github/workflows/build_android.yaml" ]; then
   sedi -E "s/PACKAGE_BASE=\"[^\"]*\"/PACKAGE_BASE=\"${PACKAGE_NAME}\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
   sedi -E "s/APP_SLUG=\"[^\"]*\"/APP_SLUG=\"${keystore_slug}\"/g" "$ROOT_DIR/.github/workflows/build_android.yaml"
