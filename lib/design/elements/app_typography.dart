@@ -113,6 +113,7 @@ class AppTypography {
 
   // Headings
   TextStyle get headline1 => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.h1,
         fontWeight: AppFontWeights.bold,
         height: AppLineHeights.tight,
@@ -120,6 +121,7 @@ class AppTypography {
       );
 
   TextStyle get headline2 => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.h2,
         fontWeight: AppFontWeights.bold,
         height: AppLineHeights.tight,
@@ -127,12 +129,14 @@ class AppTypography {
       );
 
   TextStyle get headline3 => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.h3,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.snug,
       );
 
   TextStyle get headline4 => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.h4,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.snug,
@@ -140,18 +144,21 @@ class AppTypography {
 
   // Body
   TextStyle get bodyLarge => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.bodyLarge,
         fontWeight: AppFontWeights.regular,
         height: AppLineHeights.relaxed,
       );
 
   TextStyle get bodyMedium => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.bodyMedium,
         fontWeight: AppFontWeights.regular,
         height: AppLineHeights.relaxed,
       );
 
   TextStyle get bodySmall => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.bodySmall,
         fontWeight: AppFontWeights.regular,
         height: AppLineHeights.relaxed,
@@ -159,18 +166,21 @@ class AppTypography {
 
   // Labels
   TextStyle get labelLarge => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.labelLarge,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.normal,
       );
 
   TextStyle get labelMedium => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.labelMedium,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.normal,
       );
 
   TextStyle get labelSmall => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.labelSmall,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.normal,
@@ -178,6 +188,7 @@ class AppTypography {
 
   // Action / Utility
   TextStyle get button => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.button,
         fontWeight: AppFontWeights.semiBold,
         height: AppLineHeights.tight,
@@ -185,18 +196,21 @@ class AppTypography {
       );
 
   TextStyle get caption => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.caption,
         fontWeight: AppFontWeights.regular,
         height: AppLineHeights.normal,
       );
 
   TextStyle get helper => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.helper,
         fontWeight: AppFontWeights.regular,
         height: AppLineHeights.snug,
       );
 
   TextStyle get link => const TextStyle(
+        fontFamily: AppFontFamilies.primary,
         fontSize: AppFontSizes.link,
         fontWeight: AppFontWeights.medium,
         height: AppLineHeights.normal,

@@ -138,6 +138,16 @@ flutter:
         #   style: italic
         # - asset: fonts/Clip_Bold.ttf
         #   weight: 700
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Quicksand-Regular.ttf
+          weight: 500
+        - asset: assets/fonts/Quicksand-Regular.ttf
+          weight: 600
+        - asset: assets/fonts/Quicksand-Regular.ttf
+          weight: 700
     - family: Storytime
       fonts:
         - asset: assets/fonts/Storytime.ttf
