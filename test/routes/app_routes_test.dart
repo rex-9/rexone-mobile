@@ -108,7 +108,7 @@ void main() {
     test('rejects unrecognized schemes or invalid routes', () {
       final scheme = NotificationConstants.appUrlScheme;
       expect(AppRoutes.resolveNotificationRoute('https://evil.com'), isNull);
-      expect(AppRoutes.resolveNotificationRoute('invalid_${scheme}://ai'), isNull);
+      expect(AppRoutes.resolveNotificationRoute('invalid_$scheme://ai'), isNull);
       expect(AppRoutes.resolveNotificationRoute('custom://ai'), isNull);
       expect(
         AppRoutes.resolveNotificationRoute('$scheme://unknown_route'),

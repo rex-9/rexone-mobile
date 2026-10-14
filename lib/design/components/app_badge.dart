@@ -52,9 +52,9 @@ class _AppBadgeState extends State<AppBadge> {
       case EBadgeVariant.defaultVariant:
         bg = _isPressed
             ? colors.secondary
-            : colors.secondary.withValues(alpha: 0.15);
-        fg = _isPressed ? Colors.white : colors.secondary;
-        border = Border.all(color: colors.secondary.withValues(alpha: 0.3));
+            : colors.secondary.withValues(alpha: 0.18);
+        fg = _isPressed ? Design.colors.primaryDark : colors.primary;
+        border = Border.all(color: colors.secondary.withValues(alpha: 0.35));
         break;
       case EBadgeVariant.success:
         bg = Design.colors.success.withValues(alpha: 0.15);

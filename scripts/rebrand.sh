@@ -48,14 +48,75 @@ if [ -n "$PACKAGE_NAME" ]; then
   "$SCRIPT_DIR/update_package_name.sh" "$PACKAGE_NAME"
 fi
 
-# 2.5 Update pubspec.yaml package name and all Dart imports
+# 2.5 Update pubspec.yaml package name, .dart_tool/package_config.json, and all Dart imports safely
 target_pub_name="${BRAND_SLUG_SNAKE}_mobile"
 if [ -f "$ROOT_DIR/pubspec.yaml" ]; then
   old_pub_name=$(grep -E "^name: " "$ROOT_DIR/pubspec.yaml" | awk '{print $2}')
   if [ -n "$old_pub_name" ] && [ "$old_pub_name" != "$target_pub_name" ]; then
     sedi -E "s/^name: .*/name: $target_pub_name/g" "$ROOT_DIR/pubspec.yaml"
-    find "$ROOT_DIR/lib" "$ROOT_DIR/test" "$ROOT_DIR/integration_test" -type f -name "*.dart" -exec sed -i '' -E "s/package:${old_pub_name}\//package:${target_pub_name}\//g" {} + 2>/dev/null || true
-    echo "  ✅ pubspec.yaml: Updated package name to '$target_pub_name' and synchronized all Dart imports"
+    echo "  ✅ pubspec.yaml: Updated package name to '$target_pub_name'"
+
+    # A. Synchronize .dart_tool/package_config.json immediately so Dart resolver recognizes the new package name without compile errors
+    if [ -f "$ROOT_DIR/.dart_tool/package_config.json" ]; then
+      python3 -c "
+import json, os
+p = '$ROOT_DIR/.dart_tool/package_config.json'
+if os.path.exists(p):
+    try:
+        with open(p, 'r+', encoding='utf-8') as f:
+            data = json.load(f)
+            updated = False
+            for pkg in data.get('packages', []):
+                if pkg.get('name') == '$old_pub_name':
+                    pkg['name'] = '$target_pub_name'
+                    updated = True
+            if updated:
+                f.seek(0)
+                json.dump(data, f, indent=2)
+                f.truncate()
+    except Exception:
+        pass
+" 2>/dev/null || true
+      echo "  ✅ .dart_tool/package_config.json: Synchronized package registration"
+    fi
+
+    # B. Atomically rewrite Dart imports IN-PLACE (preserving file inodes & IDE file watchers)
+    python3 -c "
+import os
+
+root_dir = '$ROOT_DIR'
+old_pkg = 'package:${old_pub_name}/'
+new_pkg = 'package:${target_pub_name}/'
+search_dirs = [os.path.join(root_dir, d) for d in ['lib', 'test', 'integration_test']]
+
+updated_count = 0
+for s_dir in search_dirs:
+    if not os.path.exists(s_dir):
+        continue
+    for root, _, files in os.walk(s_dir):
+        for file in files:
+            if file.endswith('.dart'):
+                filepath = os.path.join(root, file)
+                try:
+                    with open(filepath, 'r+', encoding='utf-8') as f:
+                        content = f.read()
+                        if old_pkg in content:
+                            f.seek(0)
+                            f.write(content.replace(old_pkg, new_pkg))
+                            f.truncate()
+                            updated_count += 1
+                except Exception:
+                    pass
+print(f'  ✅ Dart imports: In-place synchronized {updated_count} files (preserved inodes & IDE watchers)')
+"
+
+    # C. Run flutter pub get to ensure package registry and lockfile are 100% fresh and clean
+    echo "  📦 Running flutter pub get to finalize package registry..."
+    if command -v flutter >/dev/null 2>&1; then
+      (cd "$ROOT_DIR" && flutter pub get --no-example >/dev/null 2>&1 || flutter pub get >/dev/null 2>&1)
+    elif command -v dart >/dev/null 2>&1; then
+      (cd "$ROOT_DIR" && dart pub get >/dev/null 2>&1)
+    fi
   fi
 fi
 

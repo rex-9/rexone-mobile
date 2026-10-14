@@ -234,7 +234,7 @@ class AppSectionCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (trailingAction != null) trailingAction!,
+                  ?trailingAction,
                 ],
               ),
             ),
