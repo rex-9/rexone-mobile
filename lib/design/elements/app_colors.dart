@@ -43,6 +43,7 @@ class AppDayColors {
   Color get background => const Color(0xFFFAFAF8);
   Color get surface => const Color(0xFFFFFFFF);
   Color get card => const Color(0xFFF5F5F3);
+  Color get cardLit => const Color(0xFFF0F0EE);
   Color get border => const Color(0xFFE5E7EB);
   Color get divider => const Color(0xFFF3F4F6);
   Color get textPrimary => const Color(0xFF111827);
@@ -56,6 +57,7 @@ class AppNightColors {
   Color get background => const Color(0xFF160B11);
   Color get surface => const Color(0xFF1F1018);
   Color get card => const Color(0xFF26131E);
+  Color get cardLit => const Color(0xF228121E);
   Color get border => const Color(0xFF3D1B28);
   Color get divider => const Color(0xFF2C111C);
   Color get textPrimary => const Color(0xFFFFFFFF);

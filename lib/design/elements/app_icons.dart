@@ -46,6 +46,8 @@ class AppIcons {
   IconData get checkAll => Icons.done_all_rounded;
   IconData get filter => Icons.filter_list_rounded;
   IconData get openLink => Icons.open_in_new_rounded;
+  IconData get shield => Icons.shield_outlined;
+  IconData get shieldFilled => Icons.shield_rounded;
 
   // ── Chat / AI ─────────────────────────────────────────────────
   IconData get forum => Icons.forum_outlined;

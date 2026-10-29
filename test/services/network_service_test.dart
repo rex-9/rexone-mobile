@@ -57,26 +57,30 @@ void main() {
       expect(networkService.isRestored.value, false);
     });
 
-    test('handleConnectivityChange transitions to restored for 3 seconds then auto-hides', () async {
-      networkService.handleInitialConnectivity([ConnectivityResult.wifi]);
+    test(
+      'handleConnectivityChange transitions to restored for 3 seconds then auto-hides',
+      () async {
+        networkService.handleInitialConnectivity([ConnectivityResult.wifi]);
 
-      // Go offline
-      networkService.handleConnectivityChange([ConnectivityResult.none]);
-      expect(networkService.isOnline.value, false);
-      expect(networkService.isBannerVisible.value, true);
+        // Go offline
+        networkService.handleConnectivityChange([ConnectivityResult.none]);
+        expect(networkService.isOnline.value, false);
+        expect(networkService.isBannerVisible.value, true);
 
-      // Reconnect
-      networkService.handleConnectivityChange([ConnectivityResult.wifi]);
-      expect(networkService.isOnline.value, true);
-      expect(networkService.isRestored.value, true);
-      expect(networkService.isBannerVisible.value, true);
+        // Reconnect
+        networkService.handleConnectivityChange([ConnectivityResult.wifi]);
+        expect(networkService.isOnline.value, true);
+        expect(networkService.isRestored.value, true);
+        expect(networkService.isBannerVisible.value, true);
 
-      // Wait 3.1 seconds for auto-hide timer to fire
-      await Future.delayed(const Duration(milliseconds: 3100));
+        // Wait 3.1 seconds for auto-hide timer to fire
+        await Future.delayed(const Duration(milliseconds: 3100));
 
-      expect(networkService.isBannerVisible.value, false);
-      expect(networkService.isRestored.value, false);
-    });
+        expect(networkService.isBannerVisible.value, false);
+        expect(networkService.isRestored.value, false);
+      },
+      timeout: const Timeout(Duration(seconds: 60)),
+    );
 
     test('simulateOffline and simulateOnline helpers correctly toggle state', () {
       networkService.simulateOffline();

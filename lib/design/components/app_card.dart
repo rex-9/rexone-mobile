@@ -71,8 +71,8 @@ class AppCard extends StatelessWidget {
     final innerRadius = (radius - borderWidth).clamp(0.0, double.infinity);
 
     // Background color: elevated dark surface or crisp white day surface
-    final defaultBg = isDark
-        ? (isLit ? const Color(0xF228121E) : colors.surface)
+    final defaultBg = isLit
+        ? (isDark ? Design.colors.night.cardLit : Design.colors.day.cardLit)
         : colors.surface;
 
     // Border: crisp primary for lit, balanced border for dark/light
@@ -101,10 +101,10 @@ class AppCard extends StatelessWidget {
                   ),
               ]
             : [
-                const BoxShadow(
-                  color: Color(0x0C000000),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
                 if (isLit)
                   BoxShadow(
