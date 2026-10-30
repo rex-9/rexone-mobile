@@ -14,6 +14,7 @@ class AppColors {
   Color get accent => const Color(0xFFFF0D2D);
 
   // ===== NEON GLOW COLORS =====
+  Color get transparent => const Color(0x00000000);
   Color get glowWhite => const Color(0xFFFFF2F4);
   Color get glowRuby => const Color(0xFF5C0916);
 

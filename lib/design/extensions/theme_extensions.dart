@@ -39,6 +39,7 @@ class AppThemeContextColors {
   Color get onWarning => Colors.white;
   Color get info => Design.colors.info;
   Color get onInfo => Colors.white;
+  Color get transparent => Design.colors.transparent;
 }
 
 extension ThemeTypography on BuildContext {

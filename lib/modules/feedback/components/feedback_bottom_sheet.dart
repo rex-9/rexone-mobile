@@ -15,7 +15,7 @@ class FeedbackBottomSheet extends GetView<FeedbackController> {
     Get.bottomSheet(
       const FeedbackBottomSheet(),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Design.colors.transparent,
     );
   }
 

@@ -1,6 +1,7 @@
 // lib/modules/payment/controllers/checkout.controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rexone_mobile/design/design.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class CheckoutController extends GetxController {
@@ -14,7 +15,7 @@ class CheckoutController extends GetxController {
 
     webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
+      ..setBackgroundColor(Design.colors.transparent)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) => isLoading.value = true,

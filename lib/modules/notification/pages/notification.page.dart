@@ -103,7 +103,7 @@ class _NotificationPageState extends State<NotificationPage> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: colors.transparent,
       builder: (sheetContext) => Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,

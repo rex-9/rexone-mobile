@@ -19,7 +19,7 @@ class CheckoutBottomSheet extends StatefulWidget {
     return Get.bottomSheet<void>(
       CheckoutBottomSheet(product: product),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Design.colors.transparent,
     );
   }
 

@@ -32,6 +32,22 @@ Line with dots
       expect(cues.first.end, const Duration(milliseconds: 15000));
     });
 
+    test('parses WebVTT MM:SS.mmm timestamps without hour prefix', () {
+      const raw = '''
+WEBVTT
+
+01:12.500 --> 01:15.000
+Short WebVTT cue
+''';
+
+      final cues = SrtHelper.parse(raw);
+
+      expect(cues, hasLength(1));
+      expect(cues.first.start, const Duration(minutes: 1, seconds: 12, milliseconds: 500));
+      expect(cues.first.end, const Duration(minutes: 1, seconds: 15));
+      expect(cues.first.text, 'Short WebVTT cue');
+    });
+
     test('joins multi-line cue text and strips HTML tags', () {
       const raw = '''
 2

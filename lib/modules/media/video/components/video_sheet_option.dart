@@ -24,7 +24,7 @@ class VideoSheetOption extends StatelessWidget {
     final colors = context.colors;
 
     return Material(
-      color: Colors.transparent,
+      color: colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(

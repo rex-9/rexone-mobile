@@ -16,8 +16,8 @@ class SrtHelper {
   const SrtHelper._();
 
   static final _timestampPattern = RegExp(
-    r'(\d{2}):(\d{2}):(\d{2})([,.])(\d{3})\s*-->\s*'
-    r'(\d{2}):(\d{2}):(\d{2})([,.])(\d{3})',
+    r'(?:(\d{2}):)?(\d{2}):(\d{2})([,.])(\d{3})\s*-->\s*'
+    r'(?:(\d{2}):)?(\d{2}):(\d{2})([,.])(\d{3})',
   );
   static final _htmlTagPattern = RegExp(r'<[^>]+>');
 
@@ -151,7 +151,7 @@ class SrtHelper {
   }
 
   static Duration _durationFromMatch(RegExpMatch match, int startGroup) {
-    final hours = int.parse(match.group(startGroup)!);
+    final hours = int.parse(match.group(startGroup) ?? '0');
     final minutes = int.parse(match.group(startGroup + 1)!);
     final seconds = int.parse(match.group(startGroup + 2)!);
     final millis = int.parse(match.group(startGroup + 4)!);
