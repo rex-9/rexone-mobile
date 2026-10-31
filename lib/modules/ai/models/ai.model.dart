@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:rexone_mobile/constants/constants.dart';
 import 'package:rexone_mobile/models/asset.model.dart';
 
@@ -58,13 +59,15 @@ class AiMessageModel {
   bool get isCompleted => status == EAiMessageStatus.completed.name;
   bool get isProcessing =>
       status == EAiMessageStatus.queued.name ||
-      status == EAiMessageStatus.processing.name;
+      status == EAiMessageStatus.processing.name ||
+      status == EAiMessageStatus.retrying.name;
   bool get isQueued => status == EAiMessageStatus.queued.name;
   bool get isFailed => status == EAiMessageStatus.failed.name;
 
   String? get audioUrl {
     for (final asset in assets) {
-      if (asset.type == AiKeys.tts && asset.url.isNotEmpty) {
+      if ((asset.type == AiKeys.tts || asset.isAudioMedia) &&
+          asset.url.isNotEmpty) {
         return asset.url;
       }
     }
@@ -129,7 +132,7 @@ class AiRoomModel {
   factory AiRoomModel.fromJson(Map<String, dynamic> json) {
     return AiRoomModel(
       id: json[ApiKeys.id]?.toString() ?? '',
-      title: json[AiKeys.title]?.toString() ?? 'New Chat',
+      title: json[AiKeys.title]?.toString() ?? AppLocales.ai.newChat.tr,
       messageCount: json[AiKeys.messageCount] is int
           ? json[AiKeys.messageCount] as int
           : int.tryParse(json[AiKeys.messageCount]?.toString() ?? '0') ?? 0,
