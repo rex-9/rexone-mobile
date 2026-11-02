@@ -66,53 +66,13 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final radius = borderRadius ?? Design.spacing.radiusLarge;
     final innerRadius = (radius - borderWidth).clamp(0.0, double.infinity);
 
-    // Background color: elevated dark surface or crisp white day surface
-    final defaultBg = isLit
-        ? (isDark ? Design.colors.night.cardLit : Design.colors.day.cardLit)
-        : colors.surface;
-
-    // Border: crisp primary for lit, balanced border for dark/light
-    final defaultBorder = isDark
-        ? (isLit
-            ? Design.colors.primary.withValues(alpha: 0.70)
-            : colors.border)
-        : (isLit
-            ? Design.colors.primary.withValues(alpha: 0.85)
-            : colors.border);
-
-    // Box shadows for physical elevation and neon radiance
+    final defaultBg = isLit ? colors.cardLit : colors.surface;
+    final defaultBorder = isLit ? colors.borderLit : colors.border;
     final defaultShadow = boxShadow ??
-        (isDark
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-                if (isLit)
-                  BoxShadow(
-                    color: Design.colors.primary.withValues(alpha: 0.18),
-                    blurRadius: 20,
-                    spreadRadius: 1,
-                  ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-                if (isLit)
-                  BoxShadow(
-                    color: Design.colors.primary.withValues(alpha: 0.15),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-              ]);
+        (isLit ? colors.cardShadowLit : colors.cardShadow);
 
     final cardDecoration = BoxDecoration(
       color: backgroundColor ?? defaultBg,

@@ -14,6 +14,11 @@ class AppThemeContextColors {
   const AppThemeContextColors(this._context);
   final BuildContext _context;
 
+  AppPalette get _palette =>
+      _context.theme.brightness == Brightness.dark
+          ? Design.colors.night
+          : Design.colors.day;
+
   ColorScheme get colorScheme => _context.theme.colorScheme;
 
   Color get primary => _context.theme.colorScheme.primary;
@@ -23,8 +28,12 @@ class AppThemeContextColors {
   Color get surface => _context.theme.colorScheme.surface;
   Color get card =>
       _context.theme.cardTheme.color ?? _context.theme.colorScheme.surface;
+  Color get cardLit => _palette.cardLit;
   Color get divider => _context.theme.dividerColor;
   Color get border => _context.theme.colorScheme.outline;
+  Color get borderLit => _palette.borderLit;
+  List<BoxShadow> get cardShadow => _palette.cardShadow;
+  List<BoxShadow> get cardShadowLit => _palette.cardShadowLit;
   Color get textPrimary => _context.theme.colorScheme.onSurface;
   Color get textSecondary => _context.theme.colorScheme.onSurfaceVariant;
   Color get textMuted =>

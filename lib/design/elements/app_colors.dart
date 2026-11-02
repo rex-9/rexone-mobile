@@ -38,32 +38,115 @@ class AppColors {
   Shadows get shadows => const Shadows();
 }
 
-class AppDayColors {
-  const AppDayColors();
+/// 1:1 Theme Palette Contract — Every token in Day (`AppDayColors`) has an
+/// exact 1:1 counterpart in Night (`AppNightColors`).
+abstract class AppPalette {
+  const AppPalette();
 
-  Color get background => const Color(0xFFFAFAF8);
-  Color get surface => const Color(0xFFFFFFFF);
-  Color get card => const Color(0xFFF5F5F3);
-  Color get cardLit => const Color(0xFFF0F0EE);
-  Color get border => const Color(0xFFE5E7EB);
-  Color get divider => const Color(0xFFF3F4F6);
-  Color get textPrimary => const Color(0xFF111827);
-  Color get textSecondary => const Color(0xFF4B5563);
-  Color get textMuted => const Color(0xFF9CA3AF);
+  Color get background;
+  Color get surface;
+  Color get card;
+  Color get cardLit;
+  Color get border;
+  Color get borderLit;
+  Color get divider;
+  Color get textPrimary;
+  Color get textSecondary;
+  Color get textMuted;
+  List<BoxShadow> get cardShadow;
+  List<BoxShadow> get cardShadowLit;
 }
 
-class AppNightColors {
+class AppDayColors extends AppPalette {
+  const AppDayColors();
+
+  @override
+  Color get background => const Color(0xFFFAFAF8);
+  @override
+  Color get surface => const Color(0xFFFFFFFF);
+  @override
+  Color get card => const Color(0xFFF5F5F3);
+  @override
+  Color get cardLit => const Color(0xFFF0F0EE);
+  @override
+  Color get border => const Color(0xFFE5E7EB);
+  @override
+  Color get borderLit => const Color(0xD9FF2238);
+  @override
+  Color get divider => const Color(0xFFF3F4F6);
+  @override
+  Color get textPrimary => const Color(0xFF111827);
+  @override
+  Color get textSecondary => const Color(0xFF4B5563);
+  @override
+  Color get textMuted => const Color(0xFF9CA3AF);
+  @override
+  List<BoxShadow> get cardShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 10,
+      offset: const Offset(0, 3),
+    ),
+  ];
+  @override
+  List<BoxShadow> get cardShadowLit => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 10,
+      offset: const Offset(0, 3),
+    ),
+    BoxShadow(
+      color: const Color(0xFFFF2238).withValues(alpha: 0.15),
+      blurRadius: 16,
+      spreadRadius: 1,
+    ),
+  ];
+}
+
+class AppNightColors extends AppPalette {
   const AppNightColors();
 
+  @override
   Color get background => const Color(0xFF160B11);
+  @override
   Color get surface => const Color(0xFF1F1018);
+  @override
   Color get card => const Color(0xFF26131E);
+  @override
   Color get cardLit => const Color(0xF228121E);
+  @override
   Color get border => const Color(0xFF3D1B28);
+  @override
+  Color get borderLit => const Color(0xB3FF2238);
+  @override
   Color get divider => const Color(0xFF2C111C);
+  @override
   Color get textPrimary => const Color(0xFFFFFFFF);
+  @override
   Color get textSecondary => const Color(0xFFE2D4D8);
+  @override
   Color get textMuted => const Color(0xFFA39298);
+  @override
+  List<BoxShadow> get cardShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.35),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+    ),
+  ];
+  @override
+  List<BoxShadow> get cardShadowLit => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.35),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: const Color(0xFFFF2238).withValues(alpha: 0.18),
+      blurRadius: 20,
+      spreadRadius: 1,
+    ),
+  ];
 }
 
 class AppGlassColors {
