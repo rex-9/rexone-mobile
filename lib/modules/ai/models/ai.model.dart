@@ -59,8 +59,7 @@ class AiMessageModel {
   bool get isCompleted => status == EAiMessageStatus.completed.name;
   bool get isProcessing =>
       status == EAiMessageStatus.queued.name ||
-      status == EAiMessageStatus.processing.name ||
-      status == EAiMessageStatus.retrying.name;
+      status == EAiMessageStatus.processing.name;
   bool get isQueued => status == EAiMessageStatus.queued.name;
   bool get isFailed => status == EAiMessageStatus.failed.name;
 

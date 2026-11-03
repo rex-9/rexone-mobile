@@ -11,7 +11,7 @@ enum EAuthProvider { email, google }
 
 enum EChatRole { system, user, assistant }
 
-enum EAiMessageStatus { queued, processing, retrying, completed, failed }
+enum EAiMessageStatus { queued, processing, completed, failed }
 
 enum EThemePreference { light, dark }
 
