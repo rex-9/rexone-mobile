@@ -10,8 +10,8 @@ RexOne Mobile is a Flutter application targeting Android, iOS, Linux, macOS, and
 
 All mobile development is governed by **[`LAW.md`](LAW.md)** and **[`ECOSYSTEM.md`](ECOSYSTEM.md)**.
 - **Law M1 (Universal Provider Isolation)**: Media storage uses `storage_key`. Drift SQLite offline schema is canonical.
-- **Law U14 (Zero Loose Code)**: Strict, deterministic Dart contracts for all services and state models.
-- **Law U15 (Human-Readable Code)**: No alien syntax, dense nested ternaries, or unreadable regex hacks.
+- **Law U12 (Zero Loose Code)**: Strict, deterministic Dart contracts for all services and state models.
+- **Law U13 (Human-Readable Code)**: No alien syntax, dense nested ternaries, or unreadable regex hacks.
 
 ---
 
